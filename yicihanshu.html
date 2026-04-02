@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>一次函数动态演示教具 | 狙击精英·移动靶场</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .canvas-area {
+            flex: 3;
+            min-width: 500px;
+            background: #ffffff;
+            padding: 20px;
+            position: relative;
+        }
+
+        .main-canvas {
+            width: 100%;
+            height: auto;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .control-panel {
+            flex: 2;
+            min-width: 280px;
+            background: #fefefe;
+            border-left: 1px solid #e2e8f0;
+            padding: 20px 18px;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .section {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e9eef3;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 12px;
+        }
+
+        .slider-group {
+            margin-bottom: 14px;
+        }
+        .slider-group label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #334155;
+            display: block;
+            margin-bottom: 6px;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+        .param-value {
+            font-family: monospace;
+            background: #eef2ff;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        .expr-display {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+        button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-right: 6px;
+            margin-bottom: 8px;
+        }
+        button.secondary {
+            background: #64748b;
+        }
+        button.warning {
+            background: #f97316;
+        }
+        button.outline {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+        }
+        button.small {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+        button.danger {
+            background: #dc2626;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .input-number {
+            width: 70px;
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+        .badge {
+            background: #e2e8f0;
+            border-radius: 30px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+        .intersect-info {
+            background: #eef2ff;
+            border-radius: 16px;
+            padding: 8px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+        .feedback {
+            background: #fef9c3;
+            border-left: 4px solid #eab308;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+        }
+        .game-panel {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f0 100%);
+            border-left: 4px solid #10b981;
+        }
+        .game-score {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+        .knowledge-card {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 12px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #0f172a;
+            margin-top: 12px;
+        }
+        .game-canvas {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: block;
+            margin: 0 auto 10px auto;
+            border: 1px solid #e2e8f0;
+            cursor: crosshair;
+        }
+        .ammo-indicator {
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 40px;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 0.9rem;
+        }
+        .combo-indicator {
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 40px;
+            background: #fef3c7;
+            color: #d97706;
+            font-size: 0.9rem;
+        }
+        .shoot-btn {
+            background: #ef4444;
+            font-size: 1rem;
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .shoot-btn:active {
+            transform: scale(0.96);
+        }
+        .timer {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        @media (max-width: 800px) {
+            .container { flex-direction: column; }
+            .control-panel { max-height: none; border-left: none; border-top: 1px solid #e2e8f0; }
+            .canvas-area { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="canvas-area">
+        <canvas id="functionCanvas" class="main-canvas" width="800" height="550" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/550"></canvas>
+        <div class="flex-row" style="justify-content: space-between; margin-top: 8px;">
+            <span id="liveExpr" class="expr-display" style="flex:1; background:#f1f5f9; color:#0f172a;">y = 1.0x + 0.0</span>
+            <span id="angleDisplay" class="badge">夹角: --</span>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <!-- 直线1 核心控制（知识点在下方） -->
+        <div class="section">
+            <div class="section-title">📈 直线 f₁(x) = k·x + b</div>
+            <div class="slider-group">
+                <label>斜率 k₁: <span id="k1Val">1.0</span> (-10 ~ 10)</label>
+                <input type="range" id="k1Slider" min="-10" max="10" step="0.1" value="1">
+            </div>
+            <div class="slider-group">
+                <label>截距 b₁: <span id="b1Val">0.0</span> (-10 ~ 10)</label>
+                <input type="range" id="b1Slider" min="-10" max="10" step="0.1" value="0">
+            </div>
+            <div class="expr-display" id="line1Expr">y = 1.00 x + 0.00</div>
+            
+            <!-- 知识点卡片：放在变量k和b的下面 -->
+            <div class="knowledge-card">
+                📖 <strong>一次函数知识点</strong><br>
+                • <strong>斜率 k</strong>：决定直线倾斜程度。|k|越大，直线越陡；k>0 上升，k<0 下降。<br>
+                • <strong>截距 b</strong>：直线与y轴的交点纵坐标。<br>
+                • 与x轴交点：<strong>(-b/k, 0)</strong>；与y轴交点：<strong>(0, b)</strong>。<br>
+                • <strong>平移规律</strong>：左加右减（x），上加下减（y）。<br>
+                • <strong>两直线关系</strong>：平行 ⇔ k₁=k₂ 且 b₁≠b₂；垂直 ⇔ k₁·k₂ = -1。<br>
+                💡 试试拖动直线或交点，参数会实时变化！
+            </div>
+        </div>
+
+        <!-- 第二条直线开关与调节 -->
+        <div class="section">
+            <div class="section-title">🔁 第二条直线 (交点探究)</div>
+            <div class="flex-row">
+                <button id="toggleLine2Btn" class="secondary">➕ 显示第二条直线</button>
+                <button id="resetLine2Btn" class="small outline" style="display:none;">重置f₂</button>
+            </div>
+            <div id="line2Controls" style="display:none;">
+                <div class="slider-group">
+                    <label>斜率 k₂: <span id="k2Val">2.0</span></label>
+                    <input type="range" id="k2Slider" min="-10" max="10" step="0.1" value="2">
+                </div>
+                <div class="slider-group">
+                    <label>截距 b₂: <span id="b2Val">1.0</span></label>
+                    <input type="range" id="b2Slider" min="-10" max="10" step="0.1" value="1">
+                </div>
+                <div id="intersectInfo" class="intersect-info">⚫ 交点: --</div>
+            </div>
+        </div>
+
+        <!-- 平移 & 对称交互 -->
+        <div class="section">
+            <div class="section-title">🔄 平移与对称变换 (主直线)</div>
+            <div class="flex-row">
+                <span>水平平移: </span><input type="number" id="transX" value="0" step="0.5" class="input-number">
+                <span>垂直平移: </span><input type="number" id="transY" value="0" step="0.5" class="input-number">
+                <button id="applyTransBtn">平移并对比</button>
+            </div>
+            <div class="flex-row">
+                <button id="symXBtn">关于X轴对称</button>
+                <button id="symYBtn">关于Y轴对称</button>
+                <button id="symOriginBtn">关于原点对称</button>
+            </div>
+            <div class="feedback" id="transFeedback" style="margin-top:8px;">✨ 点击平移/对称，虚线为原像，实线为变换后</div>
+        </div>
+
+        <!-- 场景应用 + 错题反馈 -->
+        <div class="section">
+            <div class="section-title">🚕 场景应用: 计费问题</div>
+            <div>出租车费用: 起步价 <span id="sceneB">0</span> 元, 单价 <span id="sceneK">1</span> 元/km</div>
+            <div class="flex-row">
+                <label>单价(斜率k):</label><input type="range" id="sceneKSlider" min="0" max="5" step="0.2" value="1">
+                <label>起步价(b):</label><input type="range" id="sceneBSlider" min="0" max="10" step="0.5" value="0">
+            </div>
+            <div>费用 y = <span id="sceneKVal">1.0</span> x + <span id="sceneBVal">0</span> (x:里程km)</div>
+            <div class="feedback" style="margin-top:8px;" id="sceneNote">💡 调节上方滑块，主直线同步为场景函数</div>
+        </div>
+
+        <!-- 实验记录 & 错题反馈 -->
+        <div class="section">
+            <div class="section-title">📚 实验探究 & 错题反馈</div>
+            <div class="flex-row">
+                <button id="resetDefaultBtn">重置参数</button>
+                <button id="saveStateBtn">💾 保存当前状态</button>
+                <button id="clearSnapshotsBtn">🗑 清除对比</button>
+            </div>
+            <div id="snapshotList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;"></div>
+            <div class="feedback" id="quizFeedback">
+                🤔 判断题: 当k₁ = 2，b₁增加时，直线向上平移？ 
+                <button id="quizTrueBtn" class="small outline">✔ 对</button>
+                <button id="quizFalseBtn" class="small outline">✘ 错</button>
+                <span id="quizResult"></span>
+            </div>
+        </div>
+
+        <!-- 🎮 狙击精英 · 移动靶场（手动射击，移动靶间隔10秒） -->
+        <div class="section game-panel">
+            <div class="section-title">🎯 狙击精英 · 移动靶场</div>
+            <div style="text-align: center; position: relative;">
+                <canvas id="gameCanvas" class="game-canvas" width="280" height="280" style="width:100%; max-width:280px; height:auto; aspect-ratio:1/1"></canvas>
+            </div>
+            <div class="knowledge-card" style="margin-bottom: 10px; background:#fff; font-size:0.8rem;">
+                🎲 <strong>游戏规则</strong>：<strong style="color:#ef4444;">红色靶心</strong> 会每10秒随机移动一次，你需要调整<strong style="color:#10b981;">绿色狙击线</strong>使其穿过靶心。<br>
+                🔫 <strong>手动射击</strong>：调整好直线后，点击 <strong>“🔫 开枪！”</strong> 按钮射击，每次射击消耗1发子弹。<br>
+                ✅ <strong>命中条件</strong>：靶心与直线的垂直距离 &lt; 0.25。<br>
+                🎯 <strong>得分规则</strong>：命中+10分，并立即补满子弹（5发），靶心刷新位置。<br>
+                🔥 <strong>连击奖励</strong>：连续命中3次，额外+5分！<br>
+                💀 若子弹耗尽且未命中，游戏结束。点击<strong>“重新装弹”</strong>继续挑战。<br>
+                ⏱️ <strong>移动靶</strong>：靶心每10秒自动随机换位，增加挑战性！
+            </div>
+            <!-- 游戏独立参数控制 -->
+            <div class="slider-group">
+                <label>🎮 狙击线斜率 k: <span id="gameKVal">1.0</span> (-5 ~ 5)</label>
+                <input type="range" id="gameKSlider" min="-5" max="5" step="0.05" value="1">
+            </div>
+            <div class="slider-group">
+                <label>🎮 狙击线截距 b: <span id="gameBVal">0.0</span> (-5 ~ 5)</label>
+                <input type="range" id="gameBSlider" min="-5" max="5" step="0.05" value="0">
+            </div>
+            <div class="expr-display" style="background:#10b98120; color:#0f3d2a;" id="gameLineExpr">狙击线: y = 1.00 x + 0.00</div>
+            <div class="flex-row" style="justify-content: space-between; align-items: baseline;">
+                <span>🎯 靶心: <strong id="targetDisplay">(?,?)</strong></span>
+                <span class="game-score">🏆 得分: <span id="gameScore">0</span></span>
+            </div>
+            <div class="flex-row" style="justify-content: space-between;">
+                <span class="ammo-indicator" id="ammoDisplay">🔫 弹药: 5</span>
+                <span class="combo-indicator" id="comboDisplay">🔥 连击: 0</span>
+                <span class="timer" id="timerDisplay">⏱️ 下一靶 10s</span>
+            </div>
+            <div class="flex-row" style="justify-content: center;">
+                <button id="shootBtn" class="shoot-btn">🔫 开枪！</button>
+                <button id="gameResetBtn" class="warning">🔄 重新装弹</button>
+            </div>
+            <div id="gameFeedback" class="feedback" style="margin-top: 10px;">💡 调整滑块或拖动绿线，瞄准后点击开枪！</div>
+        </div>
+        <div class="feedback" style="background:#d9f0ec;">💡 提示: 主坐标系可点击交点拖动反向调节参数 | 游戏坐标系可拖动绿线实时调整，点击开枪射击</div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ======================= 主坐标系（完整功能，保持不变）=======================
+        const canvas = document.getElementById('functionCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 800, height = 550;
+        canvas.width = width; canvas.height = height;
+
+        let xMin = -10, xMax = 10, yMin = -10, yMax = 10;
+        function toPixelX(x) { return ((x - xMin) / (xMax - xMin)) * width; }
+        function toPixelY(y) { return height - ((y - yMin) / (yMax - yMin)) * height; }
+        function toMathX(px) { return xMin + (px / width) * (xMax - xMin); }
+        function toMathY(py) { return yMin + ((height - py) / height) * (yMax - yMin); }
+
+        let k1 = 1.0, b1 = 0.0;
+        let showLine2 = false;
+        let k2 = 2.0, b2 = 1.0;
+        let snapshots = [];
+        let compareLine = null;
+
+        function computeIntersection() {
+            if(!showLine2) return null;
+            if(Math.abs(k1 - k2) < 1e-6) return null;
+            const x = (b2 - b1) / (k1 - k2);
+            const y = k1 * x + b1;
+            return {x, y};
+        }
+        function computeAngleDeg() {
+            if(!showLine2) return null;
+            const angle1 = Math.atan2(k1, 1);
+            const angle2 = Math.atan2(k2, 1);
+            let diff = Math.abs(angle1 - angle2);
+            diff = Math.min(diff, Math.PI - diff);
+            return (diff * 180 / Math.PI).toFixed(1);
+        }
+
+        function updateMainUI() {
+            document.getElementById('k1Val').innerText = k1.toFixed(2);
+            document.getElementById('b1Val').innerText = b1.toFixed(2);
+            document.getElementById('k1Slider').value = k1;
+            document.getElementById('b1Slider').value = b1;
+            document.getElementById('line1Expr').innerHTML = `y = ${k1.toFixed(2)} x + ${b1.toFixed(2)}`;
+            document.getElementById('liveExpr').innerHTML = `📐 当前: y = ${k1.toFixed(2)}·x + ${b1.toFixed(2)}`;
+            if(showLine2){
+                document.getElementById('k2Slider').value = k2;
+                document.getElementById('b2Slider').value = b2;
+                document.getElementById('k2Val').innerText = k2.toFixed(2);
+                document.getElementById('b2Val').innerText = b2.toFixed(2);
+                const inter = computeIntersection();
+                if(inter){
+                    document.getElementById('intersectInfo').innerHTML = `⚫ 交点: (${inter.x.toFixed(2)}, ${inter.y.toFixed(2)}) &nbsp; 夹角: ${computeAngleDeg()}°`;
+                } else {
+                    document.getElementById('intersectInfo').innerHTML = `📐 两直线平行或重合，无交点 | 夹角: 0°`;
+                }
+                const angle = computeAngleDeg();
+                document.getElementById('angleDisplay').innerHTML = `📐 夹角: ${angle?angle+'°':'--'}`;
+            } else {
+                document.getElementById('angleDisplay').innerHTML = `夹角: --`;
+            }
+            document.getElementById('sceneKSlider').value = k1;
+            document.getElementById('sceneBSlider').value = b1;
+            document.getElementById('sceneKVal').innerText = k1.toFixed(2);
+            document.getElementById('sceneBVal').innerText = b1.toFixed(2);
+            document.getElementById('sceneNote').innerHTML = `🚕 当前单价 ${k1.toFixed(2)} 元/km, 起步价 ${b1.toFixed(2)} 元`;
+        }
+
+        function drawGridMain() {
+            ctx.save();
+            ctx.strokeStyle = "#e2e8f0";
+            ctx.lineWidth = 0.6;
+            for(let x = -10; x<=10; x+=1){
+                let px = toPixelX(x);
+                ctx.beginPath();
+                ctx.moveTo(px,0); ctx.lineTo(px,height);
+                ctx.stroke();
+            }
+            for(let y = -10; y<=10; y+=1){
+                let py = toPixelY(y);
+                ctx.beginPath();
+                ctx.moveTo(0,py); ctx.lineTo(width,py);
+                ctx.stroke();
+            }
+            ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = "#334155";
+            ctx.moveTo(toPixelX(0),0); ctx.lineTo(toPixelX(0),height); ctx.stroke();
+            ctx.moveTo(0,toPixelY(0)); ctx.lineTo(width,toPixelY(0)); ctx.stroke();
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "12px 'Segoe UI'";
+            for(let x = -10; x<=10; x+=2){ ctx.fillText(x, toPixelX(x)-6, toPixelY(0)-4); }
+            for(let y = -10; y<=10; y+=2){ ctx.fillText(y, toPixelX(0)+4, toPixelY(y)+4); }
+            ctx.restore();
+        }
+        function drawLineMain(k,b, color, lineWidth=2.5, isDashed=false) {
+            ctx.save();
+            if(isDashed) ctx.setLineDash([8,6]);
+            else ctx.setLineDash([]);
+            ctx.beginPath();
+            let x1 = xMin, y1 = k*x1+b;
+            let x2 = xMax, y2 = k*x2+b;
+            if(y1 < yMin && y2 < yMin) { ctx.restore(); return; }
+            if(y1 > yMax && y2 > yMax) { ctx.restore(); return; }
+            let startX = xMin, endX = xMax;
+            if(y1 < yMin) { startX = xMin + (yMin - y1)/(y2-y1)*(xMax-xMin); y1 = yMin; }
+            if(y2 < yMin) { endX = xMin + (yMin - y1)/(y2-y1)*(xMax-xMin); y2 = yMin; }
+            if(y1 > yMax) { startX = xMin + (yMax - y1)/(y2-y1)*(xMax-xMin); y1 = yMax; }
+            if(y2 > yMax) { endX = xMin + (yMax - y1)/(y2-y1)*(xMax-xMin); y2 = yMax; }
+            ctx.moveTo(toPixelX(startX), toPixelY(y1));
+            ctx.lineTo(toPixelX(endX), toPixelY(y2));
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.stroke();
+            ctx.restore();
+        }
+        function annotateLineMain(k,b, color) {
+            if(Math.abs(k) > 1e-6){
+                let xInter = -b/k;
+                if(xInter >= xMin && xInter <= xMax){
+                    let px = toPixelX(xInter), py = toPixelY(0);
+                    ctx.fillStyle = color;
+                    ctx.beginPath(); ctx.arc(px, py, 6, 0, 2*Math.PI); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.fillStyle = color; ctx.arc(px, py, 5, 0, 2*Math.PI); ctx.fill();
+                    ctx.fillStyle = "#0f172a"; ctx.font = "bold 12px monospace";
+                    ctx.fillText(`(${xInter.toFixed(2)},0)`, px+8, py-4);
+                }
+            }
+            if(b >= yMin && b <= yMax){
+                let px = toPixelX(0), py = toPixelY(b);
+                ctx.beginPath(); ctx.arc(px, py, 6, 0, 2*Math.PI); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.fillStyle = color; ctx.arc(px, py, 5, 0, 2*Math.PI); ctx.fill();
+                ctx.fillStyle = "#0f172a";
+                ctx.fillText(`(0,${b.toFixed(2)})`, px+8, py-4);
+            }
+            let tx = xMax-1.2;
+            let ty = k*tx+b;
+            if(ty>=yMin && ty<=yMax){
+                ctx.fillStyle = color;
+                ctx.font = "italic 12px 'Segoe UI'";
+                ctx.fillText(`k = ${k.toFixed(2)}`, toPixelX(tx)-30, toPixelY(ty)-8);
+            }
+        }
+        function drawMainAll() {
+            ctx.clearRect(0,0,width,height);
+            drawGridMain();
+            if(compareLine){
+                drawLineMain(compareLine.k, compareLine.b, "#94a3b8", 2.2, true);
+                ctx.fillStyle = "#475569";
+                ctx.font = "12px sans-serif";
+                ctx.fillText("变换前", toPixelX(7), toPixelY(compareLine.k*7+compareLine.b)-10);
+            }
+            drawLineMain(k1, b1, "#3b82f6", 3, false);
+            annotateLineMain(k1, b1, "#3b82f6");
+            if(showLine2){
+                drawLineMain(k2, b2, "#ef4444", 2.8, false);
+                annotateLineMain(k2, b2, "#ef4444");
+                const inter = computeIntersection();
+                if(inter && inter.x>=xMin && inter.x<=xMax && inter.y>=yMin && inter.y<=yMax){
+                    let px = toPixelX(inter.x), py = toPixelY(inter.y);
+                    ctx.beginPath(); ctx.arc(px, py, 8, 0, 2*Math.PI); ctx.fillStyle = "#facc15"; ctx.fill(); ctx.fillStyle = "#000"; ctx.font = "bold 12px"; ctx.fillText(`(${inter.x.toFixed(2)},${inter.y.toFixed(2)})`, px+12, py-6);
+                }
+            }
+            snapshots.forEach((snap, idx) => {
+                drawLineMain(snap.k, snap.b, `hsl(${idx*30+100}, 70%, 55%)`, 1.8, true);
+            });
+        }
+        function bindMainSliders(){
+            document.getElementById('k1Slider').addEventListener('input', (e)=>{ k1=parseFloat(e.target.value); b1=parseFloat(document.getElementById('b1Slider').value); compareLine=null; updateMainUI(); drawMainAll(); });
+            document.getElementById('b1Slider').addEventListener('input', (e)=>{ b1=parseFloat(e.target.value); k1=parseFloat(document.getElementById('k1Slider').value); compareLine=null; updateMainUI(); drawMainAll(); });
+            document.getElementById('k2Slider').addEventListener('input', (e)=>{ k2=parseFloat(e.target.value); updateMainUI(); drawMainAll(); });
+            document.getElementById('b2Slider').addEventListener('input', (e)=>{ b2=parseFloat(e.target.value); updateMainUI(); drawMainAll(); });
+            document.getElementById('sceneKSlider').addEventListener('input', (e)=>{ k1=parseFloat(e.target.value); document.getElementById('k1Slider').value=k1; updateMainUI(); drawMainAll(); });
+            document.getElementById('sceneBSlider').addEventListener('input', (e)=>{ b1=parseFloat(e.target.value); document.getElementById('b1Slider').value=b1; updateMainUI(); drawMainAll(); });
+        }
+        function applyTranslation(){
+            let dx = parseFloat(document.getElementById('transX').value);
+            let dy = parseFloat(document.getElementById('transY').value);
+            if(isNaN(dx)) dx=0; if(isNaN(dy)) dy=0;
+            compareLine = {k:k1, b:b1};
+            let newB = b1 + dy - k1*dx;
+            b1 = newB;
+            updateMainUI(); drawMainAll();
+            document.getElementById('transFeedback').innerHTML = `🟢 平移后: y = ${k1.toFixed(2)}x + ${b1.toFixed(2)} (规律: 左加右减, 上加下减)`;
+            setTimeout(()=>{ if(compareLine) setTimeout(()=>{compareLine=null; drawMainAll();},2000); },1500);
+        }
+        function applySymmetry(type){
+            compareLine = {k:k1, b:b1};
+            if(type === 'x'){ k1 = -k1; b1 = -b1; }
+            else if(type === 'y'){ k1 = -k1; b1 = b1; }
+            else if(type === 'origin'){ b1 = -b1; }
+            updateMainUI(); drawMainAll();
+            document.getElementById('transFeedback').innerHTML = `🔁 已执行关于${type==='x'?'X轴':type==='y'?'Y轴':'原点'}对称，虚线为原像`;
+            setTimeout(()=>{ if(compareLine) setTimeout(()=>{compareLine=null; drawMainAll();},2000); },1500);
+        }
+        let dragMode = null;
+        let startK1, startB1, dragStart = {x:0,y:0};
+        function handleMainDragStart(e){
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width/rect.width;
+            const scaleY = canvas.height/rect.height;
+            let clientX, clientY;
+            if(e.touches){ clientX=e.touches[0].clientX; clientY=e.touches[0].clientY; e.preventDefault();}
+            else { clientX=e.clientX; clientY=e.clientY; }
+            let canvasX = (clientX - rect.left)*scaleX;
+            let canvasY = (clientY - rect.top)*scaleY;
+            let mathX = toMathX(canvasX), mathY = toMathY(canvasY);
+            function nearLine(k,b, x,y, tol=0.35){ return Math.abs(y - (k*x+b)) < tol; }
+            if(nearLine(k1,b1, mathX, mathY,0.4)){
+                dragMode='line1'; startB1=b1; dragStart={x:mathX, y:mathY}; return;
+            }
+        }
+        function handleMainDragMove(e){
+            if(!dragMode) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width/rect.width;
+            const scaleY = canvas.height/rect.height;
+            let clientX, clientY;
+            if(e.touches){ clientX=e.touches[0].clientX; clientY=e.touches[0].clientY; }
+            else { clientX=e.clientX; clientY=e.clientY; }
+            let canvasX = (clientX - rect.left)*scaleX;
+            let canvasY = (clientY - rect.top)*scaleY;
+            let mathY = toMathY(canvasY);
+            if(dragMode === 'line1'){
+                let deltaY = mathY - dragStart.y;
+                let newB = startB1 + deltaY;
+                b1 = Math.min(10, Math.max(-10, newB));
+                updateMainUI(); drawMainAll();
+            }
+        }
+        function handleMainDragEnd(){ dragMode=null; }
+        canvas.addEventListener('mousedown', handleMainDragStart);
+        window.addEventListener('mousemove', handleMainDragMove);
+        window.addEventListener('mouseup', handleMainDragEnd);
+        canvas.addEventListener('touchstart', handleMainDragStart);
+        window.addEventListener('touchmove', handleMainDragMove);
+        window.addEventListener('touchend', handleMainDragEnd);
+        
+        document.getElementById('toggleLine2Btn').onclick=()=>{ showLine2=!showLine2; document.getElementById('line2Controls').style.display=showLine2?'block':'none'; document.getElementById('resetLine2Btn').style.display=showLine2?'inline-block':'none'; updateMainUI(); drawMainAll(); };
+        document.getElementById('resetLine2Btn').onclick=()=>{ k2=2; b2=1; updateMainUI(); drawMainAll(); };
+        document.getElementById('applyTransBtn').onclick=applyTranslation;
+        document.getElementById('symXBtn').onclick=()=>applySymmetry('x');
+        document.getElementById('symYBtn').onclick=()=>applySymmetry('y');
+        document.getElementById('symOriginBtn').onclick=()=>applySymmetry('origin');
+        document.getElementById('resetDefaultBtn').onclick=()=>{ k1=1; b1=0; k2=2; b2=1; showLine2=false; compareLine=null; document.getElementById('line2Controls').style.display='none'; updateMainUI(); drawMainAll(); };
+        document.getElementById('saveStateBtn').onclick=()=>{ snapshots.push({k:k1,b:b1}); if(snapshots.length>5) snapshots.shift(); drawMainAll(); let div=document.getElementById('snapshotList'); div.innerHTML=snapshots.map((s,i)=>`<span class="badge">📌 y=${s.k.toFixed(1)}x+${s.b.toFixed(1)}</span>`).join(''); };
+        document.getElementById('clearSnapshotsBtn').onclick=()=>{ snapshots=[]; drawMainAll(); document.getElementById('snapshotList').innerHTML=''; };
+        document.getElementById('quizTrueBtn').onclick=()=>{ document.getElementById('quizResult').innerHTML='✅ 正确！b增加直线向上平移'; };
+        document.getElementById('quizFalseBtn').onclick=()=>{ document.getElementById('quizResult').innerHTML='❌ 再试试调节b值滑动条，观察直线上下移动！'; };
+        bindMainSliders();
+        updateMainUI();
+        drawMainAll();
+
+        // ======================= 狙击精英 · 移动靶场（手动射击，移动靶间隔10秒）=======================
+        const gameCanvas = document.getElementById('gameCanvas');
+        const gCtx = gameCanvas.getContext('2d');
+        let gWidth = 280, gHeight = 280;
+        gameCanvas.width = gWidth; gameCanvas.height = gHeight;
+        let gXMin = -5, gXMax = 5, gYMin = -5, gYMax = 5;
+        function gToPixelX(x) { return ((x - gXMin) / (gXMax - gXMin)) * gWidth; }
+        function gToPixelY(y) { return gHeight - ((y - gYMin) / (gYMax - gYMin)) * gHeight; }
+        function gToMathX(px) { return gXMin + (px / gWidth) * (gXMax - gXMin); }
+        function gToMathY(py) { return gYMin + ((gHeight - py) / gHeight) * (gYMax - gYMin); }
+
+        // 游戏状态
+        let game_k = 1.0, game_b = 0.0;
+        let targetX = 2.0, targetY = 1.0;
+        let score = 0;
+        let ammo = 5;
+        let combo = 0;
+        let gameActive = true;
+        
+        // 定时器相关（移动靶间隔10秒）
+        let targetMoveInterval = null;   // 移动靶心的定时器（每10秒）
+        let countdownInterval = null;     // 倒计时显示定时器（每秒）
+        let timeToNextMove = 10;           // 距离下次移动的秒数（显示用）
+
+        // 随机生成目标点
+        function randomTarget() {
+            let x = (Math.random() * 8) - 4;
+            let y = (Math.random() * 8) - 4;
+            x = Math.min(4.5, Math.max(-4.5, x));
+            y = Math.min(4.5, Math.max(-4.5, y));
+            return { x, y };
+        }
+
+        // 移动靶心（由定时器触发）
+        function moveTarget() {
+            if (!gameActive) return;
+            const newTarget = randomTarget();
+            targetX = newTarget.x;
+            targetY = newTarget.y;
+            updateGameUI();
+            document.getElementById('gameFeedback').innerHTML = `🎯 靶心移动！新位置 (${targetX.toFixed(2)}, ${targetY.toFixed(2)})，快重新瞄准！`;
+            setTimeout(() => {
+                if (gameActive) document.getElementById('gameFeedback').innerHTML = `💡 调整狙击线，点击开枪！`;
+            }, 1500);
+            // 重置倒计时显示
+            timeToNextMove = 10;
+            updateTimerDisplay();
+        }
+
+        // 更新倒计时显示
+        function updateTimerDisplay() {
+            let timerSpan = document.getElementById('timerDisplay');
+            if (timerSpan) timerSpan.innerHTML = `⏱️ 下一靶 ${timeToNextMove}s`;
+        }
+
+        // 启动所有定时器
+        function startTimers() {
+            stopTimers(); // 先清除已有定时器
+            // 移动靶心定时器（每10秒）
+            targetMoveInterval = setInterval(() => {
+                moveTarget();
+            }, 10000);
+            // 倒计时显示定时器（每秒更新）
+            countdownInterval = setInterval(() => {
+                if (gameActive && timeToNextMove > 0) {
+                    timeToNextMove--;
+                    updateTimerDisplay();
+                } else if (gameActive && timeToNextMove <= 0) {
+                    // 理论上移动靶心时已重置为10，但以防万一
+                    timeToNextMove = 10;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        // 停止所有定时器
+        function stopTimers() {
+            if (targetMoveInterval) {
+                clearInterval(targetMoveInterval);
+                targetMoveInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        // 更新UI
+        function updateGameUI() {
+            document.getElementById('gameKVal').innerText = game_k.toFixed(2);
+            document.getElementById('gameBVal').innerText = game_b.toFixed(2);
+            document.getElementById('gameKSlider').value = game_k;
+            document.getElementById('gameBSlider').value = game_b;
+            document.getElementById('gameLineExpr').innerHTML = `狙击线: y = ${game_k.toFixed(2)} x + ${game_b.toFixed(2)}`;
+            document.getElementById('targetDisplay').innerHTML = `(${targetX.toFixed(2)}, ${targetY.toFixed(2)})`;
+            document.getElementById('gameScore').innerText = score;
+            document.getElementById('ammoDisplay').innerHTML = `🔫 弹药: ${ammo}`;
+            document.getElementById('comboDisplay').innerHTML = `🔥 连击: ${combo}`;
+            drawGameAll();
+        }
+
+        // 检查是否命中
+        function checkHit() {
+            let yLine = game_k * targetX + game_b;
+            let diff = Math.abs(yLine - targetY);
+            return diff < 0.25;
+        }
+
+        // 射击动作
+        function shoot() {
+            if (!gameActive) {
+                document.getElementById('gameFeedback').innerHTML = `💀 游戏已结束，请点击“重新装弹”继续挑战。`;
+                return;
+            }
+            if (ammo <= 0) {
+                gameActive = false;
+                stopTimers();
+                document.getElementById('gameFeedback').innerHTML = `💀 弹药耗尽！游戏结束。点击“重新装弹”继续挑战。`;
+                document.getElementById('gameKSlider').disabled = true;
+                document.getElementById('gameBSlider').disabled = true;
+                return;
+            }
+            ammo--;
+            const hit = checkHit();
+            if (hit) {
+                // 命中
+                score += 10;
+                combo++;
+                if (combo % 3 === 0 && combo > 0) {
+                    score += 5;
+                    document.getElementById('gameFeedback').innerHTML = `🎉 命中！ +10分！ 连击x${combo} 额外+5分！ 弹药补满！`;
+                } else {
+                    document.getElementById('gameFeedback').innerHTML = `🎉 命中！ +10分！ 弹药补满！ 连击x${combo}`;
+                }
+                // 补满弹药
+                ammo = 5;
+                // 刷新目标
+                const newTarget = randomTarget();
+                targetX = newTarget.x;
+                targetY = newTarget.y;
+                // 重置倒计时显示（因为靶心移动了）
+                timeToNextMove = 10;
+                updateTimerDisplay();
+                // 如果游戏因弹药耗尽而结束，现在重新激活（不会发生）
+                if (!gameActive) {
+                    gameActive = true;
+                    document.getElementById('gameKSlider').disabled = false;
+                    document.getElementById('gameBSlider').disabled = false;
+                    startTimers();
+                }
+            } else {
+                combo = 0;
+                document.getElementById('gameFeedback').innerHTML = `❌ 未命中！剩余弹药 ${ammo}，连击重置。继续瞄准！`;
+                if (ammo === 0) {
+                    gameActive = false;
+                    stopTimers();
+                    document.getElementById('gameFeedback').innerHTML = `💀 弹药耗尽！游戏结束。点击“重新装弹”继续挑战。`;
+                    document.getElementById('gameKSlider').disabled = true;
+                    document.getElementById('gameBSlider').disabled = true;
+                }
+            }
+            updateGameUI();
+        }
+
+        // 重置游戏（重新装弹）
+        function resetGame() {
+            stopTimers();
+            score = 0;
+            ammo = 5;
+            combo = 0;
+            gameActive = true;
+            const newTarget = randomTarget();
+            targetX = newTarget.x;
+            targetY = newTarget.y;
+            game_k = 1.0;
+            game_b = 0.0;
+            document.getElementById('gameKSlider').value = game_k;
+            document.getElementById('gameBSlider').value = game_b;
+            document.getElementById('gameKSlider').disabled = false;
+            document.getElementById('gameBSlider').disabled = false;
+            timeToNextMove = 10;
+            updateGameUI();
+            startTimers();
+            document.getElementById('gameFeedback').innerHTML = "🔄 重新装弹！弹药已补满，新靶心出现，快瞄准开枪！";
+        }
+
+        // 绘图函数
+        function drawGameGrid() {
+            gCtx.save();
+            gCtx.strokeStyle = "#cbd5e1";
+            gCtx.lineWidth = 0.5;
+            for(let x = -5; x<=5; x+=1){
+                let px = gToPixelX(x);
+                gCtx.beginPath(); gCtx.moveTo(px,0); gCtx.lineTo(px,gHeight); gCtx.stroke();
+            }
+            for(let y = -5; y<=5; y+=1){
+                let py = gToPixelY(y);
+                gCtx.beginPath(); gCtx.moveTo(0,py); gCtx.lineTo(gWidth,py); gCtx.stroke();
+            }
+            gCtx.beginPath(); gCtx.lineWidth = 1.5; gCtx.strokeStyle = "#334155";
+            gCtx.moveTo(gToPixelX(0),0); gCtx.lineTo(gToPixelX(0),gHeight); gCtx.stroke();
+            gCtx.moveTo(0,gToPixelY(0)); gCtx.lineTo(gWidth,gToPixelY(0)); gCtx.stroke();
+            gCtx.fillStyle = "#1e293b";
+            gCtx.font = "10px 'Segoe UI'";
+            for(let x = -5; x<=5; x+=2){ gCtx.fillText(x, gToPixelX(x)-4, gToPixelY(0)-2); }
+            for(let y = -5; y<=5; y+=2){ gCtx.fillText(y, gToPixelX(0)+2, gToPixelY(y)+3); }
+            gCtx.restore();
+        }
+
+        function drawLineWithStyle(k, b, color, lineWidth, isDashed) {
+            gCtx.save();
+            if (isDashed) gCtx.setLineDash([8,6]);
+            else gCtx.setLineDash([]);
+            gCtx.beginPath();
+            let x1 = gXMin, y1 = k*x1+b;
+            let x2 = gXMax, y2 = k*x2+b;
+            if((y1 < gYMin && y2 < gYMin) || (y1 > gYMax && y2 > gYMax)) { gCtx.restore(); return; }
+            let startX = gXMin, endX = gXMax;
+            if(y1 < gYMin) { startX = gXMin + (gYMin - y1)/(y2-y1)*(gXMax-gXMin); y1 = gYMin; }
+            if(y2 < gYMin) { endX = gXMin + (gYMin - y1)/(y2-y1)*(gXMax-gXMin); y2 = gYMin; }
+            if(y1 > gYMax) { startX = gXMin + (gYMax - y1)/(y2-y1)*(gXMax-gXMin); y1 = gYMax; }
+            if(y2 > gYMax) { endX = gXMin + (gYMax - y1)/(y2-y1)*(gXMax-gXMin); y2 = gYMax; }
+            gCtx.moveTo(gToPixelX(startX), gToPixelY(y1));
+            gCtx.lineTo(gToPixelX(endX), gToPixelY(y2));
+            gCtx.strokeStyle = color;
+            gCtx.lineWidth = lineWidth;
+            gCtx.stroke();
+            gCtx.restore();
+        }
+
+        function drawGameAll() {
+            gCtx.clearRect(0,0,gWidth,gHeight);
+            drawGameGrid();
+            // 绘制靶心
+            let px = gToPixelX(targetX), py = gToPixelY(targetY);
+            gCtx.font = "26px 'Segoe UI'";
+            gCtx.fillStyle = "#ef4444";
+            gCtx.fillText("🎯", px-13, py+10);
+            gCtx.font = "9px monospace";
+            gCtx.fillStyle = "#1e293b";
+            gCtx.fillText(`(${targetX.toFixed(2)},${targetY.toFixed(2)})`, px+6, py-6);
+            // 狙击线
+            drawLineWithStyle(game_k, game_b, "#10b981", 2.8, false);
+            gCtx.font = "9px monospace";
+            gCtx.fillStyle = "#10b981";
+            gCtx.fillText("狙击线", gToPixelX(3.5), gToPixelY(game_k*3.5+game_b)+12);
+        }
+
+        // 拖动交互（实时更新参数，但不射击）
+        let gDragMode = null;
+        let gStartK, gStartB, gDragStartPos = {x:0,y:0};
+
+        function handleGameDragStart(e) {
+            if (!gameActive) return;
+            const rect = gameCanvas.getBoundingClientRect();
+            const scaleX = gameCanvas.width/rect.width;
+            const scaleY = gameCanvas.height/rect.height;
+            let clientX, clientY;
+            if(e.touches){ clientX=e.touches[0].clientX; clientY=e.touches[0].clientY; e.preventDefault();}
+            else { clientX=e.clientX; clientY=e.clientY; }
+            let canvasX = (clientX - rect.left)*scaleX;
+            let canvasY = (clientY - rect.top)*scaleY;
+            let mathX = gToMathX(canvasX), mathY = gToMathY(canvasY);
+            function nearLine(k,b, x,y, tol=0.3){ return Math.abs(y - (k*x+b)) < tol; }
+            if(nearLine(game_k, game_b, mathX, mathY, 0.3)){
+                gDragMode = 'line'; gStartK = game_k; gStartB = game_b; gDragStartPos = {x:mathX, y:mathY}; return;
+            }
+            if(Math.abs(game_k) > 1e-6){
+                let xInter = -game_b/game_k;
+                let px = gToPixelX(xInter), py = gToPixelY(0);
+                if(Math.hypot(px-canvasX, py-canvasY) < 12){ gDragMode = 'xInter'; gStartK = game_k; gStartB = game_b; return; }
+            }
+            let yInter = game_b;
+            let py = gToPixelY(yInter);
+            if(Math.hypot(gToPixelX(0)-canvasX, py-canvasY) < 12){ gDragMode = 'yInter'; gStartB = game_b; return; }
+        }
+
+        function handleGameDragMove(e) {
+            if (!gameActive || !gDragMode) return;
+            e.preventDefault();
+            const rect = gameCanvas.getBoundingClientRect();
+            const scaleX = gameCanvas.width/rect.width;
+            const scaleY = gameCanvas.height/rect.height;
+            let clientX, clientY;
+            if(e.touches){ clientX=e.touches[0].clientX; clientY=e.touches[0].clientY; }
+            else { clientX=e.clientX; clientY=e.clientY; }
+            let canvasX = (clientX - rect.left)*scaleX;
+            let canvasY = (clientY - rect.top)*scaleY;
+            let mathX = gToMathX(canvasX), mathY = gToMathY(canvasY);
+            if(gDragMode === 'line'){
+                let deltaY = mathY - gDragStartPos.y;
+                let newB = gStartB + deltaY;
+                game_b = Math.min(5, Math.max(-5, newB));
+                updateGameUI();
+            } else if(gDragMode === 'xInter'){
+                let newXInter = mathX;
+                if(Math.abs(gStartK) > 1e-6){
+                    let newK = -gStartB / newXInter;
+                    if(!isNaN(newK) && Math.abs(newK) <= 6) game_k = Math.min(5, Math.max(-5, newK));
+                    updateGameUI();
+                }
+            } else if(gDragMode === 'yInter'){
+                let newB = mathY;
+                game_b = Math.min(5, Math.max(-5, newB));
+                updateGameUI();
+            }
+        }
+
+        function handleGameDragEnd() {
+            gDragMode = null;
+        }
+
+        gameCanvas.addEventListener('mousedown', handleGameDragStart);
+        window.addEventListener('mousemove', handleGameDragMove);
+        window.addEventListener('mouseup', handleGameDragEnd);
+        gameCanvas.addEventListener('touchstart', handleGameDragStart);
+        window.addEventListener('touchmove', handleGameDragMove);
+        window.addEventListener('touchend', handleGameDragEnd);
+
+        // 滑块事件：实时更新，不自动射击
+        document.getElementById('gameKSlider').addEventListener('input', (e) => {
+            if (!gameActive) return;
+            game_k = parseFloat(e.target.value);
+            updateGameUI();
+        });
+        document.getElementById('gameBSlider').addEventListener('input', (e) => {
+            if (!gameActive) return;
+            game_b = parseFloat(e.target.value);
+            updateGameUI();
+        });
+
+        // 射击按钮
+        document.getElementById('shootBtn').onclick = () => { shoot(); };
+        document.getElementById('gameResetBtn').onclick = () => { resetGame(); };
+
+        // 初始化游戏
+        resetGame();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>几何游乐场：角的认识与计算 | 趣味互动游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'PingFang SC', '微软雅黑', system-ui, sans-serif;
+            background: #f0f7ff;
+            margin: 0;
+            padding: 20px;
+            color: #1e2f3e;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 0.25rem;
+            background: linear-gradient(135deg, #1e5f7a, #2c8c6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            color: #4a6f7c;
+            margin-bottom: 24px;
+            border-left: 4px solid #2c8c6e;
+            padding-left: 16px;
+            font-size: 0.95rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #cbdbe6;
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: #eef2fa;
+            border: none;
+            padding: 10px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #2c5a6e;
+        }
+        .tab-btn.active {
+            background: #2c8c6e;
+            color: white;
+            box-shadow: 0 4px 10px rgba(44,140,110,0.3);
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .demo-card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        .canvas-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        canvas {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+            border: 1px solid #e2edf2;
+            cursor: grab;
+            width: 100%;
+            height: auto;
+            background-image: radial-gradient(#e9f0f5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .control-panel {
+            flex: 1;
+            min-width: 280px;
+            background: #f9fdfe;
+            border-radius: 24px;
+            padding: 18px;
+            border: 1px solid #cde3ec;
+        }
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        .slider-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #1a5d6f;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #2c8c6e;
+        }
+        .geom-lang {
+            background: #eef3fa;
+            padding: 12px;
+            border-radius: 20px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.85rem;
+            margin-top: 16px;
+            border-left: 6px solid #2c8c6e;
+        }
+        button {
+            background: #2c8c6e;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            margin-right: 8px;
+            font-size: 0.85rem;
+            transition: 0.1s;
+        }
+        button:hover {
+            background: #1f6e55;
+            transform: scale(0.98);
+        }
+        .game-box {
+            background: #fff9ef;
+            border-radius: 24px;
+            padding: 14px;
+            margin-top: 16px;
+            border: 2px solid #ffe0b5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .game-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #c25b1a;
+        }
+        .game-stats {
+            display: inline-block;
+            background: #ffe6cc;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        .target-badge {
+            background: #2c8c6e;
+            color: white;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 28px;
+            background: #f0f0e8;
+            font-size: 0.85rem;
+            transition: 0.1s;
+        }
+        .success-feedback {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        .error-feedback {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        .option-btn {
+            background: #e9ecef;
+            color: #2c5a6e;
+            margin: 4px;
+        }
+        .option-btn.selected {
+            background: #2c8c6e;
+            color: white;
+        }
+        .flex-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .badge {
+            background: #e2f0e6;
+            border-radius: 32px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .angle-table {
+            background: #f0f4f9;
+            border-radius: 20px;
+            padding: 12px;
+            margin: 12px 0;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .angle-pair {
+            background: white;
+            border-radius: 16px;
+            padding: 8px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .angle-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .red-text { color: #e63946; }
+        .blue-text { color: #3b82b6; }
+        @media (max-width: 780px) {
+            .canvas-area { flex-direction: column; }
+            .angle-table { flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎮 几何游乐场 · 角的认识与计算</h1>
+    <div class="sub">✨ 自由拖拽 | 实时联动 | 趣味游戏 | 在挑战中掌握几何概念</div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="sum">🧩 角的和差 · 角之拼图</button>
+        <button class="tab-btn" data-tab="vertical">📏 垂线性质 · 最短路径挑战</button>
+        <button class="tab-btn" data-tab="compute">🔍 相交线 · 对顶角侦探</button>
+    </div>
+
+    <!-- 1. 角的和差模块 · 角之拼图游戏 -->
+    <div id="sum" class="tab-pane active">
+        <div class="demo-card">
+            <h3>🎨 角之拼图 | 滑动滑块，让∠1+∠2等于目标角度！</h3>
+            <div class="canvas-area">
+                <canvas id="angleSumCanvas" width="500" height="400" style="width:500px; height:400px"></canvas>
+                <div class="control-panel">
+                    <div class="slider-group">
+                        <label>📐 ∠1 (∠AOB) = <span id="angle1Val">48</span>°</label>
+                        <input type="range" id="angle1Slider" min="0" max="180" step="1" value="48">
+                        <label>📐 ∠2 (∠BOC) = <span id="angle2Val">67</span>°</label>
+                        <input type="range" id="angle2Slider" min="0" max="180" step="1" value="67">
+                    </div>
+                    <div class="flex-row">
+                        <div class="badge">✨ 当前总和</div>
+                        <div><strong id="totalAngleSpan">115</strong>°</div>
+                    </div>
+                    <div class="geom-lang" id="sumGeomLang"></div>
+                    <button id="resetSumBtn">⟳ 复位</button>
+                    
+                    <!-- 角之拼图游戏 -->
+                    <div class="game-box">
+                        <div class="game-title">🎯 角之拼图 <span class="game-stats" id="puzzleScore">得分:0</span></div>
+                        <div><span class="target-badge" id="targetAngleDisplay">目标: 120°</span> 让 ∠1+∠2 等于目标值 (误差≤1°)</div>
+                        <div class="flex-row" style="margin-top: 12px;">
+                            <button id="newTargetBtn">🎲 新目标</button>
+                            <button id="checkPuzzleBtn">✨ 验证拼图</button>
+                        </div>
+                        <div id="puzzleFeedback" class="feedback">调整滑块，使总和接近目标，点击验证！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 垂线性质模块 · 最短路径挑战（随机位置 + 选最短线段）-->
+    <div id="vertical" class="tab-pane">
+        <div class="demo-card">
+            <h3>📌 最短路径挑战 | 拖拽点P/M/N，找出最短的线段！</h3>
+            <div class="canvas-area">
+                <canvas id="verticalCanvas" width="500" height="400" style="width:500px; height:400px; cursor: grab;"></canvas>
+                <div class="control-panel">
+                    <div><span class="badge">🔵 蓝色点P可拖拽</span> <span class="badge">🟢 绿色点M,N可沿直线拖拽</span></div>
+                    <div id="verticalStatus" style="margin: 8px 0;"></div>
+                    <div><strong>📏 PH:</strong> <span id="distanceVal">0.00</span> &nbsp;| <strong>PM:</strong> <span id="slope1Len">0.00</span> &nbsp;| <strong>PN:</strong> <span id="slope2Len">0.00</span></div>
+                    <div class="geom-lang" id="verticalGeomLang"></div>
+                    <button id="resetVertBtn">📍 重置位置</button>
+                    
+                    <!-- 最短路径挑战游戏 -->
+                    <div class="game-box">
+                        <div class="game-title">🏆 最短路径挑战 <span class="game-stats" id="vertScore">得分:0</span></div>
+                        <div>🤔 哪条线段最短？</div>
+                        <div class="flex-row" style="justify-content: space-around; margin: 10px 0;">
+                            <button id="choosePH" class="option-btn">📏 垂线段 PH</button>
+                            <button id="choosePM" class="option-btn">📐 斜线 PM</button>
+                            <button id="choosePN" class="option-btn">📐 斜线 PN</button>
+                        </div>
+                        <button id="randomVertPosBtn">🎲 随机新挑战</button>
+                        <div id="vertGameFeedback" class="feedback">点击上方按钮，选出最短的线段！可以拖拽改变位置～</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 相交线模块 · 对顶角侦探（随机题型）-->
+    <div id="compute" class="tab-pane">
+        <div class="demo-card">
+            <h3>🔍 对顶角侦探 | 对顶角相等 & 邻补角互补</h3>
+            <div class="canvas-area">
+                <canvas id="intersectCanvas" width="500" height="400" style="width:500px; height:400px"></canvas>
+                <div class="control-panel">
+                    <div class="slider-group">
+                        <label>🎛️ 旋转直线CD ∠AOC = <span id="angleAOC">65</span>°</label>
+                        <input type="range" id="rotateSlider" min="10" max="170" step="1" value="65">
+                    </div>
+                    <div class="angle-table">
+                        <div class="angle-pair"><h4>🔴 对顶角</h4>∠AOC = <span id="aocVal" class="angle-value red-text">65</span>°  ∠BOD = <span id="bodVal" class="angle-value red-text">65</span>°</div>
+                        <div class="angle-pair"><h4>🔵 对顶角</h4>∠AOD = <span id="aodVal" class="angle-value blue-text">115</span>°  ∠BOC = <span id="bocVal" class="angle-value blue-text">115</span>°</div>
+                    </div>
+                    <div class="geom-lang" id="intersectGeomLang"></div>
+                    
+                    <!-- 对顶角侦探游戏 -->
+                    <div class="game-box">
+                        <div class="game-title">🕵️ 对顶角侦探 <span class="game-stats" id="detectiveScore">得分:0</span></div>
+                        <div id="detectiveQuestion">❓ 题目加载中...</div>
+                        <div id="detectiveOptions" class="flex-row" style="margin: 10px 0;"></div>
+                        <button id="nextDetectiveBtn">🎲 下一题</button>
+                        <div id="detectiveFeedback" class="feedback">✨ 根据当前图形，选择正确答案！</div>
+                    </div>
+                    <button id="checkMistakeBtn">⚠️ 易错警示</button>
+                    <div id="mistakeFeedback" class="error-tip" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 智能辅助 -->
+    <div class="demo-card" style="background:#eef5f0;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <div style="flex:2;">
+                <div style="font-weight: bold;">🤖 几何语言助手</div>
+                <div class="flex-row" style="margin-top: 6px;">
+                    <input type="text" id="langCommand" placeholder="输入指令，如：对顶角、垂线段最短、∠1+∠2" style="flex:3; padding: 8px 16px; border-radius: 40px;">
+                    <button id="executeLang">解析</button>
+                </div>
+            </div>
+            <div id="aiFeedback" class="geom-lang" style="flex:1; margin:0; background:#ffffff;">💬 输入几何描述，AI将给出提示</div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    // ========== 模块1: 角的和差 ==========
+    const canvasSum = document.getElementById('angleSumCanvas');
+    const ctxSum = canvasSum.getContext('2d');
+    const widthSum = 500, heightSum = 400;
+    canvasSum.width = widthSum; canvasSum.height = heightSum;
+    let angle1 = 48, angle2 = 67;
+    const centerO = { x: 200, y: 200 };
+    function angleToVector(deg) {
+        let rad = deg * Math.PI / 180;
+        return { x: Math.cos(rad), y: Math.sin(rad) };
+    }
+    function drawAngleSum() {
+        ctxSum.clearRect(0, 0, widthSum, heightSum);
+        let vecA = angleToVector(0);
+        let endA = { x: centerO.x + vecA.x * 140, y: centerO.y + vecA.y * 140 };
+        ctxSum.beginPath();
+        ctxSum.moveTo(centerO.x, centerO.y);
+        ctxSum.lineTo(endA.x, endA.y);
+        ctxSum.strokeStyle = "#3b82b6";
+        ctxSum.lineWidth = 2.5;
+        ctxSum.stroke();
+        ctxSum.fillStyle = "#1e4a6e";
+        ctxSum.font = "bold 14px";
+        ctxSum.fillText("A", endA.x+5, endA.y-5);
+        
+        let vecB = angleToVector(angle1);
+        let endB = { x: centerO.x + vecB.x * 140, y: centerO.y + vecB.y * 140 };
+        ctxSum.beginPath();
+        ctxSum.moveTo(centerO.x, centerO.y);
+        ctxSum.lineTo(endB.x, endB.y);
+        ctxSum.strokeStyle = "#e67e22";
+        ctxSum.lineWidth = 3;
+        ctxSum.stroke();
+        ctxSum.fillStyle = "#c55a1a";
+        ctxSum.fillText("B", endB.x+5, endB.y-5);
+        
+        let total = angle1 + angle2;
+        let vecC = angleToVector(total);
+        let endC = { x: centerO.x + vecC.x * 140, y: centerO.y + vecC.y * 140 };
+        ctxSum.beginPath();
+        ctxSum.moveTo(centerO.x, centerO.y);
+        ctxSum.lineTo(endC.x, endC.y);
+        ctxSum.strokeStyle = "#2c8c6e";
+        ctxSum.lineWidth = 2.5;
+        ctxSum.stroke();
+        ctxSum.fillStyle = "#1f6e55";
+        ctxSum.fillText("C", endC.x+5, endC.y-5);
+        ctxSum.fillStyle = "#2c3e50";
+        ctxSum.fillText("O", centerO.x-12, centerO.y-6);
+        
+        function drawArcWithLabel(startDeg, angleDeg, color, label, labelColor) {
+            let radStart = startDeg * Math.PI/180;
+            let radEnd = (startDeg + angleDeg) * Math.PI/180;
+            ctxSum.beginPath();
+            ctxSum.arc(centerO.x, centerO.y, 55, radStart, radEnd);
+            ctxSum.strokeStyle = color;
+            ctxSum.lineWidth = 2;
+            ctxSum.stroke();
+            let midRad = (startDeg + angleDeg/2) * Math.PI/180;
+            let tx = centerO.x + 72 * Math.cos(midRad);
+            let ty = centerO.y + 72 * Math.sin(midRad);
+            ctxSum.fillStyle = labelColor;
+            ctxSum.font = "bold 13px";
+            ctxSum.fillText(label, tx-8, ty-6);
+            let txVal = centerO.x + 85 * Math.cos(midRad);
+            let tyVal = centerO.y + 85 * Math.sin(midRad);
+            ctxSum.font = "500 11px";
+            ctxSum.fillStyle = color;
+            ctxSum.fillText(`${angleDeg}°`, txVal-8, tyVal-5);
+        }
+        drawArcWithLabel(0, angle1, "#e67e22", "∠1", "#c55a1a");
+        drawArcWithLabel(angle1, angle2, "#2c8c6e", "∠2", "#1f8a6b");
+        let totalRad = total * Math.PI/180;
+        let txTotal = centerO.x + 100 * Math.cos(totalRad/2);
+        let tyTotal = centerO.y + 100 * Math.sin(totalRad/2);
+        ctxSum.fillStyle = "#2c5a6e";
+        ctxSum.font = "bold 13px";
+        ctxSum.fillText(`∠AOC = ${total}°`, txTotal-20, tyTotal-8);
+        document.getElementById('totalAngleSpan').innerText = total;
+        document.getElementById('sumGeomLang').innerHTML = `📐 几何语言：∠1 = ∠AOB = ${angle1}°，∠2 = ∠BOC = ${angle2}°，∴ ∠AOC = ∠1 + ∠2 = ${total}°。`;
+    }
+    const slider1 = document.getElementById('angle1Slider');
+    const slider2 = document.getElementById('angle2Slider');
+    function updateSum() {
+        angle1 = parseFloat(slider1.value);
+        angle2 = parseFloat(slider2.value);
+        document.getElementById('angle1Val').innerText = angle1;
+        document.getElementById('angle2Val').innerText = angle2;
+        drawAngleSum();
+    }
+    slider1.addEventListener('input', updateSum);
+    slider2.addEventListener('input', updateSum);
+    document.getElementById('resetSumBtn').addEventListener('click',()=>{
+        slider1.value = 48; slider2.value = 67; updateSum();
+    });
+    updateSum();
+    
+    // 角之拼图游戏（目标范围调整为20°~340°，适应新的总和范围）
+    let puzzleScore = 0;
+    let currentTarget = 120;
+    const targetSpan = document.getElementById('targetAngleDisplay');
+    const puzzleFeedback = document.getElementById('puzzleFeedback');
+    function updateTargetDisplay() { targetSpan.innerText = `目标: ${currentTarget}°`; }
+    function generateRandomTarget() {
+        // 目标范围 20°~340°，避免超过总和最大360°太多
+        currentTarget = Math.floor(Math.random() * (340 - 20 + 1) + 20);
+        updateTargetDisplay();
+        puzzleFeedback.innerHTML = "🎲 新目标已生成！调整滑块使总和接近目标～";
+        puzzleFeedback.classList.remove('success-feedback','error-feedback');
+    }
+    document.getElementById('newTargetBtn').addEventListener('click', generateRandomTarget);
+    document.getElementById('checkPuzzleBtn').addEventListener('click',()=>{
+        let total = angle1 + angle2;
+        if(Math.abs(total - currentTarget) <= 1) {
+            puzzleScore++;
+            document.getElementById('puzzleScore').innerText = `得分:${puzzleScore}`;
+            puzzleFeedback.innerHTML = `🎉 完美！总和${total}° 与目标${currentTarget}° 吻合！ +1分 继续挑战～`;
+            puzzleFeedback.className = "feedback success-feedback";
+            generateRandomTarget(); // 自动新目标
+        } else {
+            puzzleFeedback.innerHTML = `❌ 当前总和 ${total}°，目标 ${currentTarget}°，差 ${Math.abs(total-currentTarget)}°。再调整滑块试试！`;
+            puzzleFeedback.className = "feedback error-feedback";
+        }
+    });
+    generateRandomTarget();
+    
+    // ========== 模块2: 垂线 + 拖拽 ==========
+    const canvasVert = document.getElementById('verticalCanvas');
+    const ctxVert = canvasVert.getContext('2d');
+    const wVert = 500, hVert = 400;
+    canvasVert.width = wVert; canvasVert.height = hVert;
+    const lineY = 200;
+    let pointP = { x: 280, y: 120 };
+    let pointM = { x: 180, y: lineY };
+    let pointN = { x: 380, y: lineY };
+    let dragTarget = null, isDragging = false;
+    function updateVertLengths() {
+        let distPH = Math.abs(pointP.y - lineY);
+        let distPM = Math.hypot(pointP.x - pointM.x, pointP.y - pointM.y);
+        let distPN = Math.hypot(pointP.x - pointN.x, pointP.y - pointN.y);
+        document.getElementById('distanceVal').innerText = distPH.toFixed(2);
+        document.getElementById('slope1Len').innerText = distPM.toFixed(2);
+        document.getElementById('slope2Len').innerText = distPN.toFixed(2);
+        let status = (Math.abs(pointP.y - lineY) < 0.1) ? "点P在直线l上，垂足即P。" : "点P在直线l外，垂线段PH最短。";
+        document.getElementById('verticalStatus').innerHTML = status;
+        document.getElementById('verticalGeomLang').innerHTML = `📖 几何语言：过点P有且只有一条直线垂直于l，垂足H，PH = ${distPH.toFixed(2)}，且 PH < PM, PH < PN，垂线段最短。`;
+        return { distPH, distPM, distPN };
+    }
+    function drawVertical() {
+        ctxVert.clearRect(0, 0, wVert, hVert);
+        ctxVert.beginPath();
+        ctxVert.moveTo(40, lineY);
+        ctxVert.lineTo(wVert-40, lineY);
+        ctxVert.lineWidth = 2.5;
+        ctxVert.strokeStyle = "#2c5a6e";
+        ctxVert.stroke();
+        ctxVert.fillStyle = "#2c5a6e";
+        ctxVert.fillText("直线 l", wVert-70, lineY-5);
+        pointM.y = lineY; pointN.y = lineY;
+        pointM.x = Math.min(wVert-30, Math.max(40, pointM.x));
+        pointN.x = Math.min(wVert-30, Math.max(40, pointN.x));
+        ctxVert.beginPath();
+        ctxVert.moveTo(pointP.x, pointP.y);
+        ctxVert.lineTo(pointM.x, pointM.y);
+        ctxVert.strokeStyle = "#b98f5c";
+        ctxVert.setLineDash([8,6]);
+        ctxVert.lineWidth = 2;
+        ctxVert.stroke();
+        ctxVert.beginPath();
+        ctxVert.moveTo(pointP.x, pointP.y);
+        ctxVert.lineTo(pointN.x, pointN.y);
+        ctxVert.stroke();
+        let footX = pointP.x, footY = lineY;
+        ctxVert.setLineDash([]);
+        ctxVert.beginPath();
+        ctxVert.moveTo(pointP.x, pointP.y);
+        ctxVert.lineTo(footX, footY);
+        ctxVert.strokeStyle = "#e67e22";
+        ctxVert.lineWidth = 3;
+        ctxVert.stroke();
+        ctxVert.beginPath();
+        ctxVert.arc(footX, footY, 5, 0, 2*Math.PI);
+        ctxVert.fillStyle = "#d97706";
+        ctxVert.fill();
+        ctxVert.fillStyle = "#000";
+        ctxVert.fillText("H", footX+5, footY-4);
+        ctxVert.beginPath();
+        ctxVert.moveTo(footX-8, footY);
+        ctxVert.lineTo(footX, footY);
+        ctxVert.lineTo(footX, footY+8);
+        ctxVert.strokeStyle = "#2c8c6e";
+        ctxVert.stroke();
+        ctxVert.beginPath();
+        ctxVert.arc(pointP.x, pointP.y, 8, 0, 2*Math.PI);
+        ctxVert.fillStyle = "#3b82b6";
+        ctxVert.fill();
+        ctxVert.fillStyle = "white";
+        ctxVert.fillText("P", pointP.x-3, pointP.y+4);
+        ctxVert.beginPath();
+        ctxVert.arc(pointM.x, pointM.y, 7, 0, 2*Math.PI);
+        ctxVert.fillStyle = "#6fbf4c";
+        ctxVert.fill();
+        ctxVert.fillText("M", pointM.x-4, pointM.y-5);
+        ctxVert.beginPath();
+        ctxVert.arc(pointN.x, pointN.y, 7, 0, 2*Math.PI);
+        ctxVert.fill();
+        ctxVert.fillText("N", pointN.x-4, pointN.y-5);
+        updateVertLengths();
+    }
+    function getMouseCoords(e) {
+        const rect = canvasVert.getBoundingClientRect();
+        const scaleX = canvasVert.width / rect.width;
+        const scaleY = canvasVert.height / rect.height;
+        let mx = (e.clientX - rect.left) * scaleX;
+        let my = (e.clientY - rect.top) * scaleY;
+        mx = Math.min(wVert-20, Math.max(20, mx));
+        my = Math.min(hVert-20, Math.max(20, my));
+        return { x: mx, y: my };
+    }
+    function onVertMouseDown(e) {
+        e.preventDefault();
+        const { x, y } = getMouseCoords(e);
+        if (Math.hypot(x - pointP.x, y - pointP.y) < 12) dragTarget = 'P';
+        else if (Math.hypot(x - pointM.x, y - pointM.y) < 12) dragTarget = 'M';
+        else if (Math.hypot(x - pointN.x, y - pointN.y) < 12) dragTarget = 'N';
+        else dragTarget = null;
+        if (dragTarget) isDragging = true;
+        if (isDragging) canvasVert.style.cursor = 'grabbing';
+    }
+    function onVertMouseMove(e) {
+        if (!isDragging || !dragTarget) return;
+        e.preventDefault();
+        const { x, y } = getMouseCoords(e);
+        if (dragTarget === 'P') { pointP.x = x; pointP.y = y; }
+        else if (dragTarget === 'M') { pointM.x = x; pointM.y = lineY; }
+        else if (dragTarget === 'N') { pointN.x = x; pointN.y = lineY; }
+        drawVertical();
+    }
+    function onVertMouseUp() { isDragging = false; dragTarget = null; canvasVert.style.cursor = 'grab'; }
+    canvasVert.addEventListener('mousedown', onVertMouseDown);
+    window.addEventListener('mousemove', onVertMouseMove);
+    window.addEventListener('mouseup', onVertMouseUp);
+    document.getElementById('resetVertBtn').addEventListener('click',()=>{
+        pointP = { x: 280, y: 120 };
+        pointM = { x: 180, y: lineY };
+        pointN = { x: 380, y: lineY };
+        drawVertical();
+    });
+    drawVertical();
+    
+    // 最短路径挑战游戏
+    let vertScore = 0;
+    const vertGameFeedback = document.getElementById('vertGameFeedback');
+    function checkVertAnswer(choice) {
+        let { distPH, distPM, distPN } = updateVertLengths();
+        let shortest = "PH";
+        let minLen = distPH;
+        if(distPM < minLen - 0.01) { shortest = "PM"; minLen = distPM; }
+        if(distPN < minLen - 0.01) { shortest = "PN"; minLen = distPN; }
+        if(choice === shortest) {
+            vertScore++;
+            document.getElementById('vertScore').innerText = `得分:${vertScore}`;
+            vertGameFeedback.innerHTML = `🎉 正确！${choice} 是最短的线段 (长度 ${minLen.toFixed(2)})！ +1分`;
+            vertGameFeedback.className = "feedback success-feedback";
+        } else {
+            vertGameFeedback.innerHTML = `❌ 不对哦，当前最短的是 ${shortest} (长度 ${minLen.toFixed(2)})。再拖拽或点击随机挑战试试！`;
+            vertGameFeedback.className = "feedback error-feedback";
+        }
+    }
+    document.getElementById('choosePH').addEventListener('click',()=>checkVertAnswer("PH"));
+    document.getElementById('choosePM').addEventListener('click',()=>checkVertAnswer("PM"));
+    document.getElementById('choosePN').addEventListener('click',()=>checkVertAnswer("PN"));
+    document.getElementById('randomVertPosBtn').addEventListener('click',()=>{
+        pointP = { x: Math.random() * (wVert-80) + 40, y: Math.random() * (hVert-80) + 40 };
+        pointM = { x: Math.random() * (wVert-80) + 40, y: lineY };
+        pointN = { x: Math.random() * (wVert-80) + 40, y: lineY };
+        drawVertical();
+        vertGameFeedback.innerHTML = "🎲 新挑战！请找出最短的线段～";
+        vertGameFeedback.className = "feedback";
+    });
+    
+    // ========== 模块3: 相交线 ==========
+    const canvasInt = document.getElementById('intersectCanvas');
+    const ctxInt = canvasInt.getContext('2d');
+    canvasInt.width = 500; canvasInt.height = 400;
+    let intersectAngle = 65;
+    const centerI = { x: 250, y: 200 };
+    function drawIntersect() {
+        ctxInt.clearRect(0, 0, 500, 400);
+        let rad = intersectAngle * Math.PI/180;
+        let sup = 180 - intersectAngle;
+        ctxInt.beginPath();
+        ctxInt.moveTo(100, centerI.y);
+        ctxInt.lineTo(400, centerI.y);
+        ctxInt.strokeStyle = "#4a627a";
+        ctxInt.stroke();
+        ctxInt.fillText("A", 90, centerI.y-5);
+        ctxInt.fillText("B", 405, centerI.y-5);
+        let dx = Math.cos(rad)*140, dy = Math.sin(rad)*140;
+        let cx = centerI.x-dx, cy = centerI.y-dy, dx2 = centerI.x+dx, dy2 = centerI.y+dy;
+        ctxInt.beginPath();
+        ctxInt.moveTo(cx, cy);
+        ctxInt.lineTo(dx2, dy2);
+        ctxInt.strokeStyle = "#b96f30";
+        ctxInt.stroke();
+        ctxInt.fillText("C", cx-8, cy-5);
+        ctxInt.fillText("D", dx2+5, dy2+5);
+        ctxInt.fillText("O", centerI.x-8, centerI.y-8);
+        let radius = 55;
+        ctxInt.beginPath(); ctxInt.arc(centerI.x, centerI.y, radius, 0, rad); ctxInt.strokeStyle = "#e63946"; ctxInt.stroke();
+        ctxInt.beginPath(); ctxInt.arc(centerI.x, centerI.y, radius, Math.PI, Math.PI+rad); ctxInt.stroke();
+        ctxInt.beginPath(); ctxInt.arc(centerI.x, centerI.y, radius, rad, Math.PI); ctxInt.strokeStyle = "#3b82b6"; ctxInt.stroke();
+        ctxInt.beginPath(); ctxInt.arc(centerI.x, centerI.y, radius, Math.PI+rad, 2*Math.PI); ctxInt.stroke();
+        let rText = 70;
+        ctxInt.fillStyle = "#e63946";
+        ctxInt.fillText(`${intersectAngle}°`, centerI.x + rText*Math.cos(rad/2)-10, centerI.y + rText*Math.sin(rad/2)-6);
+        ctxInt.fillStyle = "#3b82b6";
+        ctxInt.fillText(`${sup}°`, centerI.x + rText*Math.cos(rad + (Math.PI-rad)/2)-5, centerI.y + rText*Math.sin(rad + (Math.PI-rad)/2)-5);
+        document.getElementById('aocVal').innerText = intersectAngle;
+        document.getElementById('bodVal').innerText = intersectAngle;
+        document.getElementById('aodVal').innerText = sup;
+        document.getElementById('bocVal').innerText = sup;
+        document.getElementById('angleAOC').innerText = intersectAngle;
+        document.getElementById('intersectGeomLang').innerHTML = `📖 对顶角相等：∠AOC=∠BOD=${intersectAngle}°，∠AOD=∠BOC=${sup}°；邻补角互补。`;
+    }
+    const rotateSliderInt = document.getElementById('rotateSlider');
+    rotateSliderInt.addEventListener('input', (e)=>{ intersectAngle = parseFloat(e.target.value); drawIntersect(); refreshDetectiveQuestion(); });
+    drawIntersect();
+    
+    // 对顶角侦探游戏
+    let detectiveScore = 0;
+    let currentQuestionType = "equal"; // "equal" 或 "supplement"
+    let currentCorrectAnswer = "";
+    const detectiveQuestionDiv = document.getElementById('detectiveQuestion');
+    const detectiveOptionsDiv = document.getElementById('detectiveOptions');
+    const detectiveFeedback = document.getElementById('detectiveFeedback');
+    function refreshDetectiveQuestion() {
+        let sup = 180 - intersectAngle;
+        // 随机选择题型
+        currentQuestionType = Math.random() < 0.5 ? "equal" : "supplement";
+        if(currentQuestionType === "equal") {
+            let angles = ["∠AOC", "∠BOD", "∠AOD", "∠BOC"];
+            let target = angles[Math.floor(Math.random()*angles.length)];
+            let correct = "";
+            if(target === "∠AOC") correct = "∠BOD";
+            else if(target === "∠BOD") correct = "∠AOC";
+            else if(target === "∠AOD") correct = "∠BOC";
+            else correct = "∠AOD";
+            currentCorrectAnswer = correct;
+            detectiveQuestionDiv.innerHTML = `❓ 与 ${target} 相等的对顶角是哪个？`;
+            let opts = ["∠AOC", "∠BOD", "∠AOD", "∠BOC"].filter(opt => opt !== target);
+            opts.push(correct);
+            opts = opts.sort(() => Math.random() - 0.5);
+            detectiveOptionsDiv.innerHTML = "";
+            opts.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.classList.add('option-btn');
+                btn.style.margin = "4px";
+                btn.onclick = () => checkDetectiveAnswer(opt);
+                detectiveOptionsDiv.appendChild(btn);
+            });
+        } else {
+            let targetAngle = Math.random() < 0.5 ? "∠AOC" : "∠AOD";
+            let correctVal = (targetAngle === "∠AOC") ? sup : intersectAngle;
+            currentCorrectAnswer = correctVal.toString();
+            detectiveQuestionDiv.innerHTML = `❓ ${targetAngle} 的邻补角度数是多少？`;
+            let opts = [intersectAngle, sup, intersectAngle+10, sup-10];
+            opts = [...new Set(opts)];
+            opts = opts.sort(() => Math.random() - 0.5);
+            detectiveOptionsDiv.innerHTML = "";
+            opts.forEach(val => {
+                let btn = document.createElement('button');
+                btn.innerText = val + "°";
+                btn.classList.add('option-btn');
+                btn.onclick = () => checkDetectiveAnswer(val.toString());
+                detectiveOptionsDiv.appendChild(btn);
+            });
+        }
+    }
+    function checkDetectiveAnswer(answer) {
+        let isCorrect = false;
+        if(currentQuestionType === "equal") {
+            isCorrect = (answer === currentCorrectAnswer);
+        } else {
+            isCorrect = (parseFloat(answer) === parseFloat(currentCorrectAnswer));
+        }
+        if(isCorrect) {
+            detectiveScore++;
+            document.getElementById('detectiveScore').innerText = `得分:${detectiveScore}`;
+            detectiveFeedback.innerHTML = "🎉 完全正确！ +1分 继续挑战！";
+            detectiveFeedback.className = "feedback success-feedback";
+            refreshDetectiveQuestion();
+        } else {
+            let hint = (currentQuestionType === "equal") ? `对顶角相等，正确答案是 ${currentCorrectAnswer}。` : `邻补角互补，正确答案是 ${currentCorrectAnswer}°。`;
+            detectiveFeedback.innerHTML = `❌ 不对哦。${hint} 再试试看～`;
+            detectiveFeedback.className = "feedback error-feedback";
+        }
+    }
+    document.getElementById('nextDetectiveBtn').addEventListener('click', refreshDetectiveQuestion);
+    refreshDetectiveQuestion();
+    document.getElementById('checkMistakeBtn').addEventListener('click',()=>{
+        let fb = document.getElementById('mistakeFeedback');
+        fb.style.display = 'block';
+        fb.innerHTML = `⚠️ 易错警示：对顶角相等，邻补角互补。当前∠AOC=${intersectAngle}°，∠AOD=${180-intersectAngle}°，避免混淆！`;
+    });
+    
+    // AI 辅助
+    const langInput = document.getElementById('langCommand');
+    const execLang = document.getElementById('executeLang');
+    const aiFeedback = document.getElementById('aiFeedback');
+    execLang.addEventListener('click',()=>{
+        let cmd = langInput.value.trim().toLowerCase();
+        if(cmd.includes('垂线') || cmd.includes('最短')) {
+            document.querySelector('.tab-btn[data-tab="vertical"]').click();
+            aiFeedback.innerHTML = "🤖 最短路径挑战：拖拽点P/M/N，找出最短线段，点击对应按钮得分。";
+        } else if(cmd.includes('和差') || cmd.includes('拼图')) {
+            document.querySelector('.tab-btn[data-tab="sum"]').click();
+            aiFeedback.innerHTML = "🤖 角之拼图：调整∠1和∠2，让总和等于目标值，点击验证得分。";
+        } else if(cmd.includes('对顶角') || cmd.includes('侦探')) {
+            document.querySelector('.tab-btn[data-tab="compute"]').click();
+            aiFeedback.innerHTML = "🤖 对顶角侦探：选择对顶角或邻补角度数，答对得分，随机出题。";
+        } else {
+            aiFeedback.innerHTML = "💡 试试指令：垂线、和差、对顶角、拼图等，切换到对应游戏～";
+        }
+    });
+    
+    // 选项卡切换
+    const btns = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.tab-pane');
+    btns.forEach(btn=>{
+        btn.addEventListener('click',()=>{
+            let id = btn.getAttribute('data-tab');
+            panes.forEach(p=>p.classList.remove('active'));
+            btns.forEach(b=>b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id==='sum') drawAngleSum();
+            if(id==='vertical') drawVertical();
+            if(id==='compute') drawIntersect();
+        });
+    });
+})();
+</script>
+</body>
+</html>

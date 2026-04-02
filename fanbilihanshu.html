@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>反比例函数·双曲线秘境 | 函数特征挑战</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Fredoka One', 'Comic Neue', 'Poppins', system-ui, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(145deg, #f9eec1 0%, #f5d0b8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #ff9a3c, #ff5e7c);
+            border-radius: 60px 60px 40px 40px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #fff9c4;
+        }
+
+        header::before {
+            content: "⚡ 🧮 🎮";
+            font-size: 70px;
+            position: absolute;
+            bottom: -20px;
+            right: 10px;
+            opacity: 0.2;
+            white-space: pre;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 2.7rem;
+            font-weight: 800;
+            text-shadow: 5px 5px 0 #c0392b;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            background: rgba(255, 255, 255, 0.3);
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(4px);
+        }
+
+        .section {
+            background: #fffef7;
+            border-radius: 48px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 35px;
+            transition: transform 0.2s ease;
+            border: 2px solid #ffe2b5;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            font-size: 1.9rem;
+            background: linear-gradient(120deg, #ffb347, #ff6b6b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-block;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 8px solid #ff8c42;
+        }
+
+        .canvas-container {
+            position: relative;
+            height: 550px;
+            margin: 25px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: #fdfdfd;
+        }
+
+        .global-control {
+            background: #fff3e0;
+            border-radius: 60px;
+            padding: 12px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .k-slider-group {
+            background: white;
+            padding: 8px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .k-slider-group label {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        input[type="range"] {
+            width: 260px;
+        }
+
+        .game-area {
+            background: #2b2b3a;
+            border-radius: 50px;
+            padding: 25px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(145deg, #1e2a3a, #0f1722);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background: #ffd966;
+            padding: 12px 25px;
+            border-radius: 60px;
+            margin-bottom: 25px;
+            color: #2d1b00;
+            font-weight: bold;
+        }
+
+        .score-board {
+            background: #000000aa;
+            backdrop-filter: blur(8px);
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: gold;
+            font-size: 1.7rem;
+            font-family: monospace;
+        }
+
+        .timer-board {
+            background: #1e293b;
+            backdrop-filter: blur(8px);
+            padding: 8px 18px;
+            border-radius: 60px;
+            color: #facc15;
+            font-size: 1.6rem;
+            font-weight: bold;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .timer-board span:first-child {
+            font-size: 1.3rem;
+        }
+        .timer-board .time-number {
+            background: #0f1722;
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: #ffd966;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .game-canvas-box {
+            background: #fef9e8;
+            border-radius: 40px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas#gameCanvas {
+            background: #fef3e2;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+            border: 3px solid #ffb347;
+        }
+
+        .quiz-panel {
+            background: #fef9e8;
+            border-radius: 50px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .question-text {
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-align: center;
+            background: #ffd966;
+            padding: 15px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            color: #2d1b00;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .opt-btn {
+            background: linear-gradient(135deg, #3b82f6, #9333ea);
+            color: white;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .opt-btn:hover:not(:disabled) {
+            transform: scale(0.98);
+            filter: brightness(0.95);
+        }
+        .opt-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .game-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .game-btn {
+            background: linear-gradient(to bottom, #f6d365, #fda085);
+            border: none;
+            color: #2c3e2f;
+            font-weight: bold;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #b95f2e;
+            cursor: pointer;
+        }
+        .reset-btn {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: white;
+            box-shadow: 0 5px 0 #b91c1c;
+        }
+        .feedback-bubble {
+            background: #facc15;
+            color: #2c1e0f;
+            padding: 15px;
+            border-radius: 40px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            border-left: 12px solid #ff7700;
+        }
+        .blink-red {
+            animation: blinkWarning 0.8s infinite;
+        }
+        @keyframes blinkWarning {
+            0% { background-color: #facc15; color: #2c1e0f; }
+            50% { background-color: #dc2626; color: white; }
+            100% { background-color: #facc15; color: #2c1e0f; }
+        }
+        .controls {
+            background: #fff3e0;
+            border-radius: 50px;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .control-group {
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            padding: 5px 20px;
+            border-radius: 60px;
+        }
+        .quiz-option {
+            border-radius: 60px;
+            background: #f2eee5;
+            transition: 0.2s;
+            padding: 14px 20px;
+        }
+        .quiz-option.selected {
+            background: #ffd966;
+            border-color: #ff9f4a;
+        }
+        @media (max-width: 768px) {
+            .canvas-container { height: 450px; }
+            h1 { font-size: 2rem; }
+            .options-grid { grid-template-columns: 1fr; }
+            .question-text { font-size: 1.2rem; }
+        }
+        .geom-k-slider {
+            background: #fff0dd;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin: 15px 0 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+            justify-content: space-between;
+            border: 1px solid #ffcd94;
+        }
+        .geom-k-slider label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: #ffa559;
+            padding: 5px 18px;
+            border-radius: 40px;
+            color: white;
+        }
+        .geom-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .k-value-badge {
+            font-weight: bold;
+            background: #ffecd6;
+            padding: 4px 15px;
+            border-radius: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🐼 反比例函数·超大视野冒险岛 🎈</h1>
+        <p class="subtitle">⭐ 函数特征挑战 | 限时5秒 · 冲刺100分 ⭐</p>
+    </header>
+
+    <!-- 第一部分：定义、性质、几何意义（保持不变） -->
+    <div class="section">
+        <h2>📖 一、反比例函数·神秘档案</h2>
+        <div class="global-control">
+            <div class="k-slider-group">
+                <label>🎛️ 定义曲线参数 k₁：</label>
+                <input type="range" id="globalK" min="-10" max="10" step="0.5" value="4">
+                <span id="globalKDisplay" class="k-value" style="font-weight:bold;">k₁ = 4</span>
+            </div>
+            <div class="k-slider-group">
+                <button id="toggleGeometric" class="toggle-btn" style="background: #ff8c42;">🔲 显示矩形面积 (仅定义页)</button>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="definition">✨ 定义</button>
+                <button class="tab-button" data-tab="properties">⚡ 性质</button>
+                <button class="tab-button" data-tab="k-meaning">🔮 k的几何魔法</button>
+            </div>
+            <div id="definition" class="tab-content active">
+                <p>🎯 一般形式：<strong>y = k / x</strong> (k ≠ 0, x ≠ 0) —— 两个变量乘积为常数！</p>
+                <div class="canvas-container"><canvas id="definitionChart"></canvas></div>
+                <div class="conclusion"><h3>🎓 核心笔记</h3><ul><li>双曲线两支永不相交坐标轴</li><li>k>0 在一、三象限；k<0 在二、四象限</li><li>关于原点中心对称，也关于y=x和y=-x对称（图中虚线）</li></ul></div>
+            </div>
+            <div id="properties" class="tab-content">
+                <div class="conclusion">
+                    <h3>函数性质总结：</h3>
+                    <ul>
+                        <li>当k>0时，在每个象限内，y随x的增大而<strong>减小</strong></li>
+                        <li>当k<0时，在每个象限内，y随x的增大而<strong>增大</strong></li>
+                        <li>图像关于原点<strong>中心对称</strong></li>
+                        <li>图像关于直线y=x和y=-x<strong>轴对称</strong></li>
+                        <li>图像<strong>无限接近但永不接触</strong>坐标轴（渐近线）</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="k-meaning" class="tab-content">
+                <div class="geom-k-slider">
+                    <label>🎨 几何意义独立参数 k₂ (k₂>0)：</label>
+                    <input type="range" id="geomKSlider" min="0.5" max="10" step="0.5" value="4">
+                    <span id="geomKDisplay" class="k-value-badge">k₂ = 4</span>
+                    <div class="geom-controls">
+                        <button id="toggleRectangle" style="background:#ffb347;">📦 显示矩形</button>
+                        <button id="toggleTriangle" style="background:#ffb347;">🔺 显示三角形</button>
+                    </div>
+                </div>
+                <div class="canvas-container"><canvas id="kMeaningChart"></canvas></div>
+                <div class="conclusion"><h3>🌟 |k| 的几何奥秘</h3><ul><li>矩形面积 = |k|</li><li>三角形面积 = |k|/2</li><li>无论点怎么动，面积永恒不变！</li></ul></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分：函数对比 -->
+    <div class="section">
+        <h2>🤺 二、函数大乱斗·对比擂台</h2>
+        <div class="controls"><div class="control-group"><label>🔁 反比例k：</label><input type="range" id="inverseK" min="-10" max="10" step="0.5" value="4"><span id="inverseKDisplay">k=4</span></div><div class="control-group"><label>📈 一次函数k：</label><input type="range" id="linearK" min="-5" max="5" step="0.5" value="1"><span id="linearKDisplay">k=1</span></div><div class="control-group"><label>➕ 截距b：</label><input type="range" id="linearB" min="-5" max="5" step="0.5" value="0"><span id="linearBDisplay">b=0</span></div><div class="control-group"><label>🌸 二次函数系数：</label><input type="range" id="quadraticK" min="-2" max="2" step="0.1" value="0.2"><span id="quadraticKDisplay">k=0.2</span></div></div>
+        <div class="canvas-container"><canvas id="comparisonChart"></canvas></div>
+        <div class="conclusion"><ul><li>⚡ 反比例：双曲线，乘积定值</li><li>📏 一次函数：直线，均匀变化</li><li>🌀 二次函数：抛物线，U形曲线</li></ul></div>
+    </div>
+
+    <!-- 第三部分：知识问答 -->
+    <div class="section">
+        <h2>🧠 三、脑力大挑战·反比例测验</h2>
+        <div class="quiz-container">
+            <div class="quiz-item"><div class="quiz-question">1️⃣ 下列哪个是反比例函数？</div><div class="quiz-options"><button class="quiz-option" data-correct="false">A. y=2x+3</button><button class="quiz-option" data-correct="true">B. y=5/x</button><button class="quiz-option" data-correct="false">C. y=x²</button><button class="quiz-option" data-correct="false">D. y=4</button></div><div class="feedback" id="feedback1"></div></div>
+            <div class="quiz-item"><div class="quiz-question">2️⃣ 当k>0，y=k/x图像位于？</div><div class="quiz-options"><button class="quiz-option" data-correct="false">A. 一、二象限</button><button class="quiz-option" data-correct="false">B. 二、四象限</button><button class="quiz-option" data-correct="true">C. 一、三象限</button><button class="quiz-option" data-correct="false">D. 二、三象限</button></div><div class="feedback" id="feedback2"></div></div>
+            <div class="quiz-item"><div class="quiz-question">3️⃣ 关于y=8/x，说法正确的是？</div><div class="quiz-options"><button class="quiz-option" data-correct="false">A. y随x增大而增大</button><button class="quiz-option" data-correct="true">B. 每个象限内y随x增大而减小</button><button class="quiz-option" data-correct="false">C. 与坐标轴相交</button><button class="quiz-option" data-correct="false">D. 一条直线</button></div><div class="feedback" id="feedback3"></div></div>
+            <div class="quiz-item"><div class="quiz-question">4️⃣ 点(2,3)在y=k/x上，k=？</div><div class="quiz-options"><button class="quiz-option" data-correct="false">A. 2/3</button><button class="quiz-option" data-correct="false">B. 3/2</button><button class="quiz-option" data-correct="true">C. 6</button><button class="quiz-option" data-correct="false">D. 5</button></div><div class="feedback" id="feedback4"></div></div>
+            <div class="quiz-item"><div class="quiz-question">5️⃣ 过y=6/x上任一点作坐标轴垂线，矩形面积？</div><div class="quiz-options"><button class="quiz-option" data-correct="false">A. 3</button><button class="quiz-option" data-correct="false">B. 6/x</button><button class="quiz-option" data-correct="true">C. 6</button><button class="quiz-option" data-correct="false">D. 12</button></div><div class="feedback" id="feedback5"></div></div>
+        </div>
+        <div class="controls"><button id="resetQuiz">🔄 重来一次</button></div>
+    </div>
+
+    <!-- 第四部分：实际应用 -->
+    <div class="section">
+        <h2>📐 四、生活魔法·反比例应用</h2>
+        <div class="problem"><h3>📦 矩形面积固定24cm²，长x与宽y的关系？</h3><button class="solve-btn" data-target="solution1">🔍 揭秘</button><div class="solution" id="solution1"><p>xy=24 → y=24/x，长增加宽减少，乘积不变！</p><div class="canvas-container" style="height:300px"><canvas id="applicationChart1"></canvas></div></div></div>
+        <div class="problem"><h3>🚗 总路程120km，时间t与速度v的关系？</h3><button class="solve-btn" data-target="solution2">🔍 揭秘</button><div class="solution" id="solution2"><p>t=120/v，速度越快时间越短，反比例魔法！</p><div class="canvas-container" style="height:300px"><canvas id="applicationChart2"></canvas></div></div></div>
+    </div>
+
+    <!-- 第五部分：函数特征挑战（修复版：顺序题库，确保10道题轮换） -->
+    <div class="section game-area">
+        <h2 style="color:#ffe6b3; background: none; -webkit-background-clip: unset; color:#ffd966;">🎮 五、函数特征挑战 | 5秒极限判断 ⏱️</h2>
+        <div class="game-header">
+            <div class="point-badge">📐 当前函数：y = <span id="currentKDisplay">?</span> / x</div>
+            <div class="score-board">🏆 得分：<span id="gameScore">0</span> / 100</div>
+            <div class="timer-board">
+                <span>⏱️ 剩余</span>
+                <span id="timerDisplay" class="time-number">5.0s</span>
+            </div>
+        </div>
+        <div class="game-canvas-box">
+            <canvas id="gameCanvas" width="600" height="600" style="width:100%; max-width:650px; height:auto; aspect-ratio:1/1"></canvas>
+        </div>
+        <div class="quiz-panel">
+            <div class="question-text" id="questionText">加载题目中...</div>
+            <div class="options-grid" id="optionsContainer">
+                <button class="opt-btn" data-opt="0">选项A</button>
+                <button class="opt-btn" data-opt="1">选项B</button>
+                <button class="opt-btn" data-opt="2">选项C</button>
+                <button class="opt-btn" data-opt="3">选项D</button>
+            </div>
+            <div class="game-controls">
+                <button id="nextQuestionBtn" class="game-btn next-btn">✨ 下一题 ✨</button>
+                <button id="resetGameBtn" class="game-btn reset-btn">🔄 重置游戏</button>
+            </div>
+        </div>
+        <div id="gameFeedback" class="feedback-bubble">💡 5秒内选择正确的函数特征！答对+10分，答错-5分。满分100分即胜利！</div>
+    </div>
+</div>
+
+<script>
+    // ========== 原有图表部分（保持不变） ==========
+    let showGeometric = false;
+    let showRectangle = true;
+    let showTriangle = true;
+    let globalK = 4;
+    let geomK = 4;
+    let definitionChart, kMeaningChart, comparisonChart, appChart1, appChart2;
+
+    function getSymmetryLines(rangeMin = -10, rangeMax = 10) {
+        const lineYX = [], lineYNegativeX = [];
+        for (let x = rangeMin; x <= rangeMax; x += 0.2) {
+            lineYX.push({ x: x, y: x });
+            lineYNegativeX.push({ x: x, y: -x });
+        }
+        return [
+            { label: 'y = x (对称轴)', data: lineYX, borderColor: 'rgba(0, 200, 0, 0.7)', borderWidth: 2, borderDash: [8, 6], pointRadius: 0, showLine: true, fill: false },
+            { label: 'y = -x (对称轴)', data: lineYNegativeX, borderColor: 'rgba(255, 100, 0, 0.7)', borderWidth: 2, borderDash: [8, 6], pointRadius: 0, showLine: true, fill: false }
+        ];
+    }
+    function getSymmetryLineForFirstQuadrant() {
+        const lineYX = [];
+        for (let x = 0; x <= 10; x += 0.2) lineYX.push({ x: x, y: x });
+        return { label: 'y = x (对称轴)', data: lineYX, borderColor: 'rgba(0, 200, 0, 0.7)', borderWidth: 2, borderDash: [8, 6], pointRadius: 0, showLine: true, fill: false };
+    }
+    function getInverseDatasets(k, isPositiveOnly = false) {
+        let pos = [], neg = [];
+        for (let x = 0.1; x <= 10; x += 0.1) { let y = k / x; if (Math.abs(y) <= 10) pos.push({ x, y }); }
+        for (let x = -10; x <= -0.1; x += 0.1) { let y = k / x; if (Math.abs(y) <= 10) neg.push({ x, y }); }
+        if (isPositiveOnly) return [{ label: `y = ${k}/x`, data: pos, borderColor: '#3b82f6', showLine: true, pointRadius: 2 }];
+        return [
+            { label: `y = ${k}/x (第一象限)`, data: pos, borderColor: '#3b82f6', showLine: true, pointRadius: 2 },
+            { label: `y = ${k}/x (第三象限)`, data: neg, borderColor: '#3b82f6', showLine: true, pointRadius: 2 }
+        ];
+    }
+    function addGeometricToDefinition(chart, k) {
+        if (k > 0 && showGeometric) {
+            let px = 2, py = k / px;
+            chart.data.datasets.push({ label: '矩形面积 = |k|', data: [{ x: 0, y: 0 }, { x: px, y: 0 }, { x: px, y: py }, { x: 0, y: py }, { x: 0, y: 0 }], backgroundColor: 'rgba(255,99,132,0.2)', borderColor: 'red', showLine: true, fill: true, pointRadius: 0 });
+            chart.data.datasets.push({ label: '三角形面积 = |k|/2', data: [{ x: 0, y: 0 }, { x: px, y: 0 }, { x: px, y: py }, { x: 0, y: 0 }], backgroundColor: 'rgba(75,192,192,0.2)', borderColor: 'teal', showLine: true, fill: true, pointRadius: 0 });
+        }
+    }
+    function updateDefinitionChart() {
+        let datasets = getInverseDatasets(globalK);
+        datasets.push(...getSymmetryLines(-10, 10));
+        definitionChart.data.datasets = datasets;
+        if (showGeometric) addGeometricToDefinition(definitionChart, globalK);
+        definitionChart.update();
+    }
+    function updateKMeaningChart() {
+        let datasets = [];
+        let pos = [];
+        for (let x = 0.1; x <= 10; x += 0.1) { let y = geomK / x; if (Math.abs(y) <= 10) pos.push({ x, y }); }
+        datasets.push({ label: `y = ${geomK}/x`, data: pos, borderColor: '#3b82f6', showLine: true, pointRadius: 2 });
+        datasets.push(getSymmetryLineForFirstQuadrant());
+        let px = 3, py = geomK / px;
+        if (showRectangle) {
+            datasets.push({ label: '矩形面积 = |k|', data: [{ x: 0, y: 0 }, { x: px, y: 0 }, { x: px, y: py }, { x: 0, y: py }, { x: 0, y: 0 }], backgroundColor: 'rgba(255,99,132,0.2)', borderColor: 'red', showLine: true, fill: true, pointRadius: 0 });
+        }
+        if (showTriangle) {
+            datasets.push({ label: '三角形面积 = |k|/2', data: [{ x: 0, y: 0 }, { x: px, y: 0 }, { x: px, y: py }, { x: 0, y: 0 }], backgroundColor: 'rgba(75,192,192,0.2)', borderColor: 'green', showLine: true, fill: true, pointRadius: 0 });
+        }
+        datasets.push({ label: `点P(${px}, ${py.toFixed(2)})`, data: [{ x: px, y: py }], backgroundColor: 'orange', pointRadius: 8, showLine: false });
+        kMeaningChart.data.datasets = datasets;
+        kMeaningChart.update();
+    }
+    function initCharts() {
+        let ctxDef = document.getElementById('definitionChart').getContext('2d');
+        definitionChart = new Chart(ctxDef, { type: 'scatter', data: { datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'linear', position: 'center', min: -10, max: 10 }, y: { min: -10, max: 10 } } } });
+        updateDefinitionChart();
+        let ctxMean = document.getElementById('kMeaningChart').getContext('2d');
+        kMeaningChart = new Chart(ctxMean, { type: 'scatter', data: { datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { min: 0, max: 10 }, y: { min: 0, max: 10 } } } });
+        updateKMeaningChart();
+        let ctxComp = document.getElementById('comparisonChart').getContext('2d');
+        comparisonChart = new Chart(ctxComp, { type: 'scatter', data: { datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { min: -10, max: 10, position: 'center' }, y: { min: -10, max: 10 } } } });
+        let ctxApp1 = document.getElementById('applicationChart1').getContext('2d');
+        let rectData = []; for (let x = 1; x <= 24; x += 0.5) { let y = 24 / x; if (y <= 30) rectData.push({ x, y }); }
+        appChart1 = new Chart(ctxApp1, { type: 'scatter', data: { datasets: [{ label: 'y=24/x', data: rectData, borderColor: '#f97316', showLine: true, pointRadius: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { min: 0, max: 25 }, y: { min: 0, max: 25 } } } });
+        let ctxApp2 = document.getElementById('applicationChart2').getContext('2d');
+        let speedData = []; for (let v = 10; v <= 100; v += 5) { let t = 120 / v; speedData.push({ x: v, y: t }); }
+        appChart2 = new Chart(ctxApp2, { type: 'scatter', data: { datasets: [{ label: 't=120/v', data: speedData, borderColor: '#eab308', showLine: true, pointRadius: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { min: 0, max: 100 }, y: { min: 0, max: 15 } } } });
+    }
+    function initComparisonUpdater() {
+        let invK = document.getElementById('inverseK'), linK = document.getElementById('linearK'), linB = document.getElementById('linearB'), quadK = document.getElementById('quadraticK');
+        function getLinear(k, b) { let d = []; for (let x = -10; x <= 10; x += 0.5) { let y = k * x + b; if (Math.abs(y) <= 10) d.push({ x, y }); } return { label: `y=${k}x+${b}`, data: d, borderColor: '#ff6384', showLine: true, pointRadius: 2 }; }
+        function getQuadratic(k) { let d = []; for (let x = -10; x <= 10; x += 0.5) { let y = k * x * x; if (Math.abs(y) <= 10) d.push({ x, y }); } return { label: `y=${k}x²`, data: d, borderColor: '#4bc0c0', showLine: true }; }
+        function update() { let kInv = parseFloat(invK.value), kLin = parseFloat(linK.value), bLin = parseFloat(linB.value), kQuad = parseFloat(quadK.value);
+            document.getElementById('inverseKDisplay').innerText = `k = ${kInv}`; document.getElementById('linearKDisplay').innerText = `k = ${kLin}`; document.getElementById('linearBDisplay').innerText = `b = ${bLin}`; document.getElementById('quadraticKDisplay').innerText = `k = ${kQuad}`;
+            comparisonChart.data.datasets = [...getInverseDatasets(kInv), getLinear(kLin, bLin), getQuadratic(kQuad)]; comparisonChart.update(); }
+        invK.addEventListener('input', update); linK.addEventListener('input', update); linB.addEventListener('input', update); quadK.addEventListener('input', update); update();
+    }
+    function bindGlobalK() {
+        let slider = document.getElementById('globalK'), display = document.getElementById('globalKDisplay');
+        slider.addEventListener('input', (e) => { globalK = parseFloat(e.target.value); display.innerText = `k₁ = ${globalK}`; updateDefinitionChart(); });
+        globalK = parseFloat(slider.value); updateDefinitionChart();
+    }
+    function bindGeomK() {
+        let slider = document.getElementById('geomKSlider'), display = document.getElementById('geomKDisplay');
+        slider.addEventListener('input', (e) => { geomK = parseFloat(e.target.value); display.innerText = `k₂ = ${geomK}`; updateKMeaningChart(); });
+        geomK = parseFloat(slider.value); updateKMeaningChart();
+    }
+    function bindGeometricToggle() { document.getElementById('toggleGeometric').addEventListener('click', () => { showGeometric = !showGeometric; updateDefinitionChart(); }); }
+    function bindGeometryToggles() { document.getElementById('toggleRectangle').addEventListener('click', () => { showRectangle = !showRectangle; updateKMeaningChart(); }); document.getElementById('toggleTriangle').addEventListener('click', () => { showTriangle = !showTriangle; updateKMeaningChart(); }); }
+    function setupTabs() { document.querySelectorAll('.tab-button').forEach(btn => { btn.addEventListener('click', function () { let tab = this.dataset.tab; document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); this.classList.add('active'); document.getElementById(tab).classList.add('active'); }); }); }
+    function setupQuizAndSolve() {
+        document.querySelectorAll('.solve-btn').forEach(btn => { btn.addEventListener('click', function () { let target = document.getElementById(this.dataset.target); target.classList.toggle('active'); this.innerText = target.classList.contains('active') ? '🔒 隐藏过程' : '🔍 揭秘'; }); });
+        document.querySelectorAll('.quiz-option').forEach(opt => { opt.addEventListener('click', function () { let item = this.closest('.quiz-item'), fb = item.querySelector('.feedback'); item.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected')); this.classList.add('selected'); let isCorrect = this.dataset.correct === 'true'; fb.innerHTML = isCorrect ? '🎉 答对啦！ +10数学力！' : '😵 再想想～ 试试复习一下k的符号~'; fb.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`; }); });
+        document.getElementById('resetQuiz').addEventListener('click', () => { document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected')); document.querySelectorAll('.feedback').forEach(f => { f.innerHTML = ''; f.className = 'feedback'; }); });
+    }
+
+    // ========== 修复版游戏：顺序题库 + 稳定交互 ==========
+    (function initFixedGame() {
+        // 题库（10道经典反比例函数题）
+        const QUESTION_SET = [
+            { text: "当 k > 0 时，函数 y = k/x 的图像位于哪两个象限？", options: ["一、二象限", "二、四象限", "一、三象限", "三、四象限"], correct: 2 },
+            { text: "当 k < 0 时，在每个象限内，y 随 x 的增大如何变化？", options: ["增大", "减小", "不变", "先增大后减小"], correct: 0 },
+            { text: "反比例函数 y = k/x 的图像关于什么对称？", options: ["x轴", "y轴", "原点", "直线 y = x"], correct: 2 },
+            { text: "若点 (2, -3) 在反比例函数图像上，则 k 的值为？", options: ["-6", "6", "-1.5", "1.5"], correct: 0 },
+            { text: "反比例函数 y = -5/x 的图像在第几象限？", options: ["一、三", "二、四", "一、二", "三、四"], correct: 1 },
+            { text: "函数 y = 3/x 在 x > 0 时，y 随 x 增大而？", options: ["增大", "减小", "不变", "无法确定"], correct: 1 },
+            { text: "下列哪个点一定在反比例函数 y = k/x (k≠0) 上？", options: ["(k, 1)", "(1, k)", "(k, k)", "(1, 1/k)"], correct: 1 },
+            { text: "反比例函数图像与坐标轴的位置关系是？", options: ["相交于原点", "相交于一点", "不相交", "相交于两点"], correct: 2 },
+            { text: "若反比例函数 y = (m-1)/x 的图像经过第二、四象限，则 m 的取值范围？", options: ["m>1", "m<1", "m>0", "m<0"], correct: 1 },
+            { text: "在反比例函数 y = 2/x 的图像上，下列哪点也在图像上？", options: ["(-1, -2)", "(1, -2)", "(-2, 1)", "(2, -1)"], correct: 0 }
+        ];
+        
+        // DOM 元素
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 600, height = 600;
+        canvas.width = width; canvas.height = height;
+        
+        const currentKDisplay = document.getElementById('currentKDisplay');
+        const gameScoreSpan = document.getElementById('gameScore');
+        const timerDisplaySpan = document.getElementById('timerDisplay');
+        const questionTextDiv = document.getElementById('questionText');
+        const optionBtns = document.querySelectorAll('.opt-btn');
+        const nextBtn = document.getElementById('nextQuestionBtn');
+        const resetBtn = document.getElementById('resetGameBtn');
+        const feedbackDiv = document.getElementById('gameFeedback');
+        
+        // 游戏状态
+        let currentK = 4;
+        let currentQuestionIndex = 0;      // 顺序索引
+        let score = 0;
+        let gameActive = true;
+        let canAnswer = true;
+        let timerInterval = null;
+        let timeLeft = 5;
+        
+        // 辅助绘图函数
+        function worldToCanvas(x, y) {
+            const px = ((x + 6) / 12) * width;
+            const py = height - ((y + 6) / 12) * height;
+            return { x: px, y: py };
+        }
+        
+        function drawHyperbola(k, color, lineWidth, isDashed = false) {
+            if (Math.abs(k) < 1e-6) return;
+            ctx.save();
+            if (isDashed) ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            let first = true;
+            for (let x = 0.2; x <= 5.9; x += 0.05) {
+                let y = k / x;
+                if (y > 6 || y < -6) { first = true; continue; }
+                let p = worldToCanvas(x, y);
+                if (first) { ctx.moveTo(p.x, p.y); first = false; }
+                else { ctx.lineTo(p.x, p.y); }
+            }
+            ctx.stroke();
+            ctx.beginPath();
+            first = true;
+            for (let x = -0.2; x >= -5.9; x -= 0.05) {
+                let y = k / x;
+                if (y > 6 || y < -6) { first = true; continue; }
+                let p = worldToCanvas(x, y);
+                if (first) { ctx.moveTo(p.x, p.y); first = false; }
+                else { ctx.lineTo(p.x, p.y); }
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        function drawGridAndAxes() {
+            ctx.save();
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 1;
+            for (let i = -6; i <= 6; i++) {
+                if (i === 0) continue;
+                let p1 = worldToCanvas(i, -6), p2 = worldToCanvas(i, 6);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                let p3 = worldToCanvas(-6, i), p4 = worldToCanvas(6, i);
+                ctx.beginPath(); ctx.moveTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.stroke();
+            }
+            ctx.beginPath();
+            let axisXStart = worldToCanvas(-6, 0), axisXEnd = worldToCanvas(6, 0);
+            let axisYStart = worldToCanvas(0, -6), axisYEnd = worldToCanvas(0, 6);
+            ctx.moveTo(axisXStart.x, axisXStart.y); ctx.lineTo(axisXEnd.x, axisXEnd.y);
+            ctx.moveTo(axisYStart.x, axisYStart.y); ctx.lineTo(axisYEnd.x, axisYEnd.y);
+            ctx.strokeStyle = "#334155"; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.restore();
+        }
+        
+        function drawGame() {
+            ctx.clearRect(0, 0, width, height);
+            drawGridAndAxes();
+            drawHyperbola(currentK, "#d946ef", 3, false);
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "bold 14px 'Segoe UI'";
+            ctx.fillText(`y = ${currentK} / x`, 20, 30);
+        }
+        
+        // 随机生成k（非零，范围-8~8）
+        function getRandomK() {
+            let k;
+            do { k = Math.floor(Math.random() * 17) - 8; } while (k === 0);
+            return k;
+        }
+        
+        // 顺序取下一题（轮询）
+        function getNextQuestion() {
+            const idx = currentQuestionIndex % QUESTION_SET.length;
+            currentQuestionIndex++;
+            return { ...QUESTION_SET[idx] };
+        }
+        
+        function loadNewChallenge() {
+            if (!gameActive) return;
+            // 新k值
+            currentK = getRandomK();
+            currentKDisplay.innerText = currentK;
+            // 新题目（顺序）
+            const q = getNextQuestion();
+            questionTextDiv.innerText = q.text;
+            for (let i = 0; i < optionBtns.length; i++) {
+                optionBtns[i].innerText = q.options[i];
+                optionBtns[i].disabled = false;
+            }
+            // 保存当前题目正确答案索引到按钮 data 上，便于判断
+            for (let i = 0; i < optionBtns.length; i++) {
+                optionBtns[i].setAttribute('data-correct', (i === q.correct) ? "true" : "false");
+            }
+            drawGame();
+            canAnswer = true;
+            startTimer();
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function startTimer() {
+            if (timerInterval) stopTimer();
+            if (!gameActive) return;
+            timeLeft = 5;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (!gameActive || !canAnswer) {
+                    if (timerInterval) stopTimer();
+                    return;
+                }
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    updateTimerDisplay();
+                    if (canAnswer && gameActive) {
+                        stopTimer();
+                        canAnswer = false;
+                        // 超时：扣分并显示正确答案
+                        const correctAnswer = Array.from(optionBtns).find(btn => btn.getAttribute('data-correct') === 'true')?.innerText || "未知";
+                        let newScore = Math.max(score - 5, 0);
+                        score = newScore;
+                        updateScoreUI();
+                        feedbackDiv.innerHTML = `⏰ 超时！ 正确答案是：${correctAnswer}。 -5分！ 当前 ${score}/100`;
+                        feedbackDiv.style.background = "#facc15";
+                        feedbackDiv.classList.add("blink-red");
+                        setTimeout(() => feedbackDiv.classList.remove("blink-red"), 600);
+                        for (let btn of optionBtns) btn.disabled = true;
+                        // 自动下一题
+                        setTimeout(() => {
+                            if (gameActive && score < 100) nextChallenge();
+                            else if (score >= 100) victory();
+                        }, 1200);
+                    }
+                } else {
+                    updateTimerDisplay();
+                    if (timeLeft <= 1.5) {
+                        timerDisplaySpan.style.background = "#dc2626";
+                        timerDisplaySpan.style.color = "white";
+                    } else {
+                        timerDisplaySpan.style.background = "#0f1722";
+                        timerDisplaySpan.style.color = "#ffd966";
+                    }
+                }
+            }, 100);
+        }
+        
+        function updateTimerDisplay() {
+            timerDisplaySpan.innerText = timeLeft.toFixed(1) + "s";
+        }
+        
+        function updateScoreUI() {
+            gameScoreSpan.innerText = score;
+            if (score >= 100 && gameActive) victory();
+        }
+        
+        function victory() {
+            gameActive = false;
+            stopTimer();
+            for (let btn of optionBtns) btn.disabled = true;
+            feedbackDiv.innerHTML = "🏆🎉 恭喜满分！函数特征大师！🎉🏆 点击「重置游戏」继续挑战。";
+            feedbackDiv.style.background = "gold";
+            nextBtn.disabled = true;
+        }
+        
+        function handleAnswer(selectedBtn) {
+            if (!gameActive || !canAnswer) return;
+            stopTimer();
+            canAnswer = false;
+            const isCorrect = (selectedBtn.getAttribute('data-correct') === 'true');
+            let addScore = 0;
+            let msg = "";
+            if (isCorrect) {
+                addScore = 10;
+                score = Math.min(score + addScore, 100);
+                msg = `🎉 正确！ +10分！ 当前 ${score}/100`;
+                feedbackDiv.style.background = "#bef264";
+            } else {
+                addScore = -5;
+                score = Math.max(score + addScore, 0);
+                const correctAnswer = Array.from(optionBtns).find(btn => btn.getAttribute('data-correct') === 'true')?.innerText || "未知";
+                msg = `❌ 错误！ 正确答案是：${correctAnswer}。 -5分！ 当前 ${score}/100`;
+                feedbackDiv.style.background = "#facc15";
+            }
+            updateScoreUI();
+            feedbackDiv.innerHTML = msg;
+            for (let btn of optionBtns) btn.disabled = true;
+            if (score >= 100) {
+                victory();
+            } else {
+                setTimeout(() => {
+                    if (gameActive && score < 100) nextChallenge();
+                }, 1200);
+            }
+        }
+        
+        function nextChallenge() {
+            if (!gameActive) return;
+            stopTimer();
+            loadNewChallenge();
+            feedbackDiv.innerHTML = "🔍 新函数出现！5秒内选择正确特征！";
+            feedbackDiv.style.background = "#facc15";
+            feedbackDiv.classList.remove("blink-red");
+            nextBtn.disabled = false;
+        }
+        
+        function resetGame() {
+            stopTimer();
+            score = 0;
+            gameActive = true;
+            canAnswer = true;
+            currentQuestionIndex = 0;   // 重置题目顺序
+            updateScoreUI();
+            loadNewChallenge();
+            nextBtn.disabled = false;
+            feedbackDiv.innerHTML = "✨ 游戏已重置！顺序挑战10道经典题，目标100分！";
+            feedbackDiv.style.background = "#facc15";
+            feedbackDiv.classList.remove("blink-red");
+        }
+        
+        // 绑定选项事件
+        for (let btn of optionBtns) {
+            btn.addEventListener('click', () => handleAnswer(btn));
+        }
+        nextBtn.addEventListener('click', () => {
+            if (!gameActive) return;
+            if (!canAnswer) {
+                if (score < 100) nextChallenge();
+            } else {
+                feedbackDiv.innerHTML = "⏳ 请先回答当前题目或等待倒计时结束！";
+            }
+        });
+        resetBtn.addEventListener('click', resetGame);
+        
+        // 启动游戏
+        resetGame();
+    })();
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        initCharts();
+        bindGlobalK();
+        bindGeomK();
+        bindGeometricToggle();
+        bindGeometryToggles();
+        initComparisonUpdater();
+        setupTabs();
+        setupQuizAndSolve();
+    });
+</script>
+</body>
+</html>
