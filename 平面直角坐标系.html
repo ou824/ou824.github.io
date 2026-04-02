@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>平面直角坐标系 · 教学演示 + 极速靶点游戏（含知识说明）</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            margin: 0 0 5px;
+            font-size: 1.6rem;
+            color: #1e293b;
+        }
+        .sub {
+            color: #4b5563;
+            border-left: 4px solid #3b82f6;
+            padding-left: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .canvas-area {
+            flex: 3;
+            min-width: 600px;
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            background: #fff;
+            border-radius: 16px;
+            cursor: crosshair;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .controls {
+            flex: 2;
+            min-width: 280px;
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 16px;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            border: 1px solid #eef2f6;
+            transition: 0.2s;
+        }
+        .card h3 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+            color: #0f3b5c;
+            border-left: 4px solid #3b82f6;
+            padding-left: 10px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        input, button, select {
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.85rem;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .sec-btn {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+        }
+        .info-box {
+            background: #eef2ff;
+            border-radius: 12px;
+            padding: 6px 10px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin: 6px 0;
+        }
+        .knowledge {
+            background: #fef9c3;
+            border-left: 3px solid #eab308;
+            font-size: 0.7rem;
+            padding: 5px 8px;
+            margin-top: 6px;
+            border-radius: 10px;
+            color: #2d3748;
+        }
+        .point-list {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 6px;
+            font-size: 0.7rem;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #b91c1c;
+            background: #fee2e2;
+            border-radius: 12px;
+            padding: 6px;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            display: none;
+        }
+        .game-stats {
+            background: #fef9c3;
+            border-radius: 12px;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📐 平面直角坐标系 · 教学演示 + 🎯 极速靶点游戏</h1>
+    <div class="sub">✨ 教学模式：点击/拖拽/对称/图形 | 游戏模式：快速点击靶心得分 | 每个模块均有知识说明</div>
+    <div class="flex">
+        <div class="canvas-area">
+            <canvas id="coordCanvas" width="900" height="550" style="width:100%; height:auto; aspect-ratio:900/550"></canvas>
+            <div class="row" style="justify-content: space-between; margin-top: 8px;">
+                <div class="info-box" id="coordInfo">🖱️ 鼠标坐标: (?,?)</div>
+                <div class="row">
+                    <button id="clearAllBtn" class="sec-btn">🗑️ 清除所有点</button>
+                    <button id="resetViewBtn" class="sec-btn">⟳ 重置视图</button>
+                    <button id="screenshotBtn" class="sec-btn">📸 截图</button>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <!-- 游戏模式卡片 -->
+            <div class="card" style="background: linear-gradient(135deg, #fef9c3, #fde047);">
+                <h3>🎮 极速靶点游戏</h3>
+                <div class="game-stats" id="gameStats" style="display: none;">
+                    <div>⏱️ 剩余时间: <span id="gameTime">0</span> 秒</div>
+                    <div>🎯 得分: <span id="gameScore">0</span></div>
+                    <div>📍 目标坐标: (<span id="targetX">0</span>, <span id="targetY">0</span>)</div>
+                </div>
+                <div class="row">
+                    <button id="startGameBtn" style="background: #eab308;">▶️ 开始游戏</button>
+                    <button id="exitGameBtn" class="sec-btn" style="display: none;">🚪 退出游戏</button>
+                </div>
+                <div class="knowledge">📖 游戏目标：在3秒内点击红色靶心，巩固坐标定位能力。每正确点击+1分，超时-1分，总时长20秒。</div>
+                <div class="info-box" id="gameMessage">点击“开始游戏”，在3秒内点击红色靶心得分！</div>
+            </div>
+
+            <!-- 坐标系范围卡片（含知识说明） -->
+            <div class="card">
+                <h3>🎛️ 坐标系范围 & 象限特征</h3>
+                <div class="row">
+                    <label>X:</label>
+                    <input type="number" id="xMin" value="-6" step="1" style="width:70px"> ~
+                    <input type="number" id="xMax" value="6" step="1" style="width:70px">
+                    <label>Y:</label>
+                    <input type="number" id="yMin" value="-4" step="1" style="width:70px"> ~
+                    <input type="number" id="yMax" value="4" step="1" style="width:70px">
+                    <button id="updateRangeBtn">更新</button>
+                </div>
+                <div class="knowledge">🔍 象限符号：Ⅰ(+,+) Ⅱ(-,+) Ⅲ(-,-) Ⅳ(+,-)。原点O(0,0)，x轴横坐标，y轴纵坐标。</div>
+                <div class="info-box" style="font-size:0.7rem">🔵 象限颜色已区分，鼠标悬浮显示坐标。</div>
+            </div>
+
+            <!-- 点坐标双向卡片 -->
+            <div class="card">
+                <h3>📍 点坐标双向交互</h3>
+                <div class="row">
+                    <input type="number" id="coordX" value="2" step="0.5" style="width:80px">
+                    <input type="number" id="coordY" value="1.5" step="0.5" style="width:80px">
+                    <button id="addPointByCoord">定位点</button>
+                </div>
+                <div class="knowledge">💡 坐标(x,y)唯一确定平面内一点；点击画布任意位置可生成点并显示坐标，实现“点⇄坐标”双向对应。</div>
+                <div class="point-list" id="pointList">⚡ 当前点列表: 无</div>
+            </div>
+
+            <!-- 平移卡片 -->
+            <div class="card">
+                <h3>🔄 点的平移</h3>
+                <div class="row">
+                    <span>选中点:</span>
+                    <span id="selectedPointInfo">未选中</span>
+                    <button id="clearSelected" class="sec-btn">取消</button>
+                </div>
+                <div class="row">
+                    <label>Δx:</label>
+                    <input type="number" id="dxVal" value="1" step="0.5" style="width:70px">
+                    <label>Δy:</label>
+                    <input type="number" id="dyVal" value="-1" step="0.5" style="width:70px">
+                    <button id="translateBtn">平移</button>
+                </div>
+                <div class="knowledge">📐 平移规律：<strong>左减右加，上加下减</strong>。即点(x,y)向右平移a单位→(x+a,y)；向上平移b单位→(x,y+b)。</div>
+                <div class="info-box" id="translateMsg">✨ 拖动点可实时平移，观察坐标变化。</div>
+            </div>
+
+            <!-- 对称卡片 -->
+            <div class="card">
+                <h3>🪞 对称变换</h3>
+                <div class="row">
+                    <select id="symType">
+                        <option value="x">关于x轴对称</option>
+                        <option value="y">关于y轴对称</option>
+                        <option value="origin">关于原点对称</option>
+                    </select>
+                    <button id="createSymBtn">生成对称点</button>
+                    <button id="clearSymBtn" class="sec-btn">清除对称点</button>
+                </div>
+                <div class="knowledge">
+                    📖 对称规律：<br>
+                    • 关于x轴对称：横坐标不变，纵坐标相反 (x,y)→(x,-y)<br>
+                    • 关于y轴对称：纵坐标不变，横坐标相反 (x,y)→(-x,y)<br>
+                    • 关于原点对称：横、纵坐标均相反 (x,y)→(-x,-y)
+                </div>
+                <div class="info-box" id="symRule">选中一个点，选择对称类型后生成对称点（橙色）。</div>
+            </div>
+
+            <!-- 图形演示卡片 -->
+            <div class="card">
+                <h3>📐 图形演示（可拖拽顶点）</h3>
+                <div class="row">
+                    <button id="addTriangleBtn">🔺 三角形</button>
+                    <button id="addRectBtn">🟩 矩形</button>
+                    <button id="clearGraphBtn" class="sec-btn">清除图形</button>
+                </div>
+                <div class="row">
+                    <button id="graphSymXBtn" class="sec-btn">图形x轴对称</button>
+                    <button id="graphSymYBtn" class="sec-btn">图形y轴对称</button>
+                </div>
+                <div class="knowledge">✨ 拖拽任意顶点，图形形状实时改变，所有顶点坐标同步更新。图形对称将整体复制并变换。</div>
+                <div class="info-box">💡 拖拽顶点观察坐标变化，对称功能可生成对称图形。</div>
+            </div>
+
+            <!-- 考点应用卡片 -->
+            <div class="card">
+                <h3>📖 考点应用</h3>
+                <div class="row">
+                    <input type="number" id="p1x" value="1" style="width:60px"> <input type="number" id="p1y" value="2" style="width:60px">
+                    <span>→</span>
+                    <input type="number" id="p2x" value="4" style="width:60px"> <input type="number" id="p2y" value="6" style="width:60px">
+                    <button id="calcDistBtn">距离</button>
+                </div>
+                <div class="knowledge">📏 两点间距离公式：d = √[(x₂-x₁)² + (y₂-y₁)²] (勾股定理)</div>
+                <div id="distResult" class="info-box"></div>
+                <div class="row">
+                    <span>直线 y = </span>
+                    <input type="number" id="lineK" value="1" style="width:60px"> x + 
+                    <input type="number" id="lineB" value="0" style="width:60px">
+                    <button id="checkLineBtn">判断点</button>
+                </div>
+                <div class="row">
+                    <input type="number" id="pointX" value="2" style="width:70px">
+                    <input type="number" id="pointY" value="2" style="width:70px">
+                </div>
+                <div class="knowledge">📈 判断点是否在直线上：将点坐标代入直线方程y = kx + b，若等式成立则在线上。</div>
+                <div id="lineResult" class="info-box"></div>
+                <button id="drawLineBtn" class="sec-btn">✏️ 两点绘直线</button>
+            </div>
+            <div id="errorMsg" class="error"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ---------- 获取元素 ----------
+        const canvas = document.getElementById('coordCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 900, height = 550;
+        canvas.width = width; canvas.height = height;
+
+        // 坐标系范围
+        let xMin = -6, xMax = 6, yMin = -4, yMax = 4;
+        // 教学数据
+        let points = [];           // 普通点 {id, x, y}
+        let shapePoints = [];      // 图形顶点 {id, x, y}
+        let symmetries = [];       // {originalId, type, symX, symY}
+        let nextId = 100;
+        let selectedId = null;
+        let dragTargetId = null;
+        let isDragging = false;
+        let customLine = null;      // {k, b}
+
+        // 游戏模式相关变量
+        let gameActive = false;
+        let gameScore = 0;
+        let gameTimeLeft = 20;
+        let targetPoint = { x: null, y: null };
+        let gameTimer = null;
+        let gameTimeoutTimer = null;
+
+        // ---------- 坐标转换 ----------
+        function toCanvasX(x) { return ((x - xMin) / (xMax - xMin)) * width; }
+        function toCanvasY(y) { return height - ((y - yMin) / (yMax - yMin)) * height; }
+        function toWorldX(px) { return xMin + (px / width) * (xMax - xMin); }
+        function toWorldY(py) { return yMin + ((height - py) / height) * (yMax - yMin); }
+
+        function getPointById(id) {
+            return points.find(p => p.id === id) || shapePoints.find(p => p.id === id);
+        }
+
+        function updateSymmetriesForPoint(pt) {
+            for (let s of symmetries) {
+                if (s.originalId === pt.id) {
+                    if (s.type === 'x') { s.symX = pt.x; s.symY = -pt.y; }
+                    else if (s.type === 'y') { s.symX = -pt.x; s.symY = pt.y; }
+                    else if (s.type === 'origin') { s.symX = -pt.x; s.symY = -pt.y; }
+                }
+            }
+        }
+
+        function addPoint(x, y, isShape = false) {
+            const newPoint = { id: nextId++, x, y, isShape };
+            if (isShape) shapePoints.push(newPoint);
+            else points.push(newPoint);
+            drawTeaching();
+            updateUI();
+            return newPoint;
+        }
+
+        function clearAll() {
+            points = [];
+            shapePoints = [];
+            symmetries = [];
+            selectedId = null;
+            drawTeaching();
+            updateUI();
+        }
+
+        function clearGraph() {
+            shapePoints = [];
+            drawTeaching();
+            updateUI();
+        }
+
+        function translateSelected(dx, dy) {
+            if (selectedId === null) {
+                showError("请先点击一个点选中它");
+                return false;
+            }
+            const pt = getPointById(selectedId);
+            if (!pt) return false;
+            pt.x += dx;
+            pt.y += dy;
+            updateSymmetriesForPoint(pt);
+            drawTeaching();
+            updateUI();
+            const dirX = dx>0?`右${dx.toFixed(2)}`:(dx<0?`左${(-dx).toFixed(2)}`:'');
+            const dirY = dy>0?`上${dy.toFixed(2)}`:(dy<0?`下${(-dy).toFixed(2)}`:'');
+            document.getElementById('translateMsg').innerHTML = `📐 平移: ${dirX} ${dirY} → (${pt.x.toFixed(2)},${pt.y.toFixed(2)})`;
+            return true;
+        }
+
+        function createSymmetry(type) {
+            if (selectedId === null) {
+                showError("请先选中一个点");
+                return;
+            }
+            const origin = getPointById(selectedId);
+            if (!origin) return;
+            let symX = origin.x, symY = origin.y;
+            if (type === 'x') symY = -origin.y;
+            else if (type === 'y') symX = -origin.x;
+            else if (type === 'origin') { symX = -origin.x; symY = -origin.y; }
+            if (symmetries.some(s => s.originalId === origin.id && s.type === type)) {
+                showError("该对称点已存在");
+                return;
+            }
+            symmetries.push({ originalId: origin.id, type, symX, symY });
+            drawTeaching();
+            document.getElementById('symRule').innerHTML = `✨ 生成${type==='x'?'x轴':type==='y'?'y轴':'原点'}对称点 (${symX.toFixed(2)},${symY.toFixed(2)})`;
+        }
+
+        function clearSymmetry() {
+            symmetries = [];
+            drawTeaching();
+        }
+
+        function graphSymmetry(type) {
+            if (shapePoints.length === 0) {
+                showError("请先添加图形");
+                return;
+            }
+            const newPoints = [];
+            for (let v of shapePoints) {
+                let nx = v.x, ny = v.y;
+                if (type === 'x') ny = -v.y;
+                else if (type === 'y') nx = -v.x;
+                newPoints.push({ id: nextId++, x: nx, y: ny, isShape: true });
+            }
+            shapePoints.push(...newPoints);
+            drawTeaching();
+            updateUI();
+        }
+
+        function addTriangle() {
+            clearGraph();
+            shapePoints.push({ id: nextId++, x: 1, y: 1, isShape: true });
+            shapePoints.push({ id: nextId++, x: 3, y: 1, isShape: true });
+            shapePoints.push({ id: nextId++, x: 2, y: 3, isShape: true });
+            drawTeaching();
+            updateUI();
+        }
+        function addRect() {
+            clearGraph();
+            shapePoints.push({ id: nextId++, x: -2, y: 1, isShape: true });
+            shapePoints.push({ id: nextId++, x: 2, y: 1, isShape: true });
+            shapePoints.push({ id: nextId++, x: 2, y: -1, isShape: true });
+            shapePoints.push({ id: nextId++, x: -2, y: -1, isShape: true });
+            drawTeaching();
+            updateUI();
+        }
+
+        function updateUI() {
+            const allPointsStr = [
+                ...points.map(p => `(${p.x.toFixed(2)},${p.y.toFixed(2)})`),
+                ...shapePoints.map(s => `🔷(${s.x.toFixed(2)},${s.y.toFixed(2)})`)
+            ];
+            document.getElementById('pointList').innerHTML = allPointsStr.length ? `📌 ${allPointsStr.join(' ')}` : '⚡ 无点 / 点击画布生成';
+            const selected = getPointById(selectedId);
+            document.getElementById('selectedPointInfo').innerHTML = selected ? `(${selected.x.toFixed(2)},${selected.y.toFixed(2)})` : '未选中';
+        }
+
+        // 教学模式绘图
+        function drawTeaching() {
+            ctx.clearRect(0, 0, width, height);
+            drawGridAndAxes();
+            drawQuadrants();
+            drawTicks();
+
+            if (shapePoints.length >= 3) {
+                ctx.beginPath();
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 3;
+                ctx.fillStyle = "rgba(16,185,129,0.1)";
+                ctx.moveTo(toCanvasX(shapePoints[0].x), toCanvasY(shapePoints[0].y));
+                for (let i = 1; i < shapePoints.length; i++) {
+                    ctx.lineTo(toCanvasX(shapePoints[i].x), toCanvasY(shapePoints[i].y));
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            for (let p of points) drawPoint(p, p.id === selectedId, "#ef4444");
+            for (let p of shapePoints) drawPoint(p, p.id === selectedId, "#3b82f6");
+
+            for (let s of symmetries) {
+                ctx.beginPath();
+                ctx.arc(toCanvasX(s.symX), toCanvasY(s.symY), 6, 0, 2*Math.PI);
+                ctx.fillStyle = "#f97316";
+                ctx.fill();
+                ctx.fillStyle = "#1e293b";
+                ctx.font = "bold 12px sans-serif";
+                ctx.fillText(`对称(${s.symX.toFixed(1)},${s.symY.toFixed(1)})`, toCanvasX(s.symX)+8, toCanvasY(s.symY)-5);
+            }
+
+            if (customLine) {
+                const {k, b} = customLine;
+                const x1 = xMin, y1 = k*x1 + b;
+                const x2 = xMax, y2 = k*x2 + b;
+                if ((y1 >= yMin && y1 <= yMax) || (y2 >= yMin && y2 <= yMax)) {
+                    ctx.beginPath();
+                    ctx.moveTo(toCanvasX(x1), toCanvasY(y1));
+                    ctx.lineTo(toCanvasX(x2), toCanvasY(y2));
+                    ctx.strokeStyle = "#a855f7";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 6]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillStyle = "#2d3748";
+            ctx.fillText("Ⅰ (+,+)", toCanvasX(1.5), toCanvasY(1.5));
+            ctx.fillText("Ⅱ (-,+)", toCanvasX(-4), toCanvasY(1.5));
+            ctx.fillText("Ⅲ (-,-)", toCanvasX(-4), toCanvasY(-1.5));
+            ctx.fillText("Ⅳ (+,-)", toCanvasX(1.5), toCanvasY(-1.5));
+        }
+
+        function drawPoint(p, isSelected, color) {
+            ctx.beginPath();
+            ctx.arc(toCanvasX(p.x), toCanvasY(p.y), 7, 0, 2*Math.PI);
+            ctx.fillStyle = isSelected ? "#ffaa33" : color;
+            ctx.fill();
+            ctx.strokeStyle = "#1e293b";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.fillStyle = "#0f172a";
+            ctx.font = "500 12px sans-serif";
+            ctx.fillText(`(${p.x.toFixed(2)},${p.y.toFixed(2)})`, toCanvasX(p.x)+8, toCanvasY(p.y)-6);
+        }
+
+        function drawGridAndAxes() {
+            ctx.save();
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 0.5;
+            for (let x = Math.ceil(xMin); x <= xMax; x += 1) {
+                ctx.beginPath(); ctx.moveTo(toCanvasX(x), 0); ctx.lineTo(toCanvasX(x), height); ctx.stroke();
+            }
+            for (let y = Math.ceil(yMin); y <= yMax; y += 1) {
+                ctx.beginPath(); ctx.moveTo(0, toCanvasY(y)); ctx.lineTo(width, toCanvasY(y)); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.moveTo(toCanvasX(0), 0); ctx.lineTo(toCanvasX(0), height);
+            ctx.moveTo(0, toCanvasY(0)); ctx.lineTo(width, toCanvasY(0));
+            ctx.strokeStyle = "#334155";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = "#1e293b";
+            ctx.fillText("O", toCanvasX(0)+4, toCanvasY(0)-4);
+            ctx.fillText("x", width-12, toCanvasY(0)-6);
+            ctx.fillText("y", toCanvasX(0)+8, 18);
+        }
+
+        function drawQuadrants() {
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = "#a5f3fc"; // Ⅰ
+            ctx.fillRect(toCanvasX(0), toCanvasY(0), width-toCanvasX(0), toCanvasY(0)-0);
+            ctx.fillStyle = "#fecaca"; // Ⅱ
+            ctx.fillRect(0, toCanvasY(0), toCanvasX(0), toCanvasY(0)-0);
+            ctx.fillStyle = "#fed7aa"; // Ⅲ
+            ctx.fillRect(0, toCanvasY(0), toCanvasX(0), height-toCanvasY(0));
+            ctx.fillStyle = "#bbf7d0"; // Ⅳ
+            ctx.fillRect(toCanvasX(0), toCanvasY(0), width-toCanvasX(0), height-toCanvasY(0));
+            ctx.globalAlpha = 1;
+        }
+
+        function drawTicks() {
+            ctx.fillStyle = "#2c3e66";
+            ctx.font = "11px monospace";
+            for (let x = Math.ceil(xMin); x <= xMax; x++) {
+                if (Math.abs(x) > 0.01) ctx.fillText(x, toCanvasX(x)-6, toCanvasY(0)+(x>0?12:-6));
+            }
+            for (let y = Math.ceil(yMin); y <= yMax; y++) {
+                if (Math.abs(y) > 0.01) ctx.fillText(y, toCanvasX(0)+6, toCanvasY(y)+4);
+            }
+        }
+
+        function updateRange() {
+            xMin = parseFloat(document.getElementById('xMin').value);
+            xMax = parseFloat(document.getElementById('xMax').value);
+            yMin = parseFloat(document.getElementById('yMin').value);
+            yMax = parseFloat(document.getElementById('yMax').value);
+            if (xMin >= xMax) xMax = xMin + 1;
+            if (yMin >= yMax) yMax = yMin + 1;
+            drawTeaching();
+        }
+
+        // 教学模式鼠标事件
+        function teachingMouseDown(e) {
+            const { mx, my } = getMousePos(e);
+            const worldX = toWorldX(mx);
+            const worldY = toWorldY(my);
+            const allPoints = [...points, ...shapePoints];
+            let hit = null;
+            for (let p of allPoints) {
+                const px = toCanvasX(p.x), py = toCanvasY(p.y);
+                if (Math.hypot(px - mx, py - my) < 12) {
+                    hit = p;
+                    break;
+                }
+            }
+            if (hit) {
+                dragTargetId = hit.id;
+                selectedId = hit.id;
+                isDragging = true;
+                drawTeaching();
+                updateUI();
+                e.preventDefault();
+                return;
+            }
+            const newPt = addPoint(worldX, worldY, false);
+            selectedId = newPt.id;
+            drawTeaching();
+            updateUI();
+        }
+
+        function teachingMouseMove(e) {
+            if (!isDragging || dragTargetId === null) return;
+            const pt = getPointById(dragTargetId);
+            if (!pt) return;
+            const { mx, my } = getMousePos(e);
+            const newX = toWorldX(mx);
+            const newY = toWorldY(my);
+            pt.x = newX;
+            pt.y = newY;
+            updateSymmetriesForPoint(pt);
+            drawTeaching();
+            updateUI();
+            document.getElementById('translateMsg').innerHTML = `🖱️ 拖拽中: (${newX.toFixed(2)},${newY.toFixed(2)})`;
+        }
+
+        function teachingMouseUp() {
+            isDragging = false;
+            dragTargetId = null;
+            drawTeaching();
+        }
+
+        // 游戏模式绘图
+        function drawGame() {
+            ctx.clearRect(0, 0, width, height);
+            drawGridAndAxes();
+            drawQuadrants();
+            drawTicks();
+            if (targetPoint.x !== null && targetPoint.y !== null) {
+                ctx.beginPath();
+                ctx.arc(toCanvasX(targetPoint.x), toCanvasY(targetPoint.y), 12, 0, 2*Math.PI);
+                ctx.fillStyle = "#ef4444";
+                ctx.fill();
+                ctx.strokeStyle = "#b91c1c";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 14px sans-serif";
+                ctx.fillText("🎯", toCanvasX(targetPoint.x)-6, toCanvasY(targetPoint.y)+5);
+                ctx.fillStyle = "#1e293b";
+                ctx.font = "12px monospace";
+                ctx.fillText(`(${targetPoint.x},${targetPoint.y})`, toCanvasX(targetPoint.x)+8, toCanvasY(targetPoint.y)-8);
+            }
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillStyle = "#0f172a";
+            ctx.fillText(`⏱️ ${gameTimeLeft}s  🎯 ${gameScore}`, 20, 40);
+        }
+
+        function gameMouseDown(e) {
+            if (!gameActive) return;
+            const { mx, my } = getMousePos(e);
+            const worldX = toWorldX(mx);
+            const worldY = toWorldY(my);
+            if (targetPoint.x !== null && targetPoint.y !== null) {
+                const dist = Math.hypot(worldX - targetPoint.x, worldY - targetPoint.y);
+                if (dist < 0.5) {
+                    gameScore++;
+                    document.getElementById('gameScore').innerText = gameScore;
+                    if (gameTimeoutTimer) clearTimeout(gameTimeoutTimer);
+                    generateNewTarget();
+                    startTargetTimeout();
+                } else {
+                    document.getElementById('gameMessage').innerHTML = "❌ 没点中靶心，继续加油！";
+                    setTimeout(() => {
+                        if (gameActive) document.getElementById('gameMessage').innerHTML = "🎯 快速点击红色靶心得分！";
+                    }, 500);
+                }
+            }
+        }
+
+        function generateNewTarget() {
+            const step = 0.5;
+            const minX = Math.ceil(xMin / step) * step;
+            const maxX = Math.floor(xMax / step) * step;
+            const minY = Math.ceil(yMin / step) * step;
+            const maxY = Math.floor(yMax / step) * step;
+            targetPoint.x = Math.floor(Math.random() * ((maxX - minX)/step + 1)) * step + minX;
+            targetPoint.y = Math.floor(Math.random() * ((maxY - minY)/step + 1)) * step + minY;
+            targetPoint.x = Math.min(Math.max(targetPoint.x, xMin + 0.5), xMax - 0.5);
+            targetPoint.y = Math.min(Math.max(targetPoint.y, yMin + 0.5), yMax - 0.5);
+            document.getElementById('targetX').innerText = targetPoint.x;
+            document.getElementById('targetY').innerText = targetPoint.y;
+            drawGame();
+        }
+
+        function startTargetTimeout() {
+            if (!gameActive) return;
+            gameTimeoutTimer = setTimeout(() => {
+                if (gameActive) {
+                    gameScore = Math.max(0, gameScore - 1);
+                    document.getElementById('gameScore').innerText = gameScore;
+                    document.getElementById('gameMessage').innerHTML = "⏰ 超时！扣1分，新靶心出现";
+                    generateNewTarget();
+                    startTargetTimeout();
+                    drawGame();
+                }
+            }, 3000);
+        }
+
+        function startGame() {
+            if (gameActive) return;
+            gameActive = true;
+            gameScore = 0;
+            gameTimeLeft = 20;
+            document.getElementById('gameScore').innerText = "0";
+            document.getElementById('gameTime').innerText = "20";
+            document.getElementById('gameStats').style.display = "block";
+            document.getElementById('startGameBtn').style.display = "none";
+            document.getElementById('exitGameBtn').style.display = "inline-block";
+            canvas.removeEventListener('mousedown', teachingMouseDown);
+            canvas.removeEventListener('mousemove', teachingMouseMove);
+            canvas.removeEventListener('mouseup', teachingMouseUp);
+            canvas.addEventListener('mousedown', gameMouseDown);
+            generateNewTarget();
+            startTargetTimeout();
+            if (gameTimer) clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (!gameActive) return;
+                gameTimeLeft--;
+                document.getElementById('gameTime').innerText = gameTimeLeft;
+                drawGame();
+                if (gameTimeLeft <= 0) endGame();
+            }, 1000);
+            drawGame();
+            document.getElementById('gameMessage').innerHTML = "🎯 游戏进行中！3秒内点击靶心得分！";
+        }
+
+        function endGame() {
+            if (!gameActive) return;
+            gameActive = false;
+            if (gameTimer) clearInterval(gameTimer);
+            if (gameTimeoutTimer) clearTimeout(gameTimeoutTimer);
+            canvas.removeEventListener('mousedown', gameMouseDown);
+            canvas.addEventListener('mousedown', teachingMouseDown);
+            canvas.addEventListener('mousemove', teachingMouseMove);
+            canvas.addEventListener('mouseup', teachingMouseUp);
+            document.getElementById('gameStats').style.display = "none";
+            document.getElementById('startGameBtn').style.display = "inline-block";
+            document.getElementById('exitGameBtn').style.display = "none";
+            document.getElementById('gameMessage').innerHTML = `🎉 游戏结束！最终得分: ${gameScore} 分。点击“开始游戏”再来一局！`;
+            drawTeaching();
+        }
+
+        function exitGame() {
+            if (!gameActive) return;
+            endGame();
+        }
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
+            return { mx: Math.min(Math.max(0, mx), width), my: Math.min(Math.max(0, my), height) };
+        }
+
+        function addPointByCoord() {
+            let x = parseFloat(document.getElementById('coordX').value);
+            let y = parseFloat(document.getElementById('coordY').value);
+            if (isNaN(x) || isNaN(y)) return;
+            addPoint(x, y, false);
+        }
+        function calcDistance() {
+            const x1 = parseFloat(document.getElementById('p1x').value);
+            const y1 = parseFloat(document.getElementById('p1y').value);
+            const x2 = parseFloat(document.getElementById('p2x').value);
+            const y2 = parseFloat(document.getElementById('p2y').value);
+            const dx = x2 - x1, dy = y2 - y1;
+            const dist = Math.hypot(dx, dy);
+            document.getElementById('distResult').innerHTML = `📏 距离 = √(${dx.toFixed(2)}²+${dy.toFixed(2)}²) = ${dist.toFixed(4)} (勾股定理)`;
+        }
+        function checkPointOnLine() {
+            const k = parseFloat(document.getElementById('lineK').value);
+            const b = parseFloat(document.getElementById('lineB').value);
+            const px = parseFloat(document.getElementById('pointX').value);
+            const py = parseFloat(document.getElementById('pointY').value);
+            const expected = k * px + b;
+            if (Math.abs(py - expected) < 1e-5) {
+                document.getElementById('lineResult').innerHTML = `✅ 点 (${px},${py}) 在直线 y = ${k}x + ${b} 上`;
+            } else {
+                document.getElementById('lineResult').innerHTML = `❌ 点不在直线上，代入得 y = ${expected.toFixed(3)} ≠ ${py}`;
+            }
+        }
+        function drawLineByTwoPoints() {
+            const x1 = parseFloat(prompt("第一个点 x 坐标", "-2"));
+            const y1 = parseFloat(prompt("第一个点 y 坐标", "1"));
+            const x2 = parseFloat(prompt("第二个点 x 坐标", "2"));
+            const y2 = parseFloat(prompt("第二个点 y 坐标", "3"));
+            if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) return;
+            if (Math.abs(x2 - x1) < 1e-6) {
+                showError("竖直线暂不支持");
+                return;
+            }
+            const k = (y2 - y1) / (x2 - x1);
+            const b = y1 - k * x1;
+            customLine = { k, b };
+            drawTeaching();
+            document.getElementById('lineResult').innerHTML = `📈 直线已绘制: y = ${k.toFixed(2)}x + ${b.toFixed(2)}`;
+        }
+        function resetView() {
+            document.getElementById('xMin').value = -6;
+            document.getElementById('xMax').value = 6;
+            document.getElementById('yMin').value = -4;
+            document.getElementById('yMax').value = 4;
+            updateRange();
+        }
+        function screenshot() {
+            const link = document.createElement('a');
+            link.download = 'coordinate_system.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMsg');
+            errDiv.style.display = 'block';
+            errDiv.innerText = `⚠️ ${msg}`;
+            setTimeout(() => errDiv.style.display = 'none', 2000);
+        }
+
+        // 绑定按钮事件
+        document.getElementById('updateRangeBtn').onclick = updateRange;
+        document.getElementById('addPointByCoord').onclick = addPointByCoord;
+        document.getElementById('clearAllBtn').onclick = clearAll;
+        document.getElementById('translateBtn').onclick = () => {
+            let dx = parseFloat(document.getElementById('dxVal').value);
+            let dy = parseFloat(document.getElementById('dyVal').value);
+            if (!isNaN(dx) && !isNaN(dy)) translateSelected(dx, dy);
+        };
+        document.getElementById('createSymBtn').onclick = () => createSymmetry(document.getElementById('symType').value);
+        document.getElementById('clearSymBtn').onclick = clearSymmetry;
+        document.getElementById('addTriangleBtn').onclick = addTriangle;
+        document.getElementById('addRectBtn').onclick = addRect;
+        document.getElementById('clearGraphBtn').onclick = clearGraph;
+        document.getElementById('graphSymXBtn').onclick = () => graphSymmetry('x');
+        document.getElementById('graphSymYBtn').onclick = () => graphSymmetry('y');
+        document.getElementById('calcDistBtn').onclick = calcDistance;
+        document.getElementById('checkLineBtn').onclick = checkPointOnLine;
+        document.getElementById('drawLineBtn').onclick = drawLineByTwoPoints;
+        document.getElementById('clearSelected').onclick = () => { selectedId = null; updateUI(); drawTeaching(); };
+        document.getElementById('resetViewBtn').onclick = resetView;
+        document.getElementById('screenshotBtn').onclick = screenshot;
+        document.getElementById('startGameBtn').onclick = startGame;
+        document.getElementById('exitGameBtn').onclick = exitGame;
+
+        canvas.addEventListener('mousedown', teachingMouseDown);
+        canvas.addEventListener('mousemove', teachingMouseMove);
+        canvas.addEventListener('mouseup', teachingMouseUp);
+        canvas.addEventListener('mousemove', (e) => {
+            const { mx, my } = getMousePos(e);
+            const wx = toWorldX(mx), wy = toWorldY(my);
+            document.getElementById('coordInfo').innerHTML = `🖱️ 鼠标坐标: (${wx.toFixed(2)}, ${wy.toFixed(2)})`;
+        });
+
+        updateRange();
+        drawTeaching();
+        updateUI();
+    })();
+</script>
+</body>
+</html>

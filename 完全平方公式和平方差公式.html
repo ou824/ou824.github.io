@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>平方差与完全平方公式：几何可视化 + 互动游戏 + 现实应用</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, -apple-system, 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(145deg, #eef5fa 0%, #dce9f2 100%);
+            margin: 0;
+            padding: 24px 20px;
+            color: #1a2c3e;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.1rem;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #1a5f7a, #2c9b6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .sub {
+            text-align: center;
+            color: #2c6979;
+            margin-bottom: 30px;
+            font-weight: 500;
+            border-bottom: 2px solid #c0dee9;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 6px;
+        }
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            justify-content: center;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(0px);
+            border-radius: 40px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0,0,0,0.05);
+            padding: 22px 26px 28px;
+            flex: 1;
+            min-width: 460px;
+            transition: transform 0.2s ease, box-shadow 0.2s;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 42px -16px rgba(0, 0, 0, 0.25);
+        }
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: #1f6392;
+            border-left: 6px solid #3b9bcb;
+            padding-left: 18px;
+            font-size: 1.6rem;
+        }
+        .canvas-area {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+            align-items: center;
+        }
+        .viz-box {
+            background: #fffef7;
+            border-radius: 28px;
+            padding: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.2s;
+            position: relative;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .controls {
+            margin: 20px 0 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            background: #eef4f8;
+            padding: 10px 20px;
+            border-radius: 60px;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 5px 20px;
+            border-radius: 40px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .slider-group label {
+            font-weight: 700;
+            color: #106a8b;
+        }
+        input[type="range"] {
+            width: 170px;
+            accent-color: #2c7da0;
+        }
+        .value-display {
+            font-family: monospace;
+            background: #eef2f5;
+            padding: 4px 12px;
+            border-radius: 32px;
+            font-weight: bold;
+        }
+        .formula-panel {
+            background: linear-gradient(110deg, #e9f3f8, #dcebf2);
+            border-radius: 32px;
+            padding: 14px 20px;
+            margin: 15px 0 8px;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: inset 0 1px 2px #ffffff80, 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .step-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0;
+            justify-content: center;
+        }
+        button {
+            background: white;
+            border: 1px solid #87c1db;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1f6392;
+            font-size: 0.85rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        button.primary {
+            background: #2c7da0;
+            border-color: #2c7da0;
+            color: white;
+            box-shadow: 0 4px 10px rgba(44,125,160,0.25);
+        }
+        button:hover {
+            background: #cde5f0;
+            transform: translateY(-2px);
+        }
+        button.primary:hover {
+            background: #1f5e7e;
+            transform: translateY(-2px);
+        }
+        .tip {
+            background: #fff7e5;
+            border-left: 6px solid #ffb347;
+            padding: 12px 18px;
+            border-radius: 24px;
+            font-size: 0.88rem;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+        .badge {
+            background: #d9eef5;
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        /* 游戏区域样式 */
+        .game-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            margin-top: 30px;
+        }
+        .game-card {
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            border-radius: 36px;
+            padding: 20px 24px;
+            flex: 1;
+            min-width: 280px;
+            box-shadow: 0 12px 25px -12px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,240,0.8);
+        }
+        .game-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            margin: 0 0 12px 0;
+            color: #2c5a6e;
+        }
+        .quiz-question {
+            background: #f4f9fe;
+            padding: 18px;
+            border-radius: 28px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            font-family: monospace;
+            margin: 15px 0;
+        }
+        .quiz-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .quiz-opt {
+            background: #eef2fa;
+            border-radius: 60px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: 0.1s;
+            border: 1px solid #bdd4e3;
+        }
+        .quiz-opt:hover { background: #cfe3f0; transform: scale(0.97);}
+        .feedback {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 32px;
+        }
+        /* 横向应用卡片区域 */
+        .app-horizontal {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 24px;
+            padding-bottom: 12px;
+            scrollbar-width: thin;
+        }
+        .app-card {
+            flex: 0 0 320px;
+            background: #ecf9f0;
+            border-radius: 28px;
+            padding: 18px;
+            border-left: 8px solid #4aa96c;
+            transition: 0.2s;
+        }
+        .app-card h4 { 
+            margin: 0 0 8px 0; 
+            color: #2b6e3c; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .reveal-btn {
+            background: #cbe5d4;
+            border: none;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            border-radius: 30px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .app-answer {
+            display: none;
+            margin-top: 12px;
+            background: #faf9e6;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border-left: 3px solid #4aa96c;
+        }
+        .app-answer.show {
+            display: block;
+        }
+        footer {
+            text-align: center;
+            margin-top: 45px;
+            font-size: 0.8rem;
+            color: #4f7e8c;
+        }
+        @media (max-width: 980px) {
+            .card { min-width: 380px; }
+            .app-card { flex: 0 0 280px; }
+        }
+        .summary-card {
+            background: linear-gradient(125deg, #fff7e8, #f5f0e3);
+            border-radius: 32px;
+            padding: 20px 28px;
+            margin: 25px 0 10px;
+            text-align: center;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📐 公式几何岛 · 平方差 & 完全平方公式</h1>
+    <div style="text-align: center;"><span class="badge">✨ 简洁标注 | 互动游戏 | 现实应用 ✨</span></div>
+
+    <div class="grid">
+        <!-- 平方差公式卡片 -->
+        <div class="card">
+            <h2>✧ 平方差公式 a² − b² = (a−b)(a+b) ✧</h2>
+            <div class="canvas-area">
+                <div class="viz-box">
+                    <canvas id="diffCanvasOriginal" width="280" height="280" style="width:280px;height:280px"></canvas>
+                    <div style="text-align:center; margin-top:8px;">🔲 大正方形 − 小正方形</div>
+                </div>
+                <div class="viz-box">
+                    <canvas id="diffCanvasTransform" width="280" height="280" style="width:280px;height:280px"></canvas>
+                    <div style="text-align:center; margin-top:8px;">📐 割补成长方形 (面积相等)</div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="slider-group"><label>a = </label><input type="range" id="diffA" min="1.2" max="5.0" step="0.05" value="3.5"><span id="diffAVal" class="value-display">3.50</span></div>
+                <div class="slider-group"><label>b = </label><input type="range" id="diffB" min="0.6" max="4.0" step="0.05" value="1.8"><span id="diffBVal" class="value-display">1.80</span></div>
+            </div>
+            <div class="formula-panel" id="diffFormulaPanel">
+                📐 a² − b² = <span id="diffLeft">0.00</span> &nbsp;|&nbsp; (a−b)(a+b) = <span id="diffRight">0.00</span>
+            </div>
+            <div class="step-buttons">
+                <button id="demoNegHint">🔢 符号突破 (负数验证)</button>
+                <button id="showVariantHint">⚡ 变式 (−a−b)(a−b) 转化</button>
+            </div>
+            <div class="tip" id="diffTip">
+                💡 几何核心：剩余部分面积不变 → 割补为等面积矩形 (长 a+b, 宽 a-b)。
+            </div>
+        </div>
+
+        <!-- 完全平方公式卡片 -->
+        <div class="card">
+            <h2>✦ 完全平方公式 (a±b)² = a² ± 2ab + b² ✦</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between;">
+                <div style="flex:1; min-width: 210px;">
+                    <div style="text-align:center; font-weight:bold; color:#2c7da0;">✨ (a + b)² 几何拼图</div>
+                    <canvas id="sumSquareCanvas" width="240" height="240" style="width:240px;height:240px; border-radius:24px;"></canvas>
+                    <div class="formula-panel" style="font-size:0.9rem; margin-top:8px;" id="sumFormula">(a+b)² = a² + 2ab + b²</div>
+                </div>
+                <div style="flex:1; min-width: 210px;">
+                    <div style="text-align:center; font-weight:bold; color:#c96f0e;">📐 (a - b)² 割补演示</div>
+                    <canvas id="diffSquareCanvas" width="240" height="240" style="width:240px;height:240px; border-radius:24px;"></canvas>
+                    <div class="formula-panel" style="font-size:0.9rem; margin-top:8px;" id="diffFormula">(a-b)² = a² - 2ab + b²</div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="slider-group"><label>a = </label><input type="range" id="perfectA" min="1.0" max="4.5" step="0.05" value="3.2"><span id="perfectAVal" class="value-display">3.20</span></div>
+                <div class="slider-group"><label>b = </label><input type="range" id="perfectB" min="0.5" max="3.5" step="0.05" value="1.4"><span id="perfectBVal" class="value-display">1.40</span></div>
+                <button id="showErrorTipBtn" class="primary">⚠️ 易错对比: (a+b)² vs a²+b²</button>
+            </div>
+            <div class="step-buttons">
+                <button id="explainMinusTip">🧩 差的平方“加b²”原因</button>
+                <button id="convertNegTip">🔄 转化法：(a−b)² = (a+(-b))²</button>
+            </div>
+            <div class="tip" id="perfectTip">
+                💡 和的平方 = 两个正方形+两个矩形；差的平方 = 大正方形 − 两个矩形 + 小正方形。<strong>中间项2ab易漏，几何直观避免错误！</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小结部分 -->
+    <div class="summary-card">
+        <h3 style="margin:0 0 8px 0;">📖 公式小结 · 核心记忆墙</h3>
+        <p style="font-size:1.05rem; margin:8px 0;">🔹 <strong>平方差公式</strong>：<code>a² - b² = (a - b)(a + b)</code> —— 两数和与差的积，没有中间项！几何上是大正方形减去小正方形，割补为等面积矩形，长(a+b)宽(a-b)。<br>
+        🔸 <strong>完全平方公式</strong>：<code>(a ± b)² = a² ± 2ab + b²</code> —— “首平方，尾平方，积的两倍放中央，符号同前方”。几何上拼成大正方形，差的平方注意“多减要加回”。<br>
+        🎯 <strong>易错提醒</strong>：平方差不含交叉项；完全平方中间项 ±2ab 易漏；<code>(a+b)² ≠ a²+b²</code>；<code>(a-b)² = (b-a)²</code>。</p>
+    </div>
+
+    <!-- 互动游戏区域 -->
+    <div class="game-section">
+        <div class="game-card">
+            <h3>🎮 平方差 · 配对挑战</h3>
+            <p style="margin:0 0 8px 0;">根据表达式，选择正确的展开结果！</p>
+            <div id="diffGameArea">
+                <div class="quiz-question" id="diffQuestion">(5x + 2y)(5x - 2y) = ?</div>
+                <div class="quiz-options" id="diffOptions"></div>
+                <div id="diffGameFeedback" class="feedback"></div>
+                <button id="nextDiffQuestion" style="margin-top:10px;">🎲 下一题</button>
+            </div>
+        </div>
+        <div class="game-card">
+            <h3>🎯 完全平方 · 填坑闯关</h3>
+            <p style="margin:0 0 8px 0;">补全完全平方公式的中间项或结果。</p>
+            <div id="perfGameArea">
+                <div class="quiz-question" id="perfQuestion">(3x + 4)² = 9x² + ___ + 16</div>
+                <div class="quiz-options" id="perfOptions"></div>
+                <div id="perfGameFeedback" class="feedback"></div>
+                <button id="nextPerfQuestion" style="margin-top:10px;">✨ 刷新挑战</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 现实应用案例：横向滚动布局 -->
+    <div class="card" style="margin-top: 20px; background: #fefaf0;">
+        <h2>🌍 现实世界中的应用 · 公式力量（点击按钮查看详解）</h2>
+        <div class="app-horizontal">
+            <div class="app-card">
+                <h4>📡 平方差应用：环形面积 & 速算技巧 
+                    <button class="reveal-btn" data-target="app1Ans">🔍 显示解答</button>
+                </h4>
+                <p>✨ 问题1：一个圆形花坛，外圆半径 R，内圆半径 r，求环形面积。<br>
+                ✨ 问题2：快速计算 98 × 102 的结果。</p>
+                <div id="app1Ans" class="app-answer">
+                    📐 <strong>解答：</strong><br>
+                    环形面积 = πR² - πr² = π(R² - r²) = π(R - r)(R + r)。无需分别计算平方再相减。<br>
+                    速算：98 × 102 = (100-2)(100+2) = 100² - 2² = 10000 - 4 = 9996。
+                </div>
+            </div>
+            <div class="app-card">
+                <h4>🏗️ 完全平方应用：匀加速运动 & 最值问题 
+                    <button class="reveal-btn" data-target="app2Ans">🔍 显示解答</button>
+                </h4>
+                <p>✨ 问题1：匀加速直线运动中，末速度 v = v₀ + at，动能公式 Ek = ½mv²，如何利用完全平方公式？<br>
+                ✨ 问题2：已知矩形周长为定值，何时面积最大？</p>
+                <div id="app2Ans" class="app-answer">
+                    📐 <strong>解答：</strong><br>
+                    1. 动能 Ek = ½m(v₀+at)² = ½m(v₀² + 2v₀at + a²t²)，完全平方展开便于分析。<br>
+                    2. 设长宽为 x,y，周长 2(x+y)=L，面积 S = xy。由 (x+y)² ≥ 4xy ⇒ xy ≤ (L/4)²，当 x=y 时取等，即正方形面积最大。
+                </div>
+            </div>
+            <div class="app-card">
+                <h4>🔧 光学与材料强度中的公式应用 
+                    <button class="reveal-btn" data-target="app3Ans">🔍 显示解答</button>
+                </h4>
+                <p>✨ 问题：薄膜干涉中光程差 Δ = 2nd cosθ，有时出现 (Δ₁² - Δ₂²) 形式，平方差如何简化计算？</p>
+                <div id="app3Ans" class="app-answer">
+                    📐 <strong>解答：</strong><br>
+                    平方差公式可将 Δ₁² - Δ₂² = (Δ₁ - Δ₂)(Δ₁ + Δ₂)，便于分析相位差和干涉条纹间距，简化物理推导。
+                </div>
+            </div>
+        </div>
+        <div class="tip" style="margin-top:12px;">
+            💡 数学公式不只存在于课本，平方差简化计算、完全平方揭示最值，是工程与科学的基石。点击按钮查看详细推导。
+        </div>
+    </div>
+
+    <footer>🎓 动态几何 + 游戏闯关 + 交互应用 | 滑动滑块，观察图形变化 | 挑战游戏巩固公式运用</footer>
+</div>
+
+<script>
+    // ======================== 平方差逻辑 ========================
+    let a_diff = 3.5, b_diff = 1.8;
+    
+    // 原始图形：大正方形 - 小正方形，只在图形旁边简洁标注 a 和 b（无引线、无背景）
+    function drawDiffOriginal(ctx, w, h, a, b, scale) {
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "#FEF5E8";
+        ctx.fillRect(0,0,w,h);
+        const sizeA = a * scale;
+        const startX = (w - sizeA)/2, startY = (h - sizeA)/2;
+        // 大正方形
+        ctx.fillStyle = "#6FA3C2";
+        ctx.fillRect(startX, startY, sizeA, sizeA);
+        // 小正方形
+        const sizeB = b * scale;
+        ctx.fillStyle = "#F2BC79";
+        ctx.fillRect(startX, startY + sizeA - sizeB, sizeB, sizeB);
+        ctx.strokeStyle = "#2C5F7A";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, sizeA, sizeA);
+        ctx.strokeRect(startX, startY + sizeA - sizeB, sizeB, sizeB);
+        
+        // 简洁标注 a 在图形右侧
+        ctx.font = "bold 15px 'Segoe UI'";
+        ctx.fillStyle = "#1E4D62";
+        ctx.fillText("a", startX + sizeA + 12, startY + sizeA/2 + 5);
+        
+        // 简洁标注 b 在图形左侧
+        const bTop = startY + sizeA - sizeB;
+        ctx.fillStyle = "#c95a0f";
+        ctx.fillText("b", startX - 18, bTop + sizeB/2 + 5);
+    }
+    
+    // 割补图形：长方形，a+b 标注在上方，a-b 标注在下方，带数值
+    function drawDiffTransform(ctx, w, h, a, b, scale) {
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "#FEF5E8";
+        ctx.fillRect(0,0,w,h);
+        const len = (a+b)*scale;
+        const wid = (a-b)*scale;
+        const rectX = (w - len)/2, rectY = (h - wid)/2;
+        ctx.fillStyle = "#9FC9E0";
+        ctx.fillRect(rectX, rectY, len, wid);
+        ctx.strokeStyle = "#1f6392";
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(rectX, rectY, len, wid);
+        
+        // 标注 a+b 在长方形上方
+        ctx.font = "500 12px 'Segoe UI'";
+        ctx.fillStyle = "#1f6392";
+        ctx.fillText(`a+b = ${(a+b).toFixed(2)}`, rectX + len/2 - 35, rectY - 8);
+        
+        // 标注 a-b 在长方形下方
+        ctx.fillText(`a-b = ${(a-b).toFixed(2)}`, rectX + len/2 - 35, rectY + wid + 18);
+    }
+    
+    function updateDiff() {
+        const a = a_diff, b = b_diff;
+        if(b >= a) {
+            document.getElementById("diffTip").innerHTML = "⚠️ 注意: 几何演示中 b 应小于 a 保证直观面积，但代数公式依然成立。";
+        } else {
+            document.getElementById("diffTip").innerHTML = "💡 几何核心：剩余部分面积不变 → 割补为等面积矩形 (长 a+b, 宽 a-b)。";
+        }
+        const canvasOrig = document.getElementById("diffCanvasOriginal");
+        const ctxOrig = canvasOrig.getContext("2d");
+        const finalScale = 240 / (a+0.2);
+        drawDiffOriginal(ctxOrig, 280,280, a, b, finalScale);
+        
+        const canvasTrans = document.getElementById("diffCanvasTransform");
+        const ctxTrans = canvasTrans.getContext("2d");
+        const useScale = Math.min(220/(a+b+0.2), 190/(Math.abs(a-b)+0.5));
+        drawDiffTransform(ctxTrans, 280,280, a, b, useScale);
+        
+        document.getElementById("diffLeft").innerText = (a*a - b*b).toFixed(2);
+        document.getElementById("diffRight").innerText = ((a-b)*(a+b)).toFixed(2);
+    }
+    
+    // ======================== 完全平方绘制（保持原样）====================
+    function drawSumSquare(ctx, w, h, a, b, scale) {
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "#FFF9EF";
+        ctx.fillRect(0,0,w,h);
+        const size = (a+b)*scale;
+        const offX = (w - size)/2, offY = (h - size)/2;
+        const aPx = a*scale, bPx = b*scale;
+        ctx.fillStyle = "#7FB0C7";
+        ctx.fillRect(offX, offY+size-aPx, aPx, aPx);
+        ctx.fillStyle = "#E6B17E";
+        ctx.fillRect(offX+aPx, offY, bPx, bPx);
+        ctx.fillStyle = "#C0D86D";
+        ctx.fillRect(offX+aPx, offY+size-aPx, bPx, aPx);
+        ctx.fillRect(offX, offY, aPx, bPx);
+        ctx.strokeStyle = "#2C5E7A";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(offX, offY, size, size);
+        ctx.fillStyle = "#1E4C63";
+        ctx.font = "bold 11px";
+        ctx.fillText("a²", offX+5, offY+size-8);
+        ctx.fillText("b²", offX+aPx+5, offY+18);
+        ctx.fillText("ab", offX+aPx+5, offY+size-8);
+        ctx.fillText("ab", offX+5, offY+18);
+    }
+    function drawDiffSquare(ctx, w, h, a, b, scale) {
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "#FFF4E6";
+        ctx.fillRect(0,0,w,h);
+        const sizeBig = a*scale;
+        const offX = (w - sizeBig)/2, offY = (h - sizeBig)/2;
+        const bPx = b*scale;
+        ctx.fillStyle = "#C0DBE9";
+        ctx.fillRect(offX, offY, sizeBig, sizeBig);
+        ctx.fillStyle = "#FFF4E6";
+        ctx.fillRect(offX, offY+sizeBig-bPx, sizeBig, bPx);
+        ctx.fillRect(offX+sizeBig-bPx, offY, bPx, sizeBig);
+        ctx.fillStyle = "#F4BC7C";
+        ctx.fillRect(offX+sizeBig-bPx, offY+sizeBig-bPx, bPx, bPx);
+        ctx.strokeStyle = "#2F6C47";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(offX, offY, sizeBig, sizeBig);
+        ctx.fillStyle = "#205A46";
+        ctx.font = "bold 10px";
+        ctx.fillText(`(a-b)² 剩余`, offX+10, offY-5);
+    }
+    let a_perf = 3.2, b_perf = 1.4;
+    function updatePerfect() {
+        const a = a_perf, b = b_perf;
+        const canvasSum = document.getElementById("sumSquareCanvas");
+        const ctxSum = canvasSum.getContext("2d");
+        const scaleSum = 200 / (a+b+0.3);
+        drawSumSquare(ctxSum, 240,240, a, b, scaleSum);
+        const canvasDiffSq = document.getElementById("diffSquareCanvas");
+        const ctxDiffSq = canvasDiffSq.getContext("2d");
+        const scaleDiff = 200 / (a+0.2);
+        drawDiffSquare(ctxDiffSq, 240,240, a, b, scaleDiff);
+        document.getElementById("sumFormula").innerHTML = `(a+b)² = ${((a+b)*(a+b)).toFixed(2)} = ${(a*a).toFixed(2)} + 2ab(${(2*a*b).toFixed(2)}) + ${(b*b).toFixed(2)}`;
+        document.getElementById("diffFormula").innerHTML = `(a-b)² = ${((a-b)*(a-b)).toFixed(2)} = ${(a*a).toFixed(2)} - 2ab(${(2*a*b).toFixed(2)}) + ${(b*b).toFixed(2)}`;
+    }
+    
+    // 事件绑定
+    document.getElementById("diffA").addEventListener("input", (e) => { a_diff = parseFloat(e.target.value); document.getElementById("diffAVal").innerText = a_diff.toFixed(2); updateDiff(); });
+    document.getElementById("diffB").addEventListener("input", (e) => { b_diff = parseFloat(e.target.value); document.getElementById("diffBVal").innerText = b_diff.toFixed(2); updateDiff(); });
+    document.getElementById("demoNegHint").onclick = () => { document.getElementById("diffTip").innerHTML = "🔬 代入 a=-2.5,b=1.2：a²-b²=6.25-1.44=4.81，(a-b)(a+b)=(-3.7)*(-1.3)=4.81。平方差对任意实数成立，几何背景可扩展到代数恒等式。"; };
+    document.getElementById("showVariantHint").onclick = () => { document.getElementById("diffTip").innerHTML = "📐 (−a−b)(a−b) = [-(a+b)](a-b)= -(a²-b²)=b²-a²。提取负号转化标准平方差。"; };
+    document.getElementById("perfectA").addEventListener("input", (e) => { a_perf = parseFloat(e.target.value); document.getElementById("perfectAVal").innerText = a_perf.toFixed(2); updatePerfect(); });
+    document.getElementById("perfectB").addEventListener("input", (e) => { b_perf = parseFloat(e.target.value); document.getElementById("perfectBVal").innerText = b_perf.toFixed(2); updatePerfect(); });
+    document.getElementById("showErrorTipBtn").onclick = () => { document.getElementById("perfectTip").innerHTML = "⚠️ 易错：(a+b)² = a²+2ab+b² ≠ a²+b²，几何缺少两个ab矩形！差的平方同样勿漏中间项。"; };
+    document.getElementById("explainMinusTip").onclick = () => { document.getElementById("perfectTip").innerHTML = "🧩 (a−b)² 几何：大正方形减去两个ab矩形，但角落b²被减两次，需加回b² → a²−2ab+b²。"; };
+    document.getElementById("convertNegTip").onclick = () => { document.getElementById("perfectTip").innerHTML = "🔄 (a−b)² = (a+(-b))² = a² + 2·a·(-b) + (-b)² = a² -2ab + b²。符号规律清晰。"; };
+    
+    // 平方差游戏
+    const diffQuestions = [
+        { text: "(3x + 4y)(3x - 4y) = ?", answer: "9x² - 16y²", options: ["9x² - 16y²", "9x² + 16y²", "9x² - 24xy +16y²"] },
+        { text: "(7 + 2m)(7 - 2m) = ?", answer: "49 - 4m²", options: ["49 - 4m²", "49 + 4m²", "49 - 28m +4m²"] },
+        { text: "(2a - 5b)(2a + 5b) = ?", answer: "4a² - 25b²", options: ["4a² - 25b²", "4a² + 25b²", "4a² -20ab +25b²"] }
+    ];
+    let curDiffIdx = 0;
+    function loadDiffGame() {
+        const q = diffQuestions[curDiffIdx % diffQuestions.length];
+        document.getElementById("diffQuestion").innerHTML = q.text;
+        const optsDiv = document.getElementById("diffOptions");
+        optsDiv.innerHTML = "";
+        q.options.forEach(opt => {
+            const btn = document.createElement("div");
+            btn.className = "quiz-opt";
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if(opt === q.answer) {
+                    document.getElementById("diffGameFeedback").innerHTML = "✅ 正确！平方差公式运用完美！";
+                    document.getElementById("diffGameFeedback").style.color = "green";
+                } else {
+                    document.getElementById("diffGameFeedback").innerHTML = `❌ 错误！正确答案是 ${q.answer}。再试试几何联想: (a+b)(a-b)=a²-b²。`;
+                    document.getElementById("diffGameFeedback").style.color = "#b13e3e";
+                }
+            };
+            optsDiv.appendChild(btn);
+        });
+    }
+    document.getElementById("nextDiffQuestion").onclick = () => { curDiffIdx++; loadDiffGame(); document.getElementById("diffGameFeedback").innerHTML = "✨ 新题目来啦，选择答案吧"; };
+    
+    // 完全平方游戏
+    const perfQuestions = [
+        { text: "(2x + 5)² = 4x² + ___ + 25", answer: "20x", options: ["10x", "20x", "25x"] },
+        { text: "(3y - 2)² = 9y² - ___ + 4", answer: "12y", options: ["6y", "12y", "18y"] },
+        { text: "(4a + 3b)² = 16a² + 24ab + ___", answer: "9b²", options: ["6b²", "9b²", "12b²"] }
+    ];
+    let curPerfIdx = 0;
+    function loadPerfGame() {
+        const q = perfQuestions[curPerfIdx % perfQuestions.length];
+        document.getElementById("perfQuestion").innerHTML = q.text;
+        const optsDiv = document.getElementById("perfOptions");
+        optsDiv.innerHTML = "";
+        q.options.forEach(opt => {
+            const btn = document.createElement("div");
+            btn.className = "quiz-opt";
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if(opt === q.answer) {
+                    document.getElementById("perfGameFeedback").innerHTML = "🎉 完全正确！中间项是2ab，注意符号！";
+                    document.getElementById("perfGameFeedback").style.color = "green";
+                } else {
+                    document.getElementById("perfGameFeedback").innerHTML = `❌ 哎呀不对，正确填空是 ${q.answer}。完全平方展开：首平方±2ab+尾平方。`;
+                    document.getElementById("perfGameFeedback").style.color = "#b13e3e";
+                }
+            };
+            optsDiv.appendChild(btn);
+        });
+    }
+    document.getElementById("nextPerfQuestion").onclick = () => { curPerfIdx++; loadPerfGame(); document.getElementById("perfGameFeedback").innerHTML = "🔍 新题目，仔细回忆几何拼图！"; };
+    
+    // 现实应用交互：按钮显示隐藏答案
+    document.querySelectorAll('.reveal-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const answerDiv = document.getElementById(targetId);
+            if(answerDiv.classList.contains('show')) {
+                answerDiv.classList.remove('show');
+                this.textContent = '🔍 显示解答';
+            } else {
+                answerDiv.classList.add('show');
+                this.textContent = '📘 隐藏解答';
+            }
+        });
+    });
+    
+    // 初始化
+    updateDiff();
+    updatePerfect();
+    loadDiffGame();
+    loadPerfGame();
+    document.getElementById("diffAVal").innerText = a_diff.toFixed(2);
+    document.getElementById("diffBVal").innerText = b_diff.toFixed(2);
+    document.getElementById("perfectAVal").innerText = a_perf.toFixed(2);
+    document.getElementById("perfectBVal").innerText = b_perf.toFixed(2);
+</script>
+</body>
+</html>

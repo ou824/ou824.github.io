@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>二次函数大冒险 | 玩转抛物线·限时挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9e7b3 0%, #f5cda0 100%);
+            font-family: 'Comic Neue', 'Segoe UI', 'Quicksand', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            color: #2d1b0e;
+            min-height: 100vh;
+        }
+
+        /* 大标题区域 */
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 3.2rem;
+            background: linear-gradient(135deg, #ff8c42, #ff3c00);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 4px 4px 12px rgba(0,0,0,0.1);
+            letter-spacing: -0.5px;
+            display: inline-block;
+            padding: 0 20px;
+            position: relative;
+        }
+        .hero h1::before {
+            content: "🎢";
+            font-size: 3rem;
+            position: absolute;
+            left: -40px;
+            top: 0;
+        }
+        .hero h1::after {
+            content: "🚀";
+            font-size: 3rem;
+            position: absolute;
+            right: -40px;
+            top: 0;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            background: rgba(255,245,200,0.7);
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* 主网格 */
+        .dashboard {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 28px;
+            align-items: start;
+        }
+
+        /* 左侧画布区 - 糖果风格 */
+        .visual-panel {
+            background: rgba(255, 255, 240, 0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 2.5rem;
+            box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.2), 0 0 0 3px #ffdd99 inset;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .visual-panel:hover {
+            transform: scale(1.01);
+        }
+
+        .canvas-wrapper {
+            background: #ffffff;
+            border-radius: 1.8rem;
+            padding: 6px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #fffef7;
+            border-radius: 1.5rem;
+            cursor: grab;
+            touch-action: none;
+        }
+        canvas:active { cursor: grabbing; }
+
+        .drag-hint {
+            margin-top: 14px;
+            font-size: 0.8rem;
+            color: #b45f2b;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            background: #ffefcf;
+            padding: 8px 16px;
+            border-radius: 60px;
+            font-weight: 500;
+        }
+
+        /* 右侧卡片 卡通风格 */
+        .control-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(255, 250, 225, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.2rem 1.4rem;
+            box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15), 0 0 0 2px #ffdd99 inset;
+            transition: all 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 32px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 6px solid #ff914d;
+            padding-left: 14px;
+            color: #a53f00;
+        }
+
+        .param-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .param-row label {
+            width: 32px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #ff6a00;
+        }
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #ffb347, #ff7e05);
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff3e0;
+            border-radius: 50%;
+            border: 2px solid #ff6a00;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .param-val {
+            width: 55px;
+            background: #ffe1b3;
+            border-radius: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 5px 0;
+            font-weight: bold;
+        }
+
+        .lock-badge {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0 12px;
+            font-size: 0.8rem;
+            background: #ffefcf;
+            padding: 6px 14px;
+            border-radius: 48px;
+        }
+
+        .expr-box {
+            background: #ffe0b5;
+            padding: 10px 14px;
+            border-radius: 40px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            margin: 12px 0;
+            border: 1px dashed #ffaa55;
+        }
+
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin: 12px 0;
+            gap: 12px;
+            background: #ffefcf;
+            padding: 8px 12px;
+            border-radius: 40px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        button {
+            background: #fff0dd;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #a34500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #ffcd94;
+        }
+        button.primary {
+            background: linear-gradient(95deg, #ff914d, #ff6a00);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(255,106,0,0.3);
+        }
+        button.primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 18px rgba(255,106,0,0.4);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            background: #ffe4bd;
+        }
+
+        .knowledge-tip {
+            background: #fff0df;
+            border-left: 6px solid #ffb347;
+            padding: 10px 14px;
+            border-radius: 28px;
+            font-size: 0.75rem;
+            margin-top: 12px;
+        }
+
+        /* 游戏卡片更欢乐 */
+        .game-card {
+            background: linear-gradient(125deg, #fff1cf, #ffe4b5);
+            border: 2px solid #ffbb77;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+        .score-time {
+            background: #ff6a00;
+            color: #fff2d0;
+            padding: 5px 16px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .game-question {
+            background: #fff6e5;
+            border-radius: 1.5rem;
+            padding: 16px;
+            margin: 12px 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            border: 1px solid #ffcd94;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 14px 0;
+        }
+        .opt-btn {
+            background: white;
+            border: 2px solid #ffbb77;
+            border-radius: 60px;
+            padding: 8px 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .opt-btn:hover:not(:disabled) {
+            background: #ff914d;
+            color: white;
+            transform: scale(0.97);
+        }
+        .game-control {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 880px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero h1::before, .hero h1::after { font-size: 2rem; left: -25px; right: -25px; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 0.8rem;
+            color: #8b5a2b;
+            font-weight: 500;
+        }
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75rem;
+            background: #ffefcf;
+            padding: 4px 12px;
+            border-radius: 30px;
+            width: fit-content;
+        }
+        input[type="number"] {
+            background: #fff3e0;
+            border: 1px solid #ffcd94;
+            border-radius: 40px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            width: 70px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="hero">
+    <h1>🎯 二次函数大冒险 🎈</h1>
+    <p>⚡ 拖拽顶点 | 玩转抛物线 | 限时闯关 ⚡</p>
+</div>
+
+<div class="dashboard">
+    <!-- 左侧绘图区 -->
+    <div class="visual-panel">
+        <div class="canvas-wrapper">
+            <canvas id="functionCanvas" width="800" height="500" style="width:100%; height:auto; aspect-ratio:800/500"></canvas>
+        </div>
+        <div class="drag-hint">
+            <span>✨ 抓住顶点拖拽！抛物线跟着跑 ✨</span>
+            <span>🐾 点击图像看交点坐标 🐾</span>
+        </div>
+        <div class="info-grid">
+            <span>📍 顶点位置: <strong id="vertexInfo">(0.00, -2.00)</strong></span>
+            <span>📐 对称轴: x = <strong id="axisInfo">0.00</strong></span>
+            <span>🔍 判别式 Δ = <strong id="deltaVal">0.00</strong></span>
+            <span>✖️ 与x轴交点: <strong id="rootCount">—</strong></span>
+        </div>
+    </div>
+
+    <!-- 右侧控制区 -->
+    <div class="control-stack">
+        <!-- 参数调节 -->
+        <div class="card">
+            <div class="card-title">🎛️ 变身实验室 · 调节a,b,c</div>
+            <div class="param-row"><label>a :</label><input type="range" id="sliderA" min="-5" max="5" step="0.1" value="1"><span id="valA" class="param-val">1.0</span></div>
+            <div class="param-row"><label>b :</label><input type="range" id="sliderB" min="-10" max="10" step="0.1" value="0"><span id="valB" class="param-val">0.0</span></div>
+            <div class="param-row"><label>c :</label><input type="range" id="sliderC" min="-10" max="10" step="0.1" value="-2"><span id="valC" class="param-val">-2.0</span></div>
+            <div class="lock-badge">
+                <label><input type="checkbox" id="lockA"> 🔒 锁住a</label>
+                <label><input type="checkbox" id="lockB"> 🔒 锁住b</label>
+                <label><input type="checkbox" id="lockC"> 🔒 锁住c</label>
+            </div>
+            <div class="expr-box" id="exprDisplay">y = 1.00 x² + 0.00 x - 2.00</div>
+            <div class="btn-group">
+                <button id="exploreA">📈 玩转a: 开口/胖瘦</button>
+                <button id="exploreB">⬅️ 玩转b: 左右滑滑梯</button>
+                <button id="exploreC">⬆️ 玩转c: 上下蹦蹦床</button>
+            </div>
+            <div id="explainMsg" class="knowledge-tip">💡 点击按钮，系统会自动锁定其他参数，让你专心研究一个字母的魔法！</div>
+        </div>
+
+        <!-- 变换 & 区间最值 -->
+        <div class="card">
+            <div class="card-title">🔄 魔法变形 + 最值侦探</div>
+            <div class="btn-group">
+                <input type="number" id="transDx" placeholder="Δx" value="1" step="0.5"> 
+                <input type="number" id="transDy" placeholder="Δy" value="1" step="0.5">
+                <button id="applyTrans" class="primary">✨ 平移 ✨</button>
+                <button id="resetTransform">🔄 还原</button>
+            </div>
+            <div class="btn-group">
+                <button id="symX">🪞 关于x轴镜像</button>
+                <button id="symY">🪞 关于y轴镜像</button>
+                <button id="symOrigin">🌀 中心对称</button>
+            </div>
+            <div class="param-row"><label>xₘᵢₙ</label><input type="range" id="rangeMin" min="-8" max="8" step="0.2" value="-3"><span id="minRangeVal">-3.0</span></div>
+            <div class="param-row"><label>xₘₐₓ</label><input type="range" id="rangeMax" min="-8" max="8" step="0.2" value="3"><span id="maxRangeVal">3.0</span></div>
+            <div class="info-grid">📊 区间最值: 最大值 <span id="rangeMaxVal">--</span> &nbsp; 最小值 <span id="rangeMinVal">--</span></div>
+            <div class="switch-label">
+                <label><input type="checkbox" id="showRangeHighlight" checked> 🎨 显示区间阴影（高亮区域）</label>
+            </div>
+            <div class="btn-group">
+                <button id="areaScene">📐 面积最值小剧场</button>
+                <button id="profitScene">💰 利润最值模拟器</button>
+            </div>
+            <div id="sceneResult" class="knowledge-tip">点击按钮，看看二次函数在生活里的大用处！</div>
+        </div>
+
+        <!-- 游戏板块 趣味挑战 -->
+        <div class="card game-card">
+            <div class="game-header">
+                <div class="card-title" style="border-left-color:#ff914d;">🎮 极速挑战 · 函数小英雄</div>
+                <div class="score-time">🏆 得分: <span id="gameScore">0</span> &nbsp;⏱️ <span id="gameTimer">30</span>s</div>
+            </div>
+            <div class="game-question" id="gameQuestionText">⚡ 点击「开始挑战」⚡<br>限时30秒，答对+10，答错-5！</div>
+            <div class="options" id="optionsContainer">
+                <button class="opt-btn" data-opt="0">-</button>
+                <button class="opt-btn" data-opt="1">-</button>
+                <button class="opt-btn" data-opt="2">-</button>
+                <button class="opt-btn" data-opt="3">-</button>
+            </div>
+            <div class="game-control">
+                <button id="startGameBtn" class="primary" style="flex:1">🚀 开始挑战 🚀</button>
+                <button id="resetGameBtn">🔄 重置游戏</button>
+            </div>
+            <div id="gameFeedback" class="knowledge-tip" style="background:#fffbee;">🎉 题目根据你当前函数随机生成！答对得分，答错扣分，时间结束就Game Over~</div>
+        </div>
+
+        <!-- 知识点与任务 -->
+        <div class="card">
+            <div class="card-title">📖 学霸秘籍 · 二次函数小百科</div>
+            <div class="knowledge-tip" style="margin-bottom: 8px;">
+                <strong>🎓 核心口诀</strong><br>
+                • a正开口向上笑 😊，a负开口向下哭 😢 |a|越大身材越瘦<br>
+                • 顶点公式记心间：(-b/2a , 4ac-b²/4a)<br>
+                • Δ>0两个交点好朋友，Δ=0一个交点，Δ<0没有交点<br>
+                • 平移: 左加右减，上加下减
+            </div>
+            <div class="btn-group">
+                <button id="taskOpenUp">🌸 任务：开口向上，最小值=-3</button>
+                <button id="taskVertexMove">🌀 任务：顶点移到(2,1)</button>
+                <button id="taskTwoRoots">✖️ 任务：两根距离=4</button>
+            </div>
+            <div id="taskFeedback" class="knowledge-tip">💪 一键加载任务，观察图像变化，看看参数怎么变！</div>
+            <button id="exportBtn" style="width:100%; margin-top: 8px;">📸 截图保存 + 参数快照</button>
+        </div>
+    </div>
+</div>
+<footer>✨ 玩中学，学中玩 | 拖拽顶点，你就是函数魔法师 ✨</footer>
+
+<script>
+    (function(){
+        // ---------- 核心二次函数引擎 (功能不变，保持稳定) ----------
+        const canvas = document.getElementById('functionCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 800, height = 500;
+        let xMin = -8, xMax = 8, yMin = -8, yMax = 8;
+        let params = { a: 1, b: 0, c: -2 };
+        let lock = { a: false, b: false, c: false };
+        let transformData = null;
+        let currentTransformType = '';
+        let showRangeHighlight = true;
+
+        function setCanvasSize() {
+            const rect = canvas.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width;
+            canvas.height = height;
+            draw();
+        }
+        window.addEventListener('resize', () => setCanvasSize());
+
+        function toPixelX(x) { return ((x - xMin) / (xMax - xMin)) * width; }
+        function toPixelY(y) { return height - ((y - yMin) / (yMax - yMin)) * height; }
+
+        function f(x) {
+            if (Math.abs(params.a) < 1e-6) return params.b * x + params.c;
+            return params.a * x * x + params.b * x + params.c;
+        }
+
+        function getVertex() {
+            if (Math.abs(params.a) < 1e-6) return { x: NaN, y: NaN };
+            const h = -params.b / (2 * params.a);
+            const k = params.a * h * h + params.b * h + params.c;
+            return { x: h, y: k };
+        }
+
+        function getDelta() { return params.b * params.b - 4 * params.a * params.c; }
+
+        function getRoots() {
+            if (Math.abs(params.a) < 1e-6) return [];
+            const delta = getDelta();
+            if (delta < 0) return [];
+            const sqrtD = Math.sqrt(delta);
+            const x1 = (-params.b - sqrtD) / (2 * params.a);
+            const x2 = (-params.b + sqrtD) / (2 * params.a);
+            return [x1, x2].sort((a,b)=>a-b);
+        }
+
+        function updateUI() {
+            document.getElementById('valA').innerText = params.a.toFixed(2);
+            document.getElementById('valB').innerText = params.b.toFixed(2);
+            document.getElementById('valC').innerText = params.c.toFixed(2);
+            document.getElementById('sliderA').value = params.a;
+            document.getElementById('sliderB').value = params.b;
+            document.getElementById('sliderC').value = params.c;
+
+            const vertex = getVertex();
+            if (Math.abs(params.a) > 1e-6) {
+                document.getElementById('vertexInfo').innerHTML = `(${vertex.x.toFixed(2)}, ${vertex.y.toFixed(2)})`;
+                document.getElementById('axisInfo').innerHTML = `${vertex.x.toFixed(2)}`;
+            } else {
+                document.getElementById('vertexInfo').innerHTML = `(一次函数)`;
+                document.getElementById('axisInfo').innerHTML = `无`;
+            }
+
+            const delta = getDelta();
+            const roots = getRoots();
+            document.getElementById('deltaVal').innerHTML = delta.toFixed(2);
+            if (Math.abs(params.a) < 1e-6) document.getElementById('rootCount').innerHTML = '一次函数';
+            else if (delta > 0) document.getElementById('rootCount').innerHTML = `两个 (${roots[0].toFixed(2)}, ${roots[1].toFixed(2)}) 距离=${(roots[1]-roots[0]).toFixed(2)}`;
+            else if (Math.abs(delta) < 1e-6) document.getElementById('rootCount').innerHTML = `一个 (${roots[0].toFixed(2)},0)`;
+            else document.getElementById('rootCount').innerHTML = `无交点`;
+
+            document.getElementById('exprDisplay').innerHTML = `y = ${params.a.toFixed(2)} x² + ${params.b.toFixed(2)} x + ${params.c.toFixed(2)}`;
+
+            const xl = parseFloat(document.getElementById('rangeMin').value);
+            const xr = parseFloat(document.getElementById('rangeMax').value);
+            let maxVal = -Infinity, minVal = Infinity;
+            if (xl <= xr) {
+                const step = (xr - xl) / 200;
+                for (let xx = xl; xx <= xr + 1e-8; xx += step) {
+                    let val = f(xx);
+                    if (val > maxVal) maxVal = val;
+                    if (val < minVal) minVal = val;
+                }
+                const vx = getVertex().x;
+                if (!isNaN(vx) && vx >= xl && vx <= xr) {
+                    let vv = f(vx);
+                    if (vv > maxVal) maxVal = vv;
+                    if (vv < minVal) minVal = vv;
+                }
+                document.getElementById('rangeMaxVal').innerHTML = maxVal.toFixed(2);
+                document.getElementById('rangeMinVal').innerHTML = minVal.toFixed(2);
+            }
+            draw();
+        }
+
+        function draw() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+
+            // 网格
+            ctx.strokeStyle = "#e4c8a2";
+            ctx.lineWidth = 0.8;
+            for (let x = -8; x <= 8; x += 1) {
+                ctx.beginPath(); ctx.moveTo(toPixelX(x), 0); ctx.lineTo(toPixelX(x), height); ctx.stroke();
+            }
+            for (let y = -8; y <= 8; y += 1) {
+                ctx.beginPath(); ctx.moveTo(0, toPixelY(y)); ctx.lineTo(width, toPixelY(y)); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.lineWidth = 2.5; ctx.strokeStyle = "#b45f2b";
+            ctx.moveTo(toPixelX(0), 0); ctx.lineTo(toPixelX(0), height);
+            ctx.moveTo(0, toPixelY(0)); ctx.lineTo(width, toPixelY(0)); ctx.stroke();
+
+            // 原函数
+            ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = "#ff914d";
+            let first = true;
+            for (let px = 0; px <= width; px += 2) {
+                let x = xMin + (px / width) * (xMax - xMin);
+                let y = f(x);
+                if (y < yMin - 1 || y > yMax + 1) { first = true; continue; }
+                let py = toPixelY(y);
+                if (first) { ctx.moveTo(px, py); first = false; }
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+
+            if (Math.abs(params.a) > 1e-6) {
+                const v = getVertex();
+                if (!isNaN(v.x) && v.y >= yMin - 1 && v.y <= yMax + 1) {
+                    ctx.fillStyle = "#e65c00"; ctx.beginPath(); ctx.arc(toPixelX(v.x), toPixelY(v.y), 8, 0, 2 * Math.PI); ctx.fill();
+                    ctx.fillStyle = "#fff3e0"; ctx.font = "bold 12px 'Comic Neue'"; ctx.fillText("⭐顶点", toPixelX(v.x) + 5, toPixelY(v.y) - 6);
+                }
+                getRoots().forEach(r => {
+                    if (r >= xMin && r <= xMax) {
+                        ctx.fillStyle = "#2b8c3e"; ctx.beginPath(); ctx.arc(toPixelX(r), toPixelY(0), 6, 0, 2 * Math.PI); ctx.fill();
+                        ctx.fillStyle = "#14532d"; ctx.fillText(`交点`, toPixelX(r) + 5, toPixelY(0) - 5);
+                    }
+                });
+                let y0 = f(0);
+                if (y0 >= yMin && y0 <= yMax) {
+                    ctx.fillStyle = "#f59e0b"; ctx.beginPath(); ctx.arc(toPixelX(0), toPixelY(y0), 6, 0, 2 * Math.PI); ctx.fill();
+                    ctx.fillStyle = "#b45309"; ctx.fillText(`y截距`, toPixelX(0) + 5, toPixelY(y0) - 5);
+                }
+            }
+
+            if (transformData && transformData.points) {
+                ctx.beginPath(); ctx.setLineDash([8, 6]); ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 3;
+                let ft = true;
+                for (let p of transformData.points) {
+                    if (p.y < yMin - 0.8 || p.y > yMax + 0.8) { ft = true; continue; }
+                    let px = toPixelX(p.x), py = toPixelY(p.y);
+                    if (ft) { ctx.moveTo(px, py); ft = false; }
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = "#b91c1c"; ctx.font = "bold 10px 'Comic Neue'"; ctx.fillText(`✨${currentTransformType}✨`, 20, 40);
+            } else ctx.setLineDash([]);
+
+            if (showRangeHighlight) {
+                const xl = parseFloat(document.getElementById('rangeMin').value);
+                const xr = parseFloat(document.getElementById('rangeMax').value);
+                ctx.fillStyle = "rgba(255,145,77,0.15)";
+                let startX = Math.max(0, toPixelX(xl)), endX = Math.min(width, toPixelX(xr));
+                if (startX < endX) ctx.fillRect(startX, 0, endX - startX, height);
+            }
+            ctx.restore();
+        }
+
+        function setParams(newA, newB, newC) {
+            if (!lock.a && !isNaN(newA)) params.a = parseFloat(newA);
+            if (!lock.b && !isNaN(newB)) params.b = parseFloat(newB);
+            if (!lock.c && !isNaN(newC)) params.c = parseFloat(newC);
+            if (Math.abs(params.a) < 1e-6 && params.a !== 0) params.a = 0;
+            updateUI();
+        }
+
+        function syncSliders() {
+            setParams(
+                document.getElementById('sliderA').value,
+                document.getElementById('sliderB').value,
+                document.getElementById('sliderC').value
+            );
+        }
+
+        function applyTranslation() {
+            let dx = parseFloat(document.getElementById('transDx').value) || 0;
+            let dy = parseFloat(document.getElementById('transDy').value) || 0;
+            const v = getVertex();
+            if (isNaN(v.x)) return;
+            let newH = v.x + dx, newK = v.y + dy;
+            let newB = -2 * params.a * newH;
+            let newC = params.a * newH * newH + newK;
+            setParams(params.a, newB, newC);
+            transformData = null;
+        }
+        function symmetryX() { setParams(-params.a, -params.b, -params.c); transformData = null; }
+        function symmetryY() { setParams(params.a, -params.b, params.c); transformData = null; }
+        function symmetryOrigin() { setParams(-params.a, params.b, -params.c); transformData = null; }
+        function resetTransform() { transformData = null; draw(); }
+        function exploreA() { lock.b = true; lock.c = true; lock.a = false; document.getElementById('lockB').checked = true; document.getElementById('lockC').checked = true; document.getElementById('explainMsg').innerHTML = "🔍 a决定开口方向与胖瘦，a>0开口向上笑嘻嘻，a<0开口向下哭唧唧！|a|越大抛物线越瘦～"; }
+        function exploreB() { lock.a = false; lock.b = false; lock.c = true; document.getElementById('lockA').checked = false; document.getElementById('lockC').checked = true; document.getElementById('explainMsg').innerHTML = "🔍 b影响对称轴左右滑，左加右减，试试看抛物线怎么平移～"; }
+        function exploreC() { lock.a = false; lock.b = true; lock.c = false; document.getElementById('lockB').checked = true; document.getElementById('explainMsg').innerHTML = "🔍 c决定与y轴交点，c变大向上跳，c变小向下蹦！"; }
+        function areaScene() { let v = getVertex(); document.getElementById('sceneResult').innerHTML = `📐 面积最值小剧场：当前顶点纵坐标${v.y.toFixed(2)}，若a<0则最大面积≈${v.y.toFixed(2)}，若是a>0则面积可以无限大哟～`; }
+        function profitScene() { let v = getVertex(); document.getElementById('sceneResult').innerHTML = `💰 利润模拟器：顶点(${v.x.toFixed(2)},${v.y.toFixed(2)})，${params.a<0?'最大利润='+v.y.toFixed(2)+'元！':'开口向上，成本无底线，但利润最小可能是'+v.y.toFixed(2)}`; }
+        function exportImg() { let link = document.createElement('a'); link.download = `parabola_magic.png`; link.href = canvas.toDataURL(); link.click(); alert(`参数已保存 a=${params.a.toFixed(2)}, b=${params.b.toFixed(2)}, c=${params.c.toFixed(2)}`); }
+
+        document.getElementById('taskOpenUp').onclick = () => setParams(0.5, 0, -3);
+        document.getElementById('taskVertexMove').onclick = () => setParams(1, -4, 5);
+        document.getElementById('taskTwoRoots').onclick = () => setParams(1, 0, -4);
+
+        document.getElementById('showRangeHighlight').addEventListener('change', (e) => {
+            showRangeHighlight = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('sliderA').addEventListener('input', syncSliders);
+        document.getElementById('sliderB').addEventListener('input', syncSliders);
+        document.getElementById('sliderC').addEventListener('input', syncSliders);
+        document.getElementById('applyTrans').onclick = applyTranslation;
+        document.getElementById('resetTransform').onclick = resetTransform;
+        document.getElementById('symX').onclick = symmetryX;
+        document.getElementById('symY').onclick = symmetryY;
+        document.getElementById('symOrigin').onclick = symmetryOrigin;
+        document.getElementById('areaScene').onclick = areaScene;
+        document.getElementById('profitScene').onclick = profitScene;
+        document.getElementById('exportBtn').onclick = exportImg;
+        document.getElementById('exploreA').onclick = exploreA;
+        document.getElementById('exploreB').onclick = exploreB;
+        document.getElementById('exploreC').onclick = exploreC;
+        document.getElementById('rangeMin').addEventListener('input', (e)=>{ document.getElementById('minRangeVal').innerText=e.target.value; updateUI(); });
+        document.getElementById('rangeMax').addEventListener('input', (e)=>{ document.getElementById('maxRangeVal').innerText=e.target.value; updateUI(); });
+        document.getElementById('lockA').onchange = (e)=> lock.a = e.target.checked;
+        document.getElementById('lockB').onchange = (e)=> lock.b = e.target.checked;
+        document.getElementById('lockC').onchange = (e)=> lock.c = e.target.checked;
+
+        let dragActive = false;
+        canvas.addEventListener('mousedown', () => dragActive = true);
+        window.addEventListener('mousemove', (e) => {
+            if (!dragActive) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let canvasX = (e.clientX - rect.left) * scaleX;
+            let canvasY = (e.clientY - rect.top) * scaleY;
+            let x = xMin + (canvasX / width) * (xMax - xMin);
+            let y = yMax - (canvasY / height) * (yMax - yMin);
+            if (Math.abs(params.a) > 1e-6) {
+                let newB = -2 * params.a * x;
+                let newC = params.a * x * x + y;
+                setParams(params.a, newB, newC);
+            }
+        });
+        window.addEventListener('mouseup', () => dragActive = false);
+        canvas.addEventListener('touchstart', (e) => { dragActive = true; e.preventDefault(); });
+        window.addEventListener('touchmove', (e) => {
+            if (!dragActive) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            let canvasX = (touch.clientX - rect.left) * (canvas.width/rect.width);
+            let canvasY = (touch.clientY - rect.top) * (canvas.height/rect.height);
+            let x = xMin + (canvasX/width)*(xMax-xMin);
+            let y = yMax - (canvasY/height)*(yMax-yMin);
+            if (Math.abs(params.a) > 1e-6) {
+                let newB = -2 * params.a * x;
+                let newC = params.a * x * x + y;
+                setParams(params.a, newB, newC);
+            }
+            e.preventDefault();
+        });
+        window.addEventListener('touchend', () => dragActive = false);
+        setCanvasSize();
+        syncSliders();
+
+        // ---------- 游戏模块 (与当前函数联动，趣味化) ----------
+        let gameActive = false;
+        let gameScore = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let currentQuestion = null;
+
+        const gameQuestionEl = document.getElementById('gameQuestionText');
+        const optBtns = document.querySelectorAll('.opt-btn');
+        const gameScoreSpan = document.getElementById('gameScore');
+        const gameTimerSpan = document.getElementById('gameTimer');
+        const gameFeedbackDiv = document.getElementById('gameFeedback');
+
+        function generateQuestionFromCurrent() {
+            const a = params.a, b = params.b, c = params.c;
+            const vertexX = -b/(2*a);
+            const vertexY = a*vertexX*vertexX + b*vertexX + c;
+            const delta = b*b - 4*a*c;
+            const yIntercept = c;
+            const funcExpr = `y = ${a.toFixed(2)} x² + ${b.toFixed(2)} x + ${c.toFixed(2)}`;
+            const type = Math.floor(Math.random() * 4);
+            let questionText = "", correct = "", options = [];
+            if (type === 0) {
+                questionText = `🔎 函数 ${funcExpr}<br>❓ 开口方向？`;
+                correct = a > 0 ? "向上 😊" : "向下 😢";
+                options = ["向上 😊", "向下 😢"];
+            } else if (type === 1) {
+                questionText = `🔎 函数 ${funcExpr}<br>❓ 顶点横坐标约为？`;
+                correct = vertexX.toFixed(2);
+                options = [correct, (vertexX + 1.2).toFixed(1), (vertexX - 1.1).toFixed(1), (-vertexX).toFixed(1)];
+            } else if (type === 2) {
+                questionText = `🔎 函数 ${funcExpr}<br>❓ 与y轴交点纵坐标？`;
+                correct = yIntercept.toFixed(2);
+                options = [correct, (yIntercept + 2).toFixed(1), (yIntercept - 1.5).toFixed(1), (Math.random() * 8 - 4).toFixed(1)];
+            } else {
+                questionText = `🔎 函数 ${funcExpr}<br>❓ 判别式Δ的符号？`;
+                if (delta > 0) correct = "正 ✌️";
+                else if (delta < 0) correct = "负 👎";
+                else correct = "零 ⚪";
+                options = ["正 ✌️", "负 👎", "零 ⚪"];
+            }
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            return { text: questionText, options: options, correct: correct };
+        }
+
+        function loadNewGameQuestion() {
+            if (!gameActive) return;
+            currentQuestion = generateQuestionFromCurrent();
+            gameQuestionEl.innerHTML = currentQuestion.text;
+            const btns = document.querySelectorAll('.opt-btn');
+            btns.forEach((btn, idx) => {
+                if (idx < currentQuestion.options.length) btn.innerText = currentQuestion.options[idx];
+                else btn.innerText = "??";
+                btn.disabled = false;
+            });
+            gameFeedbackDiv.innerHTML = "🎯 快选一个答案，拼手速！";
+        }
+
+        function handleGameAnswer(selectedText) {
+            if (!gameActive) return;
+            if (!currentQuestion) return;
+            if (selectedText === currentQuestion.correct) {
+                gameScore += 10;
+                gameFeedbackDiv.innerHTML = "🎉 完全正确！ +10分 🎉";
+            } else {
+                gameScore = Math.max(0, gameScore - 5);
+                gameFeedbackDiv.innerHTML = `😭 可惜错了！ 正确答案是 ${currentQuestion.correct}  -5分 😭`;
+            }
+            gameScoreSpan.innerText = gameScore;
+            if (gameActive) loadNewGameQuestion();
+        }
+
+        function stopGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            timerInterval = null;
+            optBtns.forEach(btn => btn.disabled = true);
+            gameFeedbackDiv.innerHTML = "⏹️ 游戏结束！点击「开始挑战」重新冒险～";
+        }
+
+        function startGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            gameActive = true;
+            gameScore = 0;
+            timeLeft = 30;
+            gameScoreSpan.innerText = "0";
+            gameTimerSpan.innerText = "30";
+            gameFeedbackDiv.innerHTML = "⚡ 游戏开始！30秒倒计时，答对+10，答错-5 ⚡";
+            loadNewGameQuestion();
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                if (timeLeft <= 1) {
+                    timeLeft = 0;
+                    gameTimerSpan.innerText = "0";
+                    stopGame();
+                    gameFeedbackDiv.innerHTML = `🏁 时间到！ 最终得分: ${gameScore} 分。点击开始新挑战！`;
+                } else {
+                    timeLeft--;
+                    gameTimerSpan.innerText = timeLeft;
+                }
+            }, 1000);
+        }
+
+        function resetGameOnly() {
+            if (timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            gameScore = 0;
+            timeLeft = 30;
+            gameScoreSpan.innerText = "0";
+            gameTimerSpan.innerText = "30";
+            gameQuestionEl.innerHTML = "⚡ 点击「开始挑战」⚡<br>限时30秒，答对+10，答错-5！";
+            gameFeedbackDiv.innerHTML = "✨ 重置完成，点击开始挑战 ✨";
+            optBtns.forEach(btn => btn.disabled = true);
+        }
+
+        document.getElementById('startGameBtn').onclick = () => { resetGameOnly(); startGame(); };
+        document.getElementById('resetGameBtn').onclick = () => { if(timerInterval) clearInterval(timerInterval); resetGameOnly(); };
+        optBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (!gameActive) return;
+                const selected = e.target.innerText;
+                handleGameAnswer(selected);
+            });
+        });
+        resetGameOnly();
+    })();
+</script>
+</body>
+</html>

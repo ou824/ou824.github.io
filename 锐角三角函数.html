@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>锐角三角函数 · 全景互动课堂 | 动态图像+实际应用+选择题挑战</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: #eef5fa;
+            margin: 0;
+            padding: 20px;
+            color: #1a3e50;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #0f5b7a;
+            margin-bottom: 8px;
+        }
+        .sub {
+            text-align: center;
+            color: #2e7a6e;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #b9d8e8;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 6px;
+        }
+        .grid-top {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            padding: 18px 20px;
+            transition: all 0.2s;
+            border: 1px solid rgba(129, 187, 210, 0.3);
+        }
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #1f6e93;
+            border-left: 5px solid #3b9bd5;
+            padding-left: 14px;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .slider-area {
+            margin-top: 15px;
+            text-align: center;
+        }
+        input[type="range"] {
+            width: 90%;
+            margin: 8px auto;
+            accent-color: #2c8fbb;
+        }
+        .trig-values {
+            display: flex;
+            justify-content: space-around;
+            background: #e5f0f7;
+            border-radius: 60px;
+            padding: 8px 12px;
+            margin-top: 12px;
+            font-weight: bold;
+            flex-wrap: wrap;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 12px 0;
+        }
+        button {
+            background: #ecf3f8;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #1e6a8a;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        button.primary {
+            background: #3b9bd5;
+            color: white;
+            box-shadow: 0 4px 8px rgba(59,155,213,0.25);
+        }
+        button.primary:hover {
+            background: #2a7faf;
+            transform: scale(0.97);
+        }
+        button:hover {
+            background: #d4e3ed;
+            transform: translateY(-1px);
+        }
+        .prop-box {
+            background: #f3f9ff;
+            border-radius: 20px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            border-left: 4px solid #3b9bd5;
+        }
+        .prop-box ul {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+        .prop-box li {
+            margin: 4px 0;
+        }
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        .input-group input {
+            flex: 2;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: 1px solid #c0d4e2;
+            font-size: 1rem;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: #3b9bd5;
+        }
+        .feedback {
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 30px;
+            background: #ecf7f0;
+            color: #2c6e3f;
+        }
+        .game-area {
+            background: linear-gradient(145deg, #fff9f0, #ffffff);
+            border-radius: 32px;
+            padding: 18px 24px;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            background: #ffe5c4;
+            padding: 10px 18px;
+            border-radius: 40px;
+            flex-wrap: wrap;
+        }
+        .timer {
+            font-family: monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: #1e2f3e;
+            color: #ffd966;
+            padding: 0 15px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        .question-text {
+            font-size: 1.3rem;
+            margin: 20px 0;
+            background: #eef2f5;
+            padding: 18px;
+            border-radius: 32px;
+            text-align: center;
+        }
+        .options-area {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .option-btn {
+            background: #eef2fa;
+            border: 2px solid #cfe3ef;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.1s;
+            text-align: center;
+        }
+        .option-btn:hover {
+            background: #d4e2f0;
+            transform: scale(0.98);
+        }
+        .app-canvas {
+            background: #fef7e0;
+            border-radius: 20px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+        }
+        @media (max-width: 850px) {
+            .grid-top, .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+        .footnote {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #5e7e8c;
+        }
+        .game-start-btn {
+            background: #ffb347;
+            color: #2d3e50;
+            font-size: 1rem;
+            padding: 8px 28px;
+            margin-right: 12px;
+        }
+        .game-start-btn:hover {
+            background: #ffa01e;
+        }
+        .flex-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <h1>📐 锐角三角函数 · 动态探索实验室</h1>
+    <div style="text-align:center;"><span class="sub">⚡ 单位圆·全角度 | 函数图像网格 | 实际应用图解 | 选择题挑战</span></div>
+
+    <!-- 第一行：单位圆（0-360°）+ 函数图像区域 -->
+    <div class="grid-top">
+        <div class="card">
+            <h3>🔵 单位圆 & 任意角三角函数定义</h3>
+            <canvas id="unitCircleCanvas" width="280" height="280" style="width:280px; height:280px"></canvas>
+            <div class="slider-area">
+                <span>🔽 拖动改变角 θ (0° ~ 360°)</span>
+                <input type="range" id="angleSlider" min="0" max="360" step="1" value="32">
+                <div style="font-size:1.2rem; font-weight:bold;">θ = <span id="angleValue">32</span>°</div>
+                <div class="trig-values">
+                    <span>sinθ = <strong id="sinVal">0.530</strong></span>
+                    <span>cosθ = <strong id="cosVal">0.848</strong></span>
+                    <span>tanθ = <strong id="tanVal">0.625</strong></span>
+                </div>
+                <div style="font-size:0.75rem; background:#f0f4f9; border-radius:20px; padding:6px; margin-top:8px;">
+                    💡 单位圆中，sinθ = y坐标，cosθ = x坐标，tanθ = sinθ/cosθ。红色线段为 sinθ，绿色线段为 cosθ。
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📈 三角函数图像 (0°~360°) + 正方形网格</h3>
+            <div class="btn-group">
+                <button id="btnSin" class="primary">正弦函数 sin(x)</button>
+                <button id="btnCos">余弦函数 cos(x)</button>
+                <button id="btnTan">正切函数 tan(x)</button>
+            </div>
+            <canvas id="funcCanvas" width="500" height="260" style="width:100%; height:auto; max-width:500px; aspect-ratio:500/260"></canvas>
+            <div id="funcProperties" class="prop-box">
+                <!-- 动态填充性质列表 -->
+            </div>
+            <div style="font-size:0.7rem; text-align:center; margin-top:6px;">🎯 当前角度标记 ● (仅显示在当前选中函数图像上)</div>
+        </div>
+    </div>
+
+    <!-- 第二行：解直角三角形 + 实际应用(带图形，清晰版) -->
+    <div class="two-col">
+        <div class="card">
+            <h3>📐 解直角三角形 · 互动挑战</h3>
+            <div id="rightTriangleProblem" style="background:#eef2f7; border-radius:24px; padding:12px;">
+                <div id="rtProblemText">Rt△ABC中，∠C=90°，∠A=30°，BC=5，求AB？</div>
+                <div class="input-group">
+                    <input type="number" id="rtAnswerInput" placeholder="输入你的答案 (小数或根号近似值)" step="any">
+                    <button id="rtCheckBtn">✓ 验证答案</button>
+                    <button id="rtNewBtn">🔄 新题目</button>
+                </div>
+                <div id="rtFeedback" class="feedback">✨ 输入答案，点击验证~</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>🏔️ 实际应用 · 几何模型中的三角函数</h3>
+            <div class="app-canvas">
+                <canvas id="appSceneCanvas" width="300" height="200" style="width:300px; height:200px; background:#fef7e0; border-radius:20px;"></canvas>
+            </div>
+            <div id="appProblemText" style="margin:12px 0; font-weight:500; font-size:1rem;">梯子靠墙，与地面夹角60°，底端离墙脚4米，求梯子长度？</div>
+            <div class="input-group">
+                <input type="number" id="appAnswerInput" placeholder="输入计算结果 (米)" step="any">
+                <button id="appCheckBtn">✓ 提交答案</button>
+                <button id="appNewBtn">🌿 新情境</button>
+            </div>
+            <div id="appFeedback" class="feedback">📐 根据图形，用三角函数求解~</div>
+        </div>
+    </div>
+
+    <!-- 游戏板块: 选择题形式 10题 每题10分 10秒限时 -->
+    <div class="game-area">
+        <h3>🎮 锐角英雄挑战 · 限时选择题</h3>
+        <div class="game-header">
+            <span>🏆 得分: <span id="gameScore">0</span> 分</span>
+            <span>📋 第 <span id="gameQIndex">0</span> / <span id="gameTotal">10</span> 题</span>
+            <span>⏱️ 剩余时间: <span id="timerDisplay" class="timer">0</span> 秒</span>
+        </div>
+        <div id="gameQuestion" class="question-text">✨ 点击「开始游戏」按钮，挑战10道三角函数选择题！</div>
+        <div id="gameOptions" class="options-area"></div>
+        <div class="flex-btns">
+            <button id="gameStartBtn" class="primary game-start-btn">▶ 开始新游戏</button>
+            <button id="gameRestartBtn">🔄 重新开局</button>
+        </div>
+        <div id="gameMsg" style="margin-top:12px; font-size:0.9rem;">⏳ 每题10分，限时10秒，点击正确选项得分！</div>
+    </div>
+    <div class="footnote">⭐ 角度滑块0-360°，单位圆展示任意角；函数图像含正方形网格与渐近线；性质分点展示；实际应用为梯子、斜坡等纯几何模型，图形清晰；游戏为选择题。</div>
+</div>
+
+<script>
+    (function(){
+        // DOM 元素
+        const angleSlider = document.getElementById('angleSlider');
+        const angleSpan = document.getElementById('angleValue');
+        const sinSpan = document.getElementById('sinVal');
+        const cosSpan = document.getElementById('cosVal');
+        const tanSpan = document.getElementById('tanVal');
+        const unitCanvas = document.getElementById('unitCircleCanvas');
+        const funcCanvas = document.getElementById('funcCanvas');
+        const ctxUnit = unitCanvas.getContext('2d');
+        const ctxFunc = funcCanvas.getContext('2d');
+
+        // 函数切换
+        const btnSin = document.getElementById('btnSin');
+        const btnCos = document.getElementById('btnCos');
+        const btnTan = document.getElementById('btnTan');
+        const funcPropDiv = document.getElementById('funcProperties');
+
+        // 解直角三角形
+        const rtProblemText = document.getElementById('rtProblemText');
+        const rtAnswerInput = document.getElementById('rtAnswerInput');
+        const rtCheckBtn = document.getElementById('rtCheckBtn');
+        const rtNewBtn = document.getElementById('rtNewBtn');
+        const rtFeedback = document.getElementById('rtFeedback');
+
+        // 实际应用图形
+        const appSceneCanvas = document.getElementById('appSceneCanvas');
+        const ctxApp = appSceneCanvas.getContext('2d');
+        const appProblemText = document.getElementById('appProblemText');
+        const appAnswerInput = document.getElementById('appAnswerInput');
+        const appCheckBtn = document.getElementById('appCheckBtn');
+        const appNewBtn = document.getElementById('appNewBtn');
+        const appFeedback = document.getElementById('appFeedback');
+
+        // 游戏元素
+        const gameScoreSpan = document.getElementById('gameScore');
+        const gameQIndexSpan = document.getElementById('gameQIndex');
+        const gameTotalSpan = document.getElementById('gameTotal');
+        const timerDisplaySpan = document.getElementById('timerDisplay');
+        const gameQuestionDiv = document.getElementById('gameQuestion');
+        const gameOptionsDiv = document.getElementById('gameOptions');
+        const gameStartBtn = document.getElementById('gameStartBtn');
+        const gameRestartBtn = document.getElementById('gameRestartBtn');
+        const gameMsgDiv = document.getElementById('gameMsg');
+
+        // ---------- 全局状态 ----------
+        let currentAngleDeg = 32;   // 0-360
+        let currentFunc = 'sin';     // 'sin', 'cos', 'tan'
+
+        let currentRtSolution = null;
+        let currentAppSolution = null;
+
+        // 游戏状态
+        let gameActive = false;
+        let gameQuestions = [];
+        let currentQIndex = 0;
+        let currentScore = 0;
+        let timerInterval = null;
+        let timeLeft = 10;
+        let gameTotalQuestions = 10;
+
+        // ---------- 辅助函数 ----------
+        function degToRad(deg) { return deg * Math.PI / 180; }
+
+        function updateTrigValues(deg) {
+            const rad = degToRad(deg);
+            const sinVal = Math.sin(rad);
+            const cosVal = Math.cos(rad);
+            let tanVal = Math.tan(rad);
+            if (Math.abs(tanVal) > 1000) tanVal = Infinity;
+            sinSpan.innerText = sinVal.toFixed(4);
+            cosSpan.innerText = cosVal.toFixed(4);
+            tanSpan.innerText = (Math.abs(tanVal) > 100 ? "∞" : tanVal.toFixed(4));
+            return { sinVal, cosVal, tanVal };
+        }
+
+        // 绘制单位圆（0-360°）带正方形网格
+        function drawUnitCircle(angleDeg) {
+            const w = 280, h = 280;
+            ctxUnit.clearRect(0, 0, w, h);
+            const centerX = w/2, centerY = h/2;
+            const radius = 110;
+            ctxUnit.save();
+            ctxUnit.strokeStyle = "#e2e8f0";
+            ctxUnit.lineWidth = 0.5;
+            for (let i = -1.2; i <= 1.2; i += 0.2) {
+                const x = centerX + i * radius;
+                const y = centerY + i * radius;
+                if (x > 10 && x < w-10) {
+                    ctxUnit.beginPath();
+                    ctxUnit.moveTo(x, 20);
+                    ctxUnit.lineTo(x, h-20);
+                    ctxUnit.stroke();
+                }
+                if (y > 10 && y < h-10) {
+                    ctxUnit.beginPath();
+                    ctxUnit.moveTo(20, y);
+                    ctxUnit.lineTo(w-20, y);
+                    ctxUnit.stroke();
+                }
+            }
+            ctxUnit.beginPath();
+            ctxUnit.strokeStyle = '#8aaec0';
+            ctxUnit.lineWidth = 1.2;
+            ctxUnit.moveTo(20, centerY); ctxUnit.lineTo(w-20, centerY);
+            ctxUnit.moveTo(centerX, 20); ctxUnit.lineTo(centerX, h-20);
+            ctxUnit.stroke();
+            ctxUnit.beginPath();
+            ctxUnit.arc(centerX, centerY, radius, 0, 2*Math.PI);
+            ctxUnit.strokeStyle = '#3b9bd5';
+            ctxUnit.lineWidth = 2.5;
+            ctxUnit.stroke();
+            const rad = degToRad(angleDeg);
+            const endX = centerX + radius * Math.cos(rad);
+            const endY = centerY - radius * Math.sin(rad);
+            ctxUnit.beginPath();
+            ctxUnit.moveTo(centerX, centerY);
+            ctxUnit.lineTo(endX, endY);
+            ctxUnit.strokeStyle = '#e67e22';
+            ctxUnit.lineWidth = 2;
+            ctxUnit.stroke();
+            const footX = endX;
+            const footY = centerY;
+            ctxUnit.beginPath();
+            ctxUnit.moveTo(endX, endY);
+            ctxUnit.lineTo(footX, footY);
+            ctxUnit.lineTo(centerX, centerY);
+            ctxUnit.fillStyle = 'rgba(59,155,213,0.12)';
+            ctxUnit.fill();
+            ctxUnit.strokeStyle = '#c4450c';
+            ctxUnit.lineWidth = 1.5;
+            ctxUnit.stroke();
+            ctxUnit.beginPath();
+            ctxUnit.setLineDash([4,6]);
+            ctxUnit.moveTo(endX, endY);
+            ctxUnit.lineTo(endX, centerY);
+            ctxUnit.strokeStyle = '#e63946';
+            ctxUnit.stroke();
+            ctxUnit.beginPath();
+            ctxUnit.moveTo(centerX, centerY);
+            ctxUnit.lineTo(endX, centerY);
+            ctxUnit.strokeStyle = '#2a9d8f';
+            ctxUnit.stroke();
+            ctxUnit.setLineDash([]);
+            ctxUnit.fillStyle = '#e63946';
+            ctxUnit.font = "bold 11px 'Segoe UI'";
+            ctxUnit.fillText("sinθ", endX+5, (endY+centerY)/2);
+            ctxUnit.fillStyle = '#2a9d8f';
+            ctxUnit.fillText("cosθ", (centerX+endX)/2-15, centerY-8);
+            ctxUnit.fillStyle = '#1e6a8a';
+            ctxUnit.fillText(`θ=${angleDeg}°`, centerX+20, centerY-15);
+            ctxUnit.beginPath();
+            ctxUnit.arc(endX, endY, 4, 0, 2*Math.PI);
+            ctxUnit.fillStyle = '#e67e22';
+            ctxUnit.fill();
+            ctxUnit.restore();
+        }
+
+        // 绘制函数图像（正方形网格，正切渐近线）
+        function drawFunctionGraph() {
+            const w = funcCanvas.width, h = funcCanvas.height;
+            ctxFunc.clearRect(0, 0, w, h);
+            ctxFunc.save();
+            ctxFunc.strokeStyle = "#e2e8f0";
+            ctxFunc.lineWidth = 0.6;
+            const stepX = (w-60)/360;
+            for(let x=40; x<=w-20; x+= stepX*45){
+                ctxFunc.beginPath();
+                ctxFunc.moveTo(x, 20);
+                ctxFunc.lineTo(x, h-20);
+                ctxFunc.stroke();
+            }
+            for(let y=30; y<=h-30; y+= (h-60)/6){
+                ctxFunc.beginPath();
+                ctxFunc.moveTo(40, y);
+                ctxFunc.lineTo(w-20, y);
+                ctxFunc.stroke();
+            }
+            ctxFunc.beginPath();
+            ctxFunc.strokeStyle = '#5f7f9e';
+            ctxFunc.lineWidth = 1.5;
+            const yZero = h/2;
+            ctxFunc.moveTo(40, yZero); ctxFunc.lineTo(w-20, yZero);
+            ctxFunc.moveTo(40, 20); ctxFunc.lineTo(40, h-20);
+            ctxFunc.stroke();
+            for(let x=40; x<=w-20; x+=(w-60)/6){
+                ctxFunc.fillStyle='#4d6a7e';
+                ctxFunc.font="10px 'Segoe UI'";
+                const degVal = Math.round((x-40)/(w-60)*360);
+                ctxFunc.fillText(`${degVal}°`, x-12, yZero+15);
+            }
+            ctxFunc.fillText("0°", 34, yZero+12);
+            ctxFunc.fillText("90°", 40+(w-60)/4-10, yZero+12);
+            ctxFunc.fillText("180°", 40+(w-60)/2-12, yZero+12);
+            ctxFunc.fillText("270°", 40+3*(w-60)/4-12, yZero+12);
+            ctxFunc.fillText("360°", w-28, yZero+12);
+            if(currentFunc === 'tan'){
+                ctxFunc.save();
+                ctxFunc.setLineDash([6, 8]);
+                ctxFunc.strokeStyle = "#e07a5f";
+                ctxFunc.lineWidth = 1.8;
+                const step = (w-60)/360;
+                const x90 = 40 + 90 * step;
+                const x270 = 40 + 270 * step;
+                ctxFunc.beginPath();
+                ctxFunc.moveTo(x90, 20); ctxFunc.lineTo(x90, h-20);
+                ctxFunc.stroke();
+                ctxFunc.beginPath();
+                ctxFunc.moveTo(x270, 20); ctxFunc.lineTo(x270, h-20);
+                ctxFunc.stroke();
+                ctxFunc.setLineDash([]);
+                ctxFunc.restore();
+            }
+            const stepAngle = 2;
+            let yRange = [-1.5, 1.5];
+            if(currentFunc === 'tan') yRange = [-2.8, 2.8];
+            const scaleX = (w-60)/360;
+            const scaleY = (h-60)/ (yRange[1]-yRange[0]);
+            const offsetY = yZero;
+            ctxFunc.beginPath();
+            let first = true;
+            for(let deg=0; deg<=360; deg+=stepAngle){
+                let rad = degToRad(deg);
+                let val = 0;
+                if(currentFunc === 'sin') val = Math.sin(rad);
+                else if(currentFunc === 'cos') val = Math.cos(rad);
+                else {
+                    val = Math.tan(rad);
+                    if(Math.abs(val) > 3.8) {
+                        first = true;
+                        continue;
+                    }
+                }
+                const x = 40 + deg * scaleX;
+                let y = offsetY - val * scaleY;
+                if(y<20) y=20; if(y>h-20) y=h-20;
+                if(first) { ctxFunc.moveTo(x,y); first=false; }
+                else ctxFunc.lineTo(x,y);
+            }
+            ctxFunc.strokeStyle = currentFunc==='sin'?'#e63946':(currentFunc==='cos'?'#2a9d8f':'#f4a261');
+            ctxFunc.lineWidth = 2.8;
+            ctxFunc.stroke();
+            if(currentAngleDeg>=0 && currentAngleDeg<=360){
+                let radCur = degToRad(currentAngleDeg);
+                let curVal = 0;
+                if(currentFunc === 'sin') curVal = Math.sin(radCur);
+                else if(currentFunc === 'cos') curVal = Math.cos(radCur);
+                else { 
+                    curVal = Math.tan(radCur);
+                    if(Math.abs(curVal) > 3.2) curVal = (curVal>0?3.2:-3.2);
+                }
+                const xCur = 40 + currentAngleDeg * scaleX;
+                let yCur = offsetY - curVal * scaleY;
+                if(yCur<20) yCur=20; if(yCur>h-20) yCur=h-20;
+                ctxFunc.beginPath();
+                ctxFunc.arc(xCur, yCur, 6, 0, 2*Math.PI);
+                ctxFunc.fillStyle = '#ffb347';
+                ctxFunc.shadowBlur = 4;
+                ctxFunc.fill();
+                ctxFunc.fillStyle = '#2d3e50';
+                ctxFunc.font = 'bold 10px';
+                ctxFunc.fillText("● 当前角", xCur+5, yCur-5);
+                ctxFunc.shadowBlur = 0;
+            }
+            ctxFunc.fillStyle = '#1f6392';
+            ctxFunc.font = 'bold 14px';
+            ctxFunc.fillText(currentFunc==='sin'?'y = sin x':(currentFunc==='cos'?'y = cos x':'y = tan x'), w-90, 28);
+            ctxFunc.restore();
+        }
+
+        function updateProperties() {
+            if(currentFunc === 'sin'){
+                funcPropDiv.innerHTML = `<strong>📌 正弦函数 y = sin x 的性质</strong>
+                <ul><li>定义域：R (全体实数)</li><li>值域：[-1, 1]</li><li>奇偶性：奇函数</li><li>周期：360° (2π)</li><li>锐角范围内：sinθ 从 0 递增到 1</li></ul>`;
+            } else if(currentFunc === 'cos'){
+                funcPropDiv.innerHTML = `<strong>📌 余弦函数 y = cos x 的性质</strong>
+                <ul><li>定义域：R</li><li>值域：[-1, 1]</li><li>奇偶性：偶函数</li><li>周期：360° (2π)</li><li>锐角范围内：cosθ 从 1 递减到 0</li></ul>`;
+            } else {
+                funcPropDiv.innerHTML = `<strong>📌 正切函数 y = tan x 的性质</strong>
+                <ul><li>定义域：{ x | x ≠ 90° + k·180° }</li><li>值域：R</li><li>奇偶性：奇函数</li><li>周期：180° (π)</li><li>锐角范围内：tanθ 从 0 递增到 +∞，有垂直渐近线</li></ul>`;
+            }
+        }
+
+        function refreshAll() {
+            updateTrigValues(currentAngleDeg);
+            drawUnitCircle(currentAngleDeg);
+            drawFunctionGraph();
+        }
+
+        // ---------- 解直角三角形 ----------
+        function generateRightTriangleProblem() {
+            const types = ['leg_angle_leg', 'hyp_leg_angle', 'two_legs_angle'];
+            const type = types[Math.floor(Math.random()*3)];
+            let angleA = Math.floor(Math.random()*50)+20;
+            let answer = 0;
+            let text = "";
+            if(type === 'leg_angle_leg'){
+                let givenSide = Math.floor(Math.random()*8)+3;
+                let which = Math.random()<0.5 ? '对边' : '邻边';
+                let rad = degToRad(angleA);
+                if(which === '对边'){
+                    answer = givenSide / Math.tan(rad);
+                    text = `Rt△ABC中，∠C=90°，∠A=${angleA}°，BC(对边)=${givenSide}，求AC(邻边)的长度？`;
+                } else {
+                    answer = givenSide * Math.tan(rad);
+                    text = `Rt△ABC中，∠C=90°，∠A=${angleA}°，AC(邻边)=${givenSide}，求BC(对边)的长度？`;
+                }
+            } else if(type === 'hyp_leg_angle'){
+                let hyp = Math.floor(Math.random()*12)+8;
+                let rad = degToRad(angleA);
+                let which = Math.random()<0.5 ? 'sin' : 'cos';
+                if(which === 'sin'){
+                    answer = hyp * Math.sin(rad);
+                    text = `Rt△ABC中，∠C=90°，斜边AB=${hyp}，∠A=${angleA}°，求对边BC的长度？`;
+                } else {
+                    answer = hyp * Math.cos(rad);
+                    text = `Rt△ABC中，∠C=90°，斜边AB=${hyp}，∠A=${angleA}°，求邻边AC的长度？`;
+                }
+            } else {
+                let leg1 = Math.floor(Math.random()*8)+4;
+                let leg2 = Math.floor(Math.random()*8)+4;
+                let rad = Math.atan2(leg1, leg2);
+                angleA = Math.round(rad*180/Math.PI);
+                answer = angleA;
+                text = `Rt△ABC中，∠C=90°，BC=${leg1}，AC=${leg2}，求∠A的度数(保留整数)？`;
+            }
+            answer = parseFloat(answer.toFixed(2));
+            currentRtSolution = { answer, tolerance: 0.3 };
+            rtProblemText.innerText = text;
+            rtFeedback.innerHTML = "✏️ 输入计算结果，点击验证（小数保留两位）";
+        }
+
+        function checkRightTriangle() {
+            let userVal = parseFloat(rtAnswerInput.value);
+            if(isNaN(userVal)){
+                rtFeedback.innerHTML = "⚠️ 请输入数字答案！";
+                return;
+            }
+            if(Math.abs(userVal - currentRtSolution.answer) <= currentRtSolution.tolerance){
+                rtFeedback.innerHTML = "✅ 正确！ 太棒了！ 点击新题目继续挑战~";
+            } else {
+                rtFeedback.innerHTML = `❌ 答案有误，正确答案约为 ${currentRtSolution.answer} ，再试试新题目吧。`;
+            }
+        }
+
+        // ---------- 实际应用（清晰图形，梯子+斜坡两种模型）----------
+        const appScenarios = [
+            { type: "ladder", angle: 60, dist: 4, answer: () => 4 / Math.cos(degToRad(60)), text: "梯子靠墙，与地面夹角60°，底端离墙脚4米，求梯子长度？" },
+            { type: "ladder", angle: 45, dist: 5, answer: () => 5 / Math.cos(degToRad(45)), text: "梯子靠墙，与地面夹角45°，底端离墙脚5米，求梯子长度？" },
+            { type: "ladder", angle: 30, dist: 6, answer: () => 6 / Math.cos(degToRad(30)), text: "梯子靠墙，与地面夹角30°，底端离墙脚6米，求梯子长度？" },
+            { type: "slope", angle: 25, horiz: 10, answer: () => 10 / Math.cos(degToRad(25)), text: "斜坡与水平面夹角25°，水平距离10米，求斜坡长度？" },
+            { type: "slope", angle: 35, horiz: 8, answer: () => 8 / Math.cos(degToRad(35)), text: "斜坡与水平面夹角35°，水平距离8米，求斜坡长度？" },
+            { type: "slope", angle: 40, horiz: 7, answer: () => 7 / Math.cos(degToRad(40)), text: "斜坡与水平面夹角40°，水平距离7米，求斜坡长度？" }
+        ];
+
+        function drawLadder(ctx, w, h, angle, dist, answerVal) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = "#fef7e0";
+            ctx.fillRect(0,0,w,h);
+            // 地面
+            ctx.beginPath();
+            ctx.moveTo(20, h-20);
+            ctx.lineTo(w-20, h-20);
+            ctx.strokeStyle = "#6b4c3b";
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            // 墙
+            const wallX = w-50;
+            ctx.beginPath();
+            ctx.moveTo(wallX, h-20);
+            ctx.lineTo(wallX, 25);
+            ctx.strokeStyle = "#5a6e7a";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            // 梯子
+            const baseX = 30 + dist * 7;
+            const topX = wallX;
+            const topY = h-20 - (dist * Math.tan(degToRad(angle))) * 7;
+            ctx.beginPath();
+            ctx.moveTo(baseX, h-20);
+            ctx.lineTo(topX, topY);
+            ctx.strokeStyle = "#d35400";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            // 标注
+            ctx.fillStyle = "#1e3c4a";
+            ctx.font = "bold 12px 'Segoe UI'";
+            ctx.fillText(`${angle}°`, (baseX+wallX)/2-15, h-35);
+            ctx.fillText(`${dist}米`, (baseX+wallX)/2, h-10);
+            ctx.fillStyle = "#c4450c";
+            ctx.font = "bold 13px";
+            ctx.fillText(`梯子≈${answerVal.toFixed(1)}米`, topX-55, topY-8);
+        }
+
+        function drawSlope(ctx, w, h, angle, horiz, answerVal) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = "#fef7e0";
+            ctx.fillRect(0,0,w,h);
+            const startX = 40, startY = h-20;
+            const endX = startX + horiz * 6.5;
+            const endY = startY - horiz * Math.tan(degToRad(angle)) * 6.5;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = "#e67e22";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            // 水平辅助线
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, startY);
+            ctx.setLineDash([6, 6]);
+            ctx.strokeStyle = "#95a5a6";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = "#1e3c4a";
+            ctx.font = "bold 12px";
+            ctx.fillText(`坡角${angle}°`, (startX+endX)/2-20, (startY+endY)/2-12);
+            ctx.fillText(`水平距${horiz}米`, (startX+endX)/2-15, startY-8);
+            ctx.fillStyle = "#c4450c";
+            ctx.fillText(`斜坡长≈${answerVal.toFixed(1)}米`, endX-55, endY-8);
+        }
+
+        function generateAppProblem() {
+            let idx = Math.floor(Math.random() * appScenarios.length);
+            let s = appScenarios[idx];
+            let ans = s.answer();
+            let ansVal = parseFloat(ans.toFixed(1));
+            currentAppSolution = { answer: ansVal, tolerance: 0.2 };
+            appProblemText.innerText = s.text;
+            // 根据类型绘图
+            if (s.type === "ladder") {
+                drawLadder(ctxApp, 300, 200, s.angle, s.dist, ansVal);
+            } else {
+                drawSlope(ctxApp, 300, 200, s.angle, s.horiz, ansVal);
+            }
+            appFeedback.innerHTML = "📐 根据图形，用三角函数求解~";
+        }
+
+        function checkAppProblem() {
+            let userVal = parseFloat(appAnswerInput.value);
+            if(isNaN(userVal)){
+                appFeedback.innerHTML = "🔢 请输入数值答案~";
+                return;
+            }
+            if(Math.abs(userVal - currentAppSolution.answer) <= currentAppSolution.tolerance){
+                appFeedback.innerHTML = "🎉 正确！ 应用解答正确！";
+            } else {
+                appFeedback.innerHTML = `📐 答案有误，正确答案约为 ${currentAppSolution.answer} ，再分析一下三角函数关系吧！`;
+            }
+        }
+
+        // ---------- 游戏 选择题库 ----------
+        const choiceBank = [
+            { text: "sin30° 的值是多少？", correct: "0.5", options: ["0.5", "0.866", "1", "0.707"] },
+            { text: "cos60° 等于？", correct: "0.5", options: ["0.5", "0.866", "1", "0"] },
+            { text: "tan45° 的值为？", correct: "1", options: ["0", "1", "0.5", "√3"] },
+            { text: "sin45° 的近似值是？", correct: "0.707", options: ["0.5", "0.866", "0.707", "1"] },
+            { text: "cos30° 约等于？", correct: "0.866", options: ["0.5", "0.866", "0.707", "1"] },
+            { text: "在Rt△中，∠A=30°，对边=4，斜边长为？", correct: "8", options: ["4", "8", "6.93", "5"] },
+            { text: "tan30° 的近似值是？", correct: "0.577", options: ["0.577", "0.866", "0.5", "1.732"] },
+            { text: "sin60° 的值是？", correct: "0.866", options: ["0.5", "0.866", "0.707", "1"] },
+            { text: "cos45° 等于？", correct: "0.707", options: ["0.5", "0.866", "0.707", "1"] },
+            { text: "Rt△中，∠A=60°，邻边=5，对边长度约为？", correct: "8.66", options: ["5", "8.66", "10", "2.5"] },
+            { text: "sin90° 的值？", correct: "1", options: ["0", "0.5", "1", "不存在"] },
+            { text: "tan60° 约等于？", correct: "1.732", options: ["1", "1.732", "0.577", "0.866"] }
+        ];
+
+        function generateGameQuestions() {
+            let shuffled = [...choiceBank];
+            for(let i=shuffled.length-1;i>0;i--){
+                const j = Math.floor(Math.random()*(i+1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            let selected = shuffled.slice(0,10);
+            return selected.map(q => {
+                let opts = [...q.options];
+                if(!opts.includes(q.correct)) opts.push(q.correct);
+                opts = opts.sort(() => Math.random() - 0.5);
+                return { text: q.text, options: opts, correct: q.correct };
+            });
+        }
+
+        function startGame() {
+            if(timerInterval) clearInterval(timerInterval);
+            gameQuestions = generateGameQuestions();
+            currentQIndex = 0;
+            currentScore = 0;
+            gameTotalSpan.innerText = gameQuestions.length;
+            gameScoreSpan.innerText = "0";
+            gameActive = true;
+            gameMsgDiv.innerHTML = "🎯 游戏进行中！每题10分，10秒限时，点击选项答题！";
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if(timerInterval) clearInterval(timerInterval);
+            if(!gameActive || currentQIndex >= gameQuestions.length){
+                endGame();
+                return;
+            }
+            const q = gameQuestions[currentQIndex];
+            gameQuestionDiv.innerHTML = `📌 第${currentQIndex+1}题：${q.text}`;
+            gameOptionsDiv.innerHTML = "";
+            q.options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if(!gameActive) return;
+                    if(timerInterval) clearInterval(timerInterval);
+                    if(opt === q.correct){
+                        currentScore += 10;
+                        gameScoreSpan.innerText = currentScore;
+                        gameMsgDiv.innerHTML = `✅ 正确！ +10分！ 答案: ${q.correct}`;
+                    } else {
+                        gameMsgDiv.innerHTML = `❌ 错误！ 正确答案是 ${q.correct}`;
+                    }
+                    nextQuestion();
+                };
+                gameOptionsDiv.appendChild(btn);
+            });
+            timeLeft = 10;
+            timerDisplaySpan.innerText = timeLeft;
+            timerInterval = setInterval(()=>{
+                if(!gameActive) return;
+                timeLeft--;
+                timerDisplaySpan.innerText = timeLeft>=0?timeLeft:0;
+                if(timeLeft < 0){
+                    clearInterval(timerInterval);
+                    gameMsgDiv.innerHTML = `⏰ 超时！ 正确答案: ${q.correct} 。进入下一题...`;
+                    nextQuestion();
+                }
+            },1000);
+        }
+
+        function nextQuestion(){
+            currentQIndex++;
+            if(currentQIndex < gameQuestions.length){
+                gameQIndexSpan.innerText = currentQIndex+1;
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame(){
+            if(timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            gameMsgDiv.innerHTML = `🏁 游戏结束！ 最终得分: ${currentScore} / ${gameQuestions.length*10} 分。点击【开始新游戏】继续挑战！`;
+            gameQuestionDiv.innerHTML = "🎉 恭喜完成挑战！ 点击「开始新游戏」再玩一局~";
+            gameOptionsDiv.innerHTML = "";
+            timerDisplaySpan.innerText = "0";
+            gameQIndexSpan.innerText = "0";
+        }
+
+        function restartGame() {
+            if(timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            gameQuestionDiv.innerHTML = "✨ 点击「开始游戏」按钮，挑战10道三角函数选择题！";
+            gameOptionsDiv.innerHTML = "";
+            gameScoreSpan.innerText = "0";
+            gameQIndexSpan.innerText = "0";
+            timerDisplaySpan.innerText = "0";
+            gameMsgDiv.innerHTML = "⏳ 每题10分，限时10秒，点击正确选项得分！";
+        }
+
+        // ---------- 事件绑定 ----------
+        angleSlider.addEventListener('input', (e)=>{
+            currentAngleDeg = parseInt(e.target.value);
+            angleSpan.innerText = currentAngleDeg;
+            refreshAll();
+        });
+        btnSin.addEventListener('click',()=>{ currentFunc='sin'; updateProperties(); refreshAll(); });
+        btnCos.addEventListener('click',()=>{ currentFunc='cos'; updateProperties(); refreshAll(); });
+        btnTan.addEventListener('click',()=>{ currentFunc='tan'; updateProperties(); refreshAll(); });
+        rtNewBtn.addEventListener('click',()=>{ generateRightTriangleProblem(); rtAnswerInput.value=""; rtFeedback.innerHTML="新题目已出！"; });
+        rtCheckBtn.addEventListener('click', checkRightTriangle);
+        appNewBtn.addEventListener('click',()=>{ generateAppProblem(); appAnswerInput.value=""; appFeedback.innerHTML="新实际情境，结合图形求解~"; });
+        appCheckBtn.addEventListener('click', checkAppProblem);
+        gameStartBtn.addEventListener('click', startGame);
+        gameRestartBtn.addEventListener('click', restartGame);
+
+        function init(){
+            currentAngleDeg = 32;
+            angleSlider.value = 32;
+            updateTrigValues(32);
+            drawUnitCircle(32);
+            currentFunc = 'sin';
+            updateProperties();
+            drawFunctionGraph();
+            generateRightTriangleProblem();
+            generateAppProblem();
+            restartGame();
+        }
+        init();
+    })();
+</script>
+</body>
+</html>

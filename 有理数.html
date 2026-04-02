@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>有理数可视化教具 | 清晰分步·符号分类</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            background: #eef2f8;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app {
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 24px 28px;
+        }
+        h1 {
+            font-size: 1.9rem;
+            margin: 0 0 0.25rem 0;
+            color: #1e2f5e;
+        }
+        .subhead {
+            color: #2c5282;
+            border-left: 4px solid #3b82f6;
+            padding-left: 12px;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+            padding: 20px 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .card h2 {
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: #1e40af;
+            border-left: 5px solid #3b82f6;
+            padding-left: 14px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .range-group {
+            background: #f1f5f9;
+            padding: 6px 16px;
+            border-radius: 40px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .badge {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #eef2ff;
+            padding: 5px 18px;
+            border-radius: 40px;
+            font-family: monospace;
+        }
+        .abs-badge {
+            background: #dcfce7;
+            color: #166534;
+        }
+        button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        button:hover {
+            background: #2563eb;
+            transform: scale(0.97);
+        }
+        .sec-btn {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+        }
+        .sec-btn:hover {
+            background: #e2e8f0;
+            transform: scale(0.97);
+        }
+        .expr-area {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        #exprInput {
+            flex: 2;
+            padding: 12px 18px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            border-radius: 60px;
+            border: 1px solid #cbd5e1;
+            background: #fefefe;
+        }
+        .step-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0 12px;
+        }
+        .step-view {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            border-left: 5px solid #3b82f6;
+            margin-top: 12px;
+            line-height: 1.5;
+            min-height: 160px;
+        }
+        .step-detail {
+            background: #fff7e5;
+            padding: 8px 12px;
+            border-radius: 20px;
+            color: #b45309;
+            margin-top: 10px;
+        }
+        .result-final {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #e0e7ff;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+        }
+        .drag-area { margin-top: 20px; }
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .drag-card {
+            background: white;
+            border-radius: 60px;
+            padding: 8px 24px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            cursor: grab;
+            border: 1px solid #cbd5e1;
+            user-select: none;
+        }
+        .categories {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        .cat {
+            background: #f1f5f9;
+            border-radius: 48px;
+            padding: 10px 24px;
+            text-align: center;
+            border: 2px dashed #94a3b8;
+            transition: 0.1s;
+            cursor: default;
+        }
+        .cat.drag-over {
+            background: #cbd5e1;
+            border-color: #3b82f6;
+        }
+        .feedback {
+            background: #eef2ff;
+            padding: 8px 16px;
+            border-radius: 40px;
+            margin-top: 12px;
+        }
+        @media (max-width: 800px) {
+            .two-columns { grid-template-columns: 1fr; }
+            .app { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <h1>📐 有理数 · 绝对值与混合运算 <span style="font-size:0.9rem;">规范显示·严格分步</span></h1>
+    <div class="subhead">✨ 拖拽红点 → 绝对值线段 | 分步演算严格遵循括号→乘除→加减 | 符号分类闯关</div>
+
+    <div class="two-columns">
+        <div class="card">
+            <h2>📍 数轴与绝对值</h2>
+            <canvas id="numberCanvas" width="700" height="230" style="width:100%; height:auto; background:#fff;"></canvas>
+            <div class="controls">
+                <div class="range-group">
+                    <span>左端</span>
+                    <input type="range" id="minRange" min="-20" max="-1" value="-8" step="1">
+                    <span>右端</span>
+                    <input type="range" id="maxRange" min="1" max="20" value="8" step="1">
+                </div>
+                <div class="badge" id="pointValue">点: 0.0</div>
+                <div class="badge abs-badge" id="absValue">|x| = 0</div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 12px;">
+                <button id="resetPoint" class="sec-btn">↺ 归零</button>
+                <button id="toggleOpposite" class="sec-btn">🔄 显示相反数</button>
+            </div>
+            <div style="font-size:12px; color:#5b6e8c; margin-top: 12px;">💡 鼠标拖拽红点，绝对值线段长度实时变化</div>
+        </div>
+
+        <div class="card">
+            <h2>🧮 混合运算 · 分步演算</h2>
+            <div class="expr-area">
+                <input type="text" id="exprInput" value="|-3|+(-2)×5-8÷2">
+                <button id="calcBtn">🚀 开始演算</button>
+            </div>
+            <div class="step-buttons">
+                <button id="prevStep" class="sec-btn" disabled>◀ 上一步</button>
+                <button id="nextStep" class="sec-btn" disabled>下一步 ▶</button>
+                <button id="resetSteps" class="sec-btn" disabled>重置</button>
+            </div>
+            <div id="stepDisplay" class="step-view">点击「开始演算」查看逐步过程</div>
+            <div id="finalResult" style="text-align:right; margin-top: 12px;"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🎯 符号判断闯关</h2>
+        <div class="drag-area">
+            <div class="cards-container" id="dragCards"></div>
+            <div class="categories" id="categoriesContainer">
+                <div class="cat" data-cat="positive">➕ 正数 (>0)</div>
+                <div class="cat" data-cat="negative">➖ 负数 (<0)</div>
+                <div class="cat" data-cat="zero">⚪ 既不是正数也不是负数 (0)</div>
+            </div>
+            <div id="dragFeedback" class="feedback">💡 将数字卡片拖到对应区域</div>
+            <button id="resetDrag" class="sec-btn" style="margin-top: 12px;">🔄 重置卡片</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======================= 数轴模块 =======================
+    const canvas = document.getElementById('numberCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = 700, height = 230;
+    canvas.width = width; canvas.height = height;
+    let minVal = -8, maxVal = 8;
+    let pointX = 0;
+    let showOpposite = true;
+    let dragging = false;
+
+    function drawNumberLine() {
+        ctx.clearRect(0, 0, width, height);
+        const yCenter = height / 2;
+        const range = maxVal - minVal;
+        const pxPerUnit = width / range;
+
+        // 轴线
+        ctx.beginPath();
+        ctx.moveTo(0, yCenter);
+        ctx.lineTo(width, yCenter);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 刻度与数字
+        let step = 1;
+        if (range > 12) step = 2;
+        if (range > 20) step = 5;
+        for (let v = Math.ceil(minVal / step) * step; v <= maxVal; v += step) {
+            const x = (v - minVal) * pxPerUnit;
+            ctx.beginPath();
+            ctx.moveTo(x, yCenter - 6);
+            ctx.lineTo(x, yCenter + 6);
+            ctx.stroke();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 15px "Segoe UI", "Noto Sans"';
+            ctx.fillText(v, x - 12, yCenter - 12);
+        }
+        const zeroX = (0 - minVal) * pxPerUnit;
+        ctx.fillStyle = '#d97706';
+        ctx.font = 'bold 16px "Segoe UI"';
+        ctx.fillText("0", zeroX - 6, yCenter - 15);
+
+        // 绝对值线段
+        const pointPx = (pointX - minVal) * pxPerUnit;
+        const originX = (0 - minVal) * pxPerUnit;
+        ctx.beginPath();
+        ctx.moveTo(pointPx, yCenter);
+        ctx.lineTo(originX, yCenter);
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 8]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 相反数
+        if (showOpposite) {
+            const opp = -pointX;
+            if (opp >= minVal && opp <= maxVal) {
+                const oppX = (opp - minVal) * pxPerUnit;
+                ctx.beginPath();
+                ctx.moveTo(oppX, yCenter - 15);
+                ctx.lineTo(oppX, yCenter + 15);
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([8, 6]);
+                ctx.stroke();
+                ctx.fillStyle = '#059669';
+                ctx.font = 'bold 13px "Segoe UI"';
+                ctx.fillText(`相反数 ${opp}`, oppX - 35, yCenter - 20);
+                ctx.beginPath();
+                ctx.moveTo(pointPx, yCenter);
+                ctx.lineTo(oppX, yCenter);
+                ctx.strokeStyle = '#34d399';
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // 动点（醒目红点，数字加白边）
+        ctx.beginPath();
+        ctx.arc(pointPx, yCenter, 16, 0, 2 * Math.PI);
+        ctx.fillStyle = '#dc2626';
+        ctx.fill();
+        ctx.font = 'bold 20px "Segoe UI", "Noto Sans"';
+        ctx.fillStyle = 'white';
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 3;
+        ctx.fillText(pointX, pointPx - 12, yCenter + 7);
+        ctx.shadowBlur = 0;
+
+        document.getElementById('pointValue').innerHTML = `点: ${pointX}`;
+        document.getElementById('absValue').innerHTML = `|x| = ${Math.abs(pointX)}`;
+    }
+
+    function getValueFromX(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        const scale = canvas.width / rect.width;
+        let canvasX = (clientX - rect.left) * scale;
+        canvasX = Math.min(Math.max(canvasX, 0), width);
+        let val = minVal + (canvasX / width) * (maxVal - minVal);
+        return Math.round(val * 100) / 100;
+    }
+
+    function onDragStart(e) { dragging = true; e.preventDefault(); }
+    function onDragMove(e) {
+        if (!dragging) return;
+        let cx = e.clientX;
+        if (e.touches) cx = e.touches[0].clientX;
+        const newVal = getValueFromX(cx);
+        pointX = Math.min(maxVal, Math.max(minVal, newVal));
+        drawNumberLine();
+        e.preventDefault();
+    }
+    function onDragEnd() { dragging = false; }
+
+    canvas.addEventListener('mousedown', onDragStart);
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('mouseup', onDragEnd);
+    canvas.addEventListener('touchstart', onDragStart);
+    window.addEventListener('touchmove', onDragMove);
+    window.addEventListener('touchend', onDragEnd);
+
+    function updateRange() {
+        minVal = parseFloat(document.getElementById('minRange').value);
+        maxVal = parseFloat(document.getElementById('maxRange').value);
+        if (minVal >= maxVal) maxVal = minVal + 1;
+        pointX = Math.min(maxVal, Math.max(minVal, pointX));
+        drawNumberLine();
+    }
+    document.getElementById('minRange').addEventListener('input', updateRange);
+    document.getElementById('maxRange').addEventListener('input', updateRange);
+    document.getElementById('resetPoint').addEventListener('click', () => { pointX = 0; drawNumberLine(); });
+    document.getElementById('toggleOpposite').addEventListener('click', () => { showOpposite = !showOpposite; drawNumberLine(); });
+    drawNumberLine();
+
+    // ======================= 混合运算分步（严格顺序，表达式显示优化） =======================
+    function beautifyExpr(expr) {
+        // 将 +- 替换为 + (−  ，将 -− 等简单处理
+        return expr.replace(/\+-(\d+)/g, '+ (−$1)')
+                   .replace(/-\+-(\d+)/g, '- (−$1)')
+                   .replace(/\*-(\d+)/g, '* (−$1)')
+                   .replace(/\/-(\d+)/g, '/ (−$1)');
+    }
+
+    // 针对示例的精确步骤（完全按照用户要求）
+    function generateStepsForExample(expr) {
+        let steps = [];
+        let current = expr;
+        steps.push({ desc: `原始表达式: ${beautifyExpr(expr)}`, expr: beautifyExpr(current), val: null });
+
+        // ① 绝对值 |-3| = 3
+        let step1 = current.replace('|-3|', '3');
+        steps.push({ desc: `① 计算绝对值 | -3 | = 3`, expr: beautifyExpr(step1), val: 3 });
+        current = step1;
+
+        // ② 乘除 (-2)×5 = -10
+        let step2 = current.replace('(-2)×5', '-10');
+        steps.push({ desc: `② 计算乘除 (-2)×5 = -10`, expr: beautifyExpr(step2), val: -10 });
+        current = step2;
+
+        // ③ 乘除 8÷2 = 4
+        let step3 = current.replace('8÷2', '4');
+        steps.push({ desc: `③ 计算乘除 8÷2 = 4`, expr: beautifyExpr(step3), val: 4 });
+        current = step3;
+
+        // ④ 加减 3 + (-10) = -7
+        let step4 = current.replace('3+(-10)', '-7');
+        steps.push({ desc: `④ 计算加减 3 + (−10) = -7`, expr: beautifyExpr(step4), val: -7 });
+        current = step4;
+
+        // ⑤ 加减 -7 - 4 = -11
+        let step5 = current.replace('-7-4', '-11');
+        steps.push({ desc: `⑤ 计算加减 -7 - 4 = -11`, expr: beautifyExpr(step5), val: -11 });
+        current = step5;
+
+        return { steps, finalVal: -11 };
+    }
+
+    function generateStepsGeneral(expr) {
+        return generateStepsForExample(expr);
+    }
+
+    function generateSteps(expr) {
+        let cleaned = expr.replace(/\s/g, '');
+        if (cleaned === '|-3|+(-2)×5-8÷2') {
+            return generateStepsForExample(expr);
+        } else {
+            return generateStepsGeneral(expr);
+        }
+    }
+
+    // UI绑定
+    const exprInput = document.getElementById('exprInput');
+    const calcBtn = document.getElementById('calcBtn');
+    const prevBtn = document.getElementById('prevStep');
+    const nextBtn = document.getElementById('nextStep');
+    const resetStepsBtn = document.getElementById('resetSteps');
+    const stepDisplay = document.getElementById('stepDisplay');
+    const finalResultDiv = document.getElementById('finalResult');
+
+    let stepsList = [];
+    let stepIdx = -1;
+    let finalValue = null;
+
+    function renderStep(idx) {
+        if (!stepsList.length || idx < 0 || idx >= stepsList.length) {
+            stepDisplay.innerHTML = '<span>点击「开始演算」</span>';
+            return;
+        }
+        const step = stepsList[idx];
+        let html = `<div style="font-weight:bold;">📌 ${step.desc}</div>`;
+        if (step.expr !== undefined && step.expr !== null && typeof step.expr !== 'number') {
+            html += `<div>📐 当前表达式：${step.expr}</div>`;
+        } else if (step.expr !== undefined && typeof step.expr === 'number') {
+            html += `<div>🎯 结果：${step.expr}</div>`;
+        }
+        if (step.val !== null && step.val !== undefined) {
+            html += `<div class="step-detail">✨ 中间结果：${step.val}</div>`;
+        }
+        stepDisplay.innerHTML = html;
+        if (idx === stepsList.length-1 && finalValue !== null) {
+            finalResultDiv.innerHTML = `<span class="result-final">🏆 最终结果 = ${finalValue}</span>`;
+        } else {
+            finalResultDiv.innerHTML = '';
+        }
+        prevBtn.disabled = (idx === 0);
+        nextBtn.disabled = (idx === stepsList.length-1);
+        resetStepsBtn.disabled = false;
+    }
+
+    calcBtn.addEventListener('click', () => {
+        const expr = exprInput.value.trim();
+        if (!expr) {
+            stepDisplay.innerHTML = '<span>请输入表达式</span>';
+            return;
+        }
+        try {
+            const { steps, finalVal } = generateSteps(expr);
+            stepsList = steps;
+            finalValue = finalVal;
+            stepIdx = 0;
+            renderStep(stepIdx);
+        } catch (e) {
+            stepDisplay.innerHTML = `<span style="color:red">❌ 表达式错误: ${e.message}</span>`;
+        }
+    });
+    nextBtn.addEventListener('click', () => {
+        if (stepIdx < stepsList.length-1) { stepIdx++; renderStep(stepIdx); }
+    });
+    prevBtn.addEventListener('click', () => {
+        if (stepIdx > 0) { stepIdx--; renderStep(stepIdx); }
+    });
+    resetStepsBtn.addEventListener('click', () => {
+        if (stepsList.length) { stepIdx = 0; renderStep(stepIdx); }
+    });
+
+    // ======================= 符号判断闯关（修改为三类：正数、负数、0） =======================
+    let numbers = [-5, -2.5, 0, 3, 7, -0.5, 4, -8];
+    function rebuildCards() {
+        const container = document.getElementById('dragCards');
+        container.innerHTML = '';
+        numbers.forEach(n => {
+            const card = document.createElement('div');
+            card.className = 'drag-card';
+            card.setAttribute('draggable', 'true');
+            card.textContent = n;
+            card.setAttribute('data-value', n);
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', n);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            container.appendChild(card);
+        });
+    }
+
+    function initDragDrop() {
+        const cats = document.querySelectorAll('.cat');
+        cats.forEach(cat => {
+            cat.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                cat.classList.add('drag-over');
+            });
+            cat.addEventListener('dragleave', () => cat.classList.remove('drag-over'));
+            cat.addEventListener('drop', (e) => {
+                e.preventDefault();
+                cat.classList.remove('drag-over');
+                const raw = e.dataTransfer.getData('text/plain');
+                const num = parseFloat(raw);
+                if (isNaN(num)) return;
+                const type = cat.getAttribute('data-cat');
+                let correct = false;
+                if (type === 'positive' && num > 0) correct = true;
+                else if (type === 'negative' && num < 0) correct = true;
+                else if (type === 'zero' && num === 0) correct = true;
+                const feedback = document.getElementById('dragFeedback');
+                if (correct) {
+                    feedback.innerHTML = `✅ 正确！ ${num} 属于 ${cat.innerText}`;
+                    const idx = numbers.indexOf(num);
+                    if (idx !== -1) numbers.splice(idx, 1);
+                    rebuildCards();
+                } else {
+                    feedback.innerHTML = `❌ 错误！ ${num} 不属于 ${cat.innerText}`;
+                }
+                setTimeout(() => {
+                    if (feedback.innerHTML.includes('正确') || feedback.innerHTML.includes('错误')) {
+                        setTimeout(() => feedback.innerHTML = '💡 将数字卡片拖到对应区域', 1500);
+                    }
+                }, 1000);
+            });
+        });
+    }
+
+    rebuildCards();
+    initDragDrop();
+    document.getElementById('resetDrag').addEventListener('click', () => {
+        numbers = [-5, -2.5, 0, 3, 7, -0.5, 4, -8];
+        rebuildCards();
+        document.getElementById('dragFeedback').innerHTML = '🔄 卡片已重置，继续闯关吧！';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>勾股定理 · 未来实验室 | 超大范围动态验证 + 多元挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #03071e, #000000);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Orbitron', 'Poppins', 'Rajdhani', monospace;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .dashboard {
+            max-width: 1800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hologram-card {
+            background: rgba(8, 20, 40, 0.45);
+            backdrop-filter: blur(4px);
+            border-radius: 2rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+        }
+
+        .top-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .demo-area {
+            flex: 2;
+            min-width: 700px;
+        }
+
+        .right-area {
+            flex: 1.2;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #aaffff, #2a6fdb, #aa44ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 12px rgba(0,255,255,0.6);
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h1 small {
+            font-size: 0.65rem;
+            background: rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: #7df9ff;
+            border: 1px solid cyan;
+        }
+
+        .sub {
+            color: #7df0ff;
+            margin-bottom: 0.8rem;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            border-bottom: 1px dashed cyan;
+            display: inline-block;
+            padding-bottom: 4px;
+        }
+
+        .formula-card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid cyan;
+            border-radius: 2rem;
+            padding: 10px;
+            margin-bottom: 12px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+        .formula-card .big-formula {
+            font-size: 1.8rem;
+            font-family: 'Orbitron', monospace;
+            color: #ffffff;
+            text-shadow: 0 0 8px cyan;
+            letter-spacing: 2px;
+        }
+        .formula-card .current-values {
+            font-size: 1rem;
+            color: #bbffff;
+            margin-top: 5px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #010614;
+            border-radius: 24px;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+            border: 1px solid rgba(0, 255, 255, 0.6);
+        }
+
+        .controls {
+            margin-top: 16px;
+            background: rgba(12, 25, 45, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 0.8rem 1rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+        }
+
+        .slider-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .slider-item {
+            flex: 1;
+            min-width: 220px;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 6px 12px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid cyan;
+        }
+
+        .slider-item label {
+            font-weight: 600;
+            color: #aaffff;
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+
+        .slider-item span {
+            font-family: 'Orbitron', monospace;
+            background: #0a1a2f;
+            color: cyan;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            border: 1px solid cyan;
+        }
+
+        input[type="range"] {
+            width: 180px;
+            margin: 0 5px;
+            vertical-align: middle;
+            cursor: pointer;
+            background: #0a2a3a;
+            height: 4px;
+            border-radius: 5px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 16px;
+            height: 16px;
+            background: cyan;
+            border-radius: 50%;
+            box-shadow: 0 0 10px cyan;
+            border: 1px solid white;
+        }
+
+        .verify-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 12px;
+            border: 1px solid #ffaa33;
+            text-align: center;
+        }
+        .verify-card h3 {
+            color: #ffaa66;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #ffaa33;
+            display: inline-block;
+        }
+        .verify-canvas {
+            background: #010614;
+            border-radius: 16px;
+            margin: 8px auto;
+            width: 100%;
+            max-width: 260px;
+            display: block;
+            box-shadow: 0 0 12px #ffaa33;
+        }
+        .verify-equation {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #aaffaa;
+            margin-top: 8px;
+            background: #00000066;
+            padding: 6px;
+            border-radius: 20px;
+        }
+
+        .knowledge-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 12px;
+            border: 1px solid #44ffaa;
+            text-align: center;
+        }
+        .knowledge-card h3 {
+            color: #44ffaa;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #44ffaa;
+            display: inline-block;
+        }
+        .quiz-box {
+            background: #021a2a;
+            border-radius: 1rem;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            color: #ccf;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .quiz-option {
+            background: #0a1a2f;
+            padding: 6px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #44ffaa;
+        }
+        .quiz-option:hover {
+            background: #44ffaa;
+            color: black;
+            transform: scale(1.02);
+        }
+        .quiz-feedback {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #aaffaa;
+        }
+        .quiz-btn {
+            background: linear-gradient(45deg, #1f3a5f, #0a1a2f);
+            border: 1px solid #44ffaa;
+            padding: 6px 16px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        .quiz-btn:hover {
+            background: #44ffaa;
+            color: black;
+        }
+
+        .game-panel {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1.8rem;
+            padding: 1rem;
+            border: 1px solid #ff44cc;
+        }
+        .game-panel h3 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 0 0 5px #ff44cc;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+        .game-stats {
+            display: flex;
+            gap: 15px;
+            background: #0a0f2acc;
+            padding: 6px 15px;
+            border-radius: 40px;
+            font-family: 'Orbitron';
+            font-size: 0.8rem;
+            color: white;
+        }
+        .game-question-area {
+            background: #021a2a;
+            padding: 15px;
+            border-radius: 28px;
+            margin: 12px 0;
+            border: 1px solid #ff44cc;
+            text-align: center;
+        }
+        .game-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        .game-question-text {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: white;
+        }
+        .game-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .game-option {
+            background: #0a1a2f;
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            border: 1px solid #ff44cc;
+            transition: 0.2s;
+            color: white;
+        }
+        .game-option:hover {
+            background: #ff44cc;
+            color: black;
+        }
+        .game-feedback {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            min-height: 40px;
+            color: #ffaa66;
+        }
+        .game-btn {
+            background: linear-gradient(45deg, #1f3a5f, #0a1a2f);
+            border: 1px solid #ff44cc;
+            padding: 6px 20px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .game-btn:hover {
+            background: #ff44cc;
+            color: black;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 12px;
+            font-size: 0.65rem;
+            flex-wrap: wrap;
+        }
+        .color-badge {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 12px;
+            color: #5f9fff;
+        }
+        .innovate-badge {
+            background: linear-gradient(45deg, #ff44cc, #44ffaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+        }
+        @media (max-width: 1200px) {
+            .top-row { flex-direction: column; }
+            .demo-area { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="hologram-card">
+        <div class="container">
+            <h1>
+                ⚡ 勾股定理 · 未来实验室 ⚡
+                <small>a² + b² = c²</small>
+            </h1>
+            <div class="sub">✦ 超大范围动态几何 | 弦图验证 | 知识擂台 | 特工挑战 ✦</div>
+        </div>
+    </div>
+
+    <div class="top-row">
+        <!-- 左侧主演示区 - 画布增大，中心点调整，确保a,b最大250时完全可见 -->
+        <div class="demo-area hologram-card">
+            <div class="formula-card">
+                <div class="big-formula" id="bigFormula">a² + b² = c²</div>
+                <div class="current-values" id="currentValues">当前: a = 90, b = 120, c = 150.00</div>
+            </div>
+            <canvas id="pythagorasCanvas" width="1400" height="950" style="width:100%; height:auto; max-width:1400px; aspect-ratio:1400/950"></canvas>
+            <div class="controls">
+                <div class="slider-group">
+                    <div class="slider-item">
+                        <label>🔷 直角边 a (水平)</label>
+                        <input type="range" id="sliderA" min="20" max="250" step="1" value="90">
+                        <span id="valueA">90</span>
+                    </div>
+                    <div class="slider-item">
+                        <label>🔶 直角边 b (垂直)</label>
+                        <input type="range" id="sliderB" min="20" max="250" step="1" value="120">
+                        <span id="valueB">120</span>
+                    </div>
+                </div>
+                <div class="legend">
+                    <div><div class="color-badge" style="background: #0ff88a;"></div> a² 能量方阵</div>
+                    <div><div class="color-badge" style="background: #ff44cc;"></div> b² 能量方阵</div>
+                    <div><div class="color-badge" style="background: #3a86ff;"></div> c² 完美正方形</div>
+                    <div><div class="color-badge" style="background: #ffaa33;"></div> 全息三角</div>
+                </div>
+                <div style="font-size:0.7rem; color:#7df9ff; margin-top:6px;">💡 <span class="innovate-badge">创新亮点</span>：动态粒子流、实时面积可视化、弦图割补验证、实际应用题库，直角边范围20~250，图形完全居中不溢出</div>
+            </div>
+        </div>
+
+        <!-- 右侧区域：动态验证 + 知识擂台 + 游戏 -->
+        <div class="right-area">
+            <div class="verify-card">
+                <h3>🔬 勾股定理验证 · 赵爽弦图 🔬</h3>
+                <canvas id="verifyCanvas" width="260" height="260" class="verify-canvas" style="width:100%; max-width:260px; aspect-ratio:1/1;"></canvas>
+                <div class="verify-equation" id="verifyEquation">加载中...</div>
+                <div style="font-size:0.65rem; color:#ccc; margin-top:6px;">大正方形 = (a+b)² = a²+b²+2ab，减去4个直角三角形(2ab)得中央小正方形c² → a²+b²=c²</div>
+            </div>
+            
+            <div class="knowledge-card">
+                <h3>📚 勾股知识擂台 · 实际应用篇 📚</h3>
+                <div id="knowledgeQuiz" class="quiz-box">
+                    <div class="quiz-question" id="quizQuestion">加载中...</div>
+                    <div id="quizOptions" class="quiz-options"></div>
+                    <div class="quiz-feedback" id="quizFeedback"></div>
+                    <div class="quiz-btn" id="nextQuizBtn">🎲 下一题</div>
+                </div>
+            </div>
+            
+            <div class="game-panel">
+                <h3>🕵️ 定理特工队 · 限时挑战 🕵️</h3>
+                <div class="game-header">
+                    <div class="game-stats">
+                        <span>🏆 积分: <span id="gameScore">0</span></span>
+                        <span>⏱️ 剩余: <span id="gameTimer">50</span>s</span>
+                        <span>💥 失误: <span id="gameMistakes">0</span>/3</span>
+                    </div>
+                    <div class="game-btn" id="startGameBtn" style="background:#2a6f5c;">▶ 开始任务</div>
+                </div>
+                <div class="game-question-area" id="gameQuestionArea">
+                    <div class="game-icon">🔍</div>
+                    <div class="game-question-text" id="gameQuestionText">点击「开始任务」启动挑战</div>
+                    <div id="gameOptions" class="game-options"></div>
+                    <div class="game-feedback" id="gameFeedbackMsg"></div>
+                </div>
+                <div class="game-btn" id="resetGameBtn" style="background:#2a6f5c;">🔄 重置游戏</div>
+            </div>
+        </div>
+    </div>
+    <footer>⭐ <span class="innovate-badge">创新突破</span>：相比传统软件，本系统集成科幻视觉、粒子流、动态几何、弦图割补验证、实际应用擂台、限时游戏，且直角边范围扩大至20~250，画布充分容纳，图形始终居中完整显示 ⭐</footer>
+</div>
+
+<script>
+    (function(){
+        // ======================= 主画布（超大画布，中心点精确计算，确保a,b最大250时完全不溢出）=======================
+        const canvas = document.getElementById('pythagorasCanvas');
+        const ctx = canvas.getContext('2d');
+        // 画布尺寸 1400x950，中心点 (700, 650) 留出足够边距
+        // 最大边长250，斜边最大≈353，向外延伸后最大坐标约为 700+250+353 = 1303，小于1400；上边界 650-250-353=47>0；安全
+        const CX = 700;
+        const CY = 650;
+        let a = 90, b = 120;
+        
+        const sliderA = document.getElementById('sliderA');
+        const sliderB = document.getElementById('sliderB');
+        const spanA = document.getElementById('valueA');
+        const spanB = document.getElementById('valueB');
+        const bigFormulaSpan = document.getElementById('bigFormula');
+        const currentValuesSpan = document.getElementById('currentValues');
+        
+        let particles = [];
+        
+        function computeHypotenuse() { return Math.sqrt(a*a + b*b); }
+        function updateFormula() {
+            const c = computeHypotenuse();
+            const aSq = a*a, bSq = b*b, cSq = c*c;
+            bigFormulaSpan.innerHTML = `${a}² + ${b}² = ${c.toFixed(2)}²`;
+            currentValuesSpan.innerHTML = `当前: a = ${a}, b = ${b}, c = ${c.toFixed(2)}`;
+        }
+        
+        function initParticles() {
+            particles = [];
+            for(let i=0;i<70;i++) {
+                particles.push({
+                    progress: Math.random(),
+                    speed: 0.004 + Math.random()*0.01,
+                    type: Math.random()>0.5?'a':'b',
+                    offsetX: Math.random()*0.8+0.1,
+                    offsetY: Math.random()*0.8+0.1,
+                    glow: 0.5+Math.random()*0.5
+                });
+            }
+        }
+        
+        function getAPoint(ratioX, ratioY) { return { x: CX + ratioX*a, y: CY + ratioY*a }; }
+        function getBPoint(ratioX, ratioY) { return { x: CX - b + ratioX*b, y: CY - b + ratioY*b }; }
+        
+        function getHypotenuseSquarePoints() {
+            const A = { x: CX + a, y: CY };
+            const B = { x: CX, y: CY - b };
+            const cLen = computeHypotenuse();
+            const AB = { x: B.x - A.x, y: B.y - A.y };
+            const C = { x: CX, y: CY };
+            const mid = { x: (A.x + B.x)/2, y: (A.y + B.y)/2 };
+            const dir = { x: mid.x - C.x, y: mid.y - C.y };
+            const lenDir = Math.hypot(dir.x, dir.y);
+            if (lenDir < 1e-5) return null;
+            const outward = { x: dir.x / lenDir, y: dir.y / lenDir };
+            const perp = { x: -AB.y, y: AB.x };
+            const perpLen = Math.hypot(perp.x, perp.y);
+            if (perpLen < 1e-5) return null;
+            const unitPerp = { x: perp.x / perpLen, y: perp.y / perpLen };
+            const dot = outward.x * unitPerp.x + outward.y * unitPerp.y;
+            const finalNormal = dot > 0 ? unitPerp : { x: -unitPerp.x, y: -unitPerp.y };
+            const P2 = { x: B.x + finalNormal.x * cLen, y: B.y + finalNormal.y * cLen };
+            const P3 = { x: A.x + finalNormal.x * cLen, y: A.y + finalNormal.y * cLen };
+            return { A, B, P2, P3 };
+        }
+        
+        function drawNeonSquare(x,y,side,color1,color2,label,value) {
+            ctx.shadowBlur=12; ctx.shadowColor=color1;
+            const grad=ctx.createLinearGradient(x,y,x+side*0.3,y+side*0.7);
+            grad.addColorStop(0,color1); grad.addColorStop(1,color2);
+            ctx.fillStyle=grad; ctx.fillRect(x,y,side,side);
+            ctx.strokeStyle="#ffffffcc"; ctx.lineWidth=1.5; ctx.strokeRect(x+2,y+2,side-4,side-4);
+            ctx.strokeStyle="cyan"; ctx.strokeRect(x,y,side,side);
+            ctx.font="bold 16px 'Orbitron'"; ctx.fillStyle="#eef5ff";
+            ctx.fillText(`${value}`, x+side/2-15, y+side/2+6);
+            ctx.font="10px 'Orbitron'"; ctx.fillStyle="#bbffff"; ctx.fillText(label, x+side/2-12, y+side+14);
+            ctx.shadowBlur=0;
+        }
+        
+        function drawSciFiBackground() {
+            const grad = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+            grad.addColorStop(0,'#010a1a'); grad.addColorStop(1,'#021a2a');
+            ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.strokeStyle = "rgba(0,255,255,0.15)"; ctx.lineWidth=0.5;
+            for(let i=0;i<canvas.width;i+=40) {
+                ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke();
+            }
+        }
+        
+        function drawMain() {
+            if(!ctx) return;
+            drawSciFiBackground();
+            const cLen=computeHypotenuse(), aSq=a*a, bSq=b*b, cSq=cLen*cLen;
+            const C={x:CX,y:CY}, A={x:CX+a,y:CY}, B={x:CX,y:CY-b};
+            
+            drawNeonSquare(CX,CY,a,"#0affaa","#1e6f5c","a²",aSq);
+            drawNeonSquare(CX-b,CY-b,b,"#ff44cc","#aa2e6e","b²",bSq);
+            
+            const square = getHypotenuseSquarePoints();
+            if (square) {
+                ctx.beginPath();
+                ctx.moveTo(square.A.x, square.A.y);
+                ctx.lineTo(square.B.x, square.B.y);
+                ctx.lineTo(square.P2.x, square.P2.y);
+                ctx.lineTo(square.P3.x, square.P3.y);
+                ctx.closePath();
+                ctx.fillStyle="#3a86ffcc";
+                ctx.fill();
+                ctx.strokeStyle="#ffffffaa";
+                ctx.lineWidth=2;
+                ctx.stroke();
+                const centerX = (square.A.x + square.B.x + square.P2.x + square.P3.x)/4;
+                const centerY = (square.A.y + square.B.y + square.P2.y + square.P3.y)/4;
+                ctx.font="bold 18px 'Orbitron'"; ctx.fillStyle="#ffffff";
+                ctx.fillText(`${Math.round(cSq)}`, centerX-18, centerY+8);
+                ctx.font="10px monospace"; ctx.fillStyle="cyan";
+                ctx.fillText(`c² = ${cSq.toFixed(1)}`, centerX-24, centerY+28);
+            }
+            
+            ctx.beginPath(); ctx.moveTo(C.x,C.y); ctx.lineTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.closePath();
+            ctx.fillStyle="#ffaa33aa"; ctx.fill(); ctx.strokeStyle="#ffcc44"; ctx.lineWidth=2.5; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(C.x,C.y); ctx.lineTo(C.x+12,C.y); ctx.lineTo(C.x+12,C.y-12); ctx.lineTo(C.x,C.y-12); ctx.fillStyle="rgba(255,200,0,0.8)"; ctx.fill();
+            ctx.font="bold 14px 'Rajdhani'"; ctx.fillStyle="#bbffff"; ctx.fillText("C",C.x-12,C.y+6); ctx.fillText("A",A.x+10,A.y+4); ctx.fillText("B",B.x-12,B.y-6);
+            ctx.font="12px 'Orbitron'"; ctx.fillStyle="#6effff"; ctx.fillText(`a = ${a}`, (C.x+A.x)/2-10, CY+18); ctx.fillText(`b = ${b}`, CX-28, (C.y+B.y)/2);
+            
+            for(let p of particles) {
+                p.progress += p.speed;
+                if(p.progress>=1) { p.progress=0; p.type = Math.random()>0.5?'a':'b'; }
+                let start, end;
+                if(p.type==='a') start=getAPoint(p.offsetX,p.offsetY);
+                else start=getBPoint(p.offsetX,p.offsetY);
+                if(square) {
+                    const t=p.progress;
+                    const endX = square.A.x*(1-t) + square.P3.x*t;
+                    const endY = square.A.y*(1-t) + square.P3.y*t;
+                    const curX=start.x*(1-t)+endX*t, curY=start.y*(1-t)+endY*t;
+                    const rad=2.5+Math.sin(Date.now()*0.008+p.glow*8)*1;
+                    const grad=ctx.createRadialGradient(curX,curY,0,curX,curY,rad);
+                    grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.6,p.type==='a'?'#0affaa':'#ff66cc');
+                    ctx.fillStyle=grad; ctx.shadowBlur=8; ctx.beginPath(); ctx.arc(curX,curY,rad,0,Math.PI*2); ctx.fill();
+                }
+            }
+            ctx.shadowBlur=0;
+        }
+        
+        // ======================= 动态验证模块：赵爽弦图（自适应缩放）=======================
+        const verifyCanvas = document.getElementById('verifyCanvas');
+        const vCtx = verifyCanvas.getContext('2d');
+        function drawZhaoShuang() {
+            if(!vCtx) return;
+            const size = 260;
+            vCtx.clearRect(0,0,size,size);
+            vCtx.fillStyle="#010614"; vCtx.fillRect(0,0,size,size);
+            // 动态缩放，使图形适应画布，最大边长按比例压缩
+            const maxSide = Math.max(a,b, computeHypotenuse());
+            const scale = Math.min(100 / maxSide, 1.0);
+            const aShow = a * scale;
+            const bShow = b * scale;
+            const bigSide = aShow + bShow;
+            const centerX = 130, centerY = 130;
+            const leftTopX = centerX - bigSide/2;
+            const leftTopY = centerY - bigSide/2;
+            
+            vCtx.fillStyle = "#0a1a3faa"; vCtx.fillRect(leftTopX, leftTopY, bigSide, bigSide);
+            vCtx.strokeStyle = "#ffaa66"; vCtx.lineWidth=1.5; vCtx.strokeRect(leftTopX, leftTopY, bigSide, bigSide);
+            
+            vCtx.fillStyle = `rgba(255, 170, 51, 0.65)`;
+            // 左下
+            vCtx.beginPath(); vCtx.moveTo(leftTopX, leftTopY+bigSide); vCtx.lineTo(leftTopX+aShow, leftTopY+bigSide); vCtx.lineTo(leftTopX, leftTopY+bigSide-bShow); vCtx.fill();
+            // 右下
+            vCtx.beginPath(); vCtx.moveTo(leftTopX+bigSide, leftTopY); vCtx.lineTo(leftTopX+bigSide-bShow, leftTopY); vCtx.lineTo(leftTopX+bigSide, leftTopY+aShow); vCtx.fill();
+            // 右上
+            vCtx.beginPath(); vCtx.moveTo(leftTopX+bigSide, leftTopY+bigSide); vCtx.lineTo(leftTopX+bigSide-aShow, leftTopY+bigSide); vCtx.lineTo(leftTopX+bigSide, leftTopY+bigSide-bShow); vCtx.fill();
+            // 左上
+            vCtx.beginPath(); vCtx.moveTo(leftTopX, leftTopY); vCtx.lineTo(leftTopX+bShow, leftTopY); vCtx.lineTo(leftTopX, leftTopY+aShow); vCtx.fill();
+            
+            const smallX = leftTopX + aShow;
+            const smallY = leftTopY + bShow;
+            const smallSide = bigSide - aShow - bShow;
+            const time = Date.now() * 0.005;
+            const glow = 0.6 + Math.sin(time) * 0.3;
+            vCtx.fillStyle = `rgba(58, 134, 255, ${glow})`;
+            vCtx.fillRect(smallX, smallY, smallSide, smallSide);
+            vCtx.strokeStyle = "white"; vCtx.strokeRect(smallX, smallY, smallSide, smallSide);
+            vCtx.font = "bold 14px 'Orbitron'"; vCtx.fillStyle = "#ffffff";
+            vCtx.fillText("c²", smallX+smallSide/2-12, smallY+smallSide/2+6);
+            
+            vCtx.font = "10px monospace"; vCtx.fillStyle = "#ffaa66";
+            vCtx.fillText(`a = ${a}`, leftTopX + aShow/2 - 10, leftTopY+bigSide+12);
+            vCtx.fillText(`b = ${b}`, leftTopX - 28, leftTopY + bShow/2);
+            
+            const aSq = a*a, bSq = b*b, cSq = computeHypotenuse()**2;
+            document.getElementById('verifyEquation').innerHTML = `✨ 大正方形 = (${a}+${b})² = ${(a+b)*(a+b)} &nbsp;|&nbsp; 4个三角形面积 = 2ab = ${2*a*b} &nbsp;|&nbsp; c² = ${cSq.toFixed(1)} → ${a}² + ${b}² = ${cSq.toFixed(1)} ✅`;
+        }
+        
+        function animateVerify() {
+            drawZhaoShuang();
+            requestAnimationFrame(animateVerify);
+        }
+        
+        // ======================= 知识擂台 =======================
+        const knowledgeQuestions = [
+            { type: "choice", text: "🏗️ 斜拉桥桥塔高42米，桥面锚点距塔基水平56米，钢缆长度？", options: ["70米", "98米", "84米", "65米"], answer: 0, explanation: "√(42²+56²)=70米" },
+            { type: "choice", text: "📺 电视塔高120米，地面缆车站距塔基50米，索道长度？", options: ["170米", "130米", "150米", "110米"], answer: 1, explanation: "√(120²+50²)=130米" },
+            { type: "choice", text: "⚽ 足球场长105米，宽68米，对角线约？", options: ["125米", "173米", "98米", "140米"], answer: 0, explanation: "√(105²+68²)≈125米" },
+            { type: "choice", text: "🪜 梯子底端离墙2.5米，顶端离地6米，梯长？", options: ["8.5米", "6.5米", "7米", "5.5米"], answer: 1, explanation: "√(2.5²+6²)=6.5米" },
+            { type: "choice", text: "🎈 风筝线长50米，水平距离30米，高度？", options: ["40米", "35米", "45米", "30米"], answer: 0, explanation: "√(50²-30²)=40米" },
+            { type: "choice", text: "🚢 船向东40海里，向北30海里，离起点？", options: ["70海里", "50海里", "60海里", "45海里"], answer: 1, explanation: "√(40²+30²)=50海里" },
+            { type: "choice", text: "下列哪组是勾股数？", options: ["(2,3,4)", "(5,12,13)", "(1,2,3)", "(4,5,6)"], answer: 1, explanation: "5²+12²=13²" },
+            { type: "judge", text: "判断：直角三角形两条直角边平方和等于斜边平方。", options: ["正确", "错误"], answer: 0, explanation: "勾股定理标准表述" },
+            { type: "choice", text: "直角边6和8，斜边？", options: ["10", "14", "12", "9"], answer: 0, explanation: "√(36+64)=10" },
+            { type: "fill", text: "勾股定理公式：a² + b² = ______", options: ["c²", "a+b", "ab"], answer: 0, explanation: "c²" },
+            { type: "choice", text: "中国古代最早记载勾股定理的著作？", options: ["《九章算术》", "《周髀算经》", "《几何原本》", "《孙子算经》"], answer: 1, explanation: "《周髀算经》勾三股四弦五" }
+        ];
+        let currentKIndex = 0;
+        function loadKnowledgeQuiz(index) {
+            const q = knowledgeQuestions[index % knowledgeQuestions.length];
+            document.getElementById('quizQuestion').innerHTML = q.text;
+            const optsDiv = document.getElementById('quizOptions');
+            optsDiv.innerHTML = '';
+            if (q.type === 'choice' || q.type === 'judge') {
+                q.options.forEach((opt, i) => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'quiz-option';
+                    optDiv.innerHTML = opt;
+                    optDiv.onclick = () => checkKnowledgeAnswer(i, q);
+                    optsDiv.appendChild(optDiv);
+                });
+            } else if (q.type === 'fill') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = '输入答案...';
+                input.style.width = '80%';
+                input.style.padding = '6px';
+                input.style.borderRadius = '20px';
+                input.style.border = '1px solid cyan';
+                input.style.background = '#010a1a';
+                input.style.color = '#0ff';
+                input.id = 'fillInput';
+                const submitBtn = document.createElement('div');
+                submitBtn.className = 'quiz-btn';
+                submitBtn.innerHTML = '提交答案';
+                submitBtn.style.marginTop = '10px';
+                submitBtn.onclick = () => {
+                    const val = document.getElementById('fillInput').value.trim();
+                    let isCorrect = false;
+                    if (q.answer === 0 && (val === 'c²' || val === 'c^2' || val === 'c平方')) isCorrect = true;
+                    else if (val.toLowerCase() === q.options[q.answer].toLowerCase()) isCorrect = true;
+                    if (isCorrect) {
+                        document.getElementById('quizFeedback').innerHTML = `✅ 正确！ ${q.explanation}`;
+                    } else {
+                        document.getElementById('quizFeedback').innerHTML = `❌ 错误。正确答案是 ${q.options[q.answer]}。 ${q.explanation}`;
+                    }
+                };
+                optsDiv.appendChild(input);
+                optsDiv.appendChild(submitBtn);
+            }
+            document.getElementById('quizFeedback').innerHTML = '';
+        }
+        function checkKnowledgeAnswer(selected, q) {
+            const isCorrect = (selected === q.answer);
+            if (isCorrect) {
+                document.getElementById('quizFeedback').innerHTML = `✅ 正确！ ${q.explanation}`;
+            } else {
+                const correctAns = q.options[q.answer];
+                document.getElementById('quizFeedback').innerHTML = `❌ 错误。正确答案是 ${correctAns}。 ${q.explanation}`;
+            }
+        }
+        document.getElementById('nextQuizBtn').addEventListener('click', () => {
+            currentKIndex++;
+            loadKnowledgeQuiz(currentKIndex);
+        });
+        loadKnowledgeQuiz(0);
+        
+        // ======================= 游戏：定理特工队 =======================
+        let gameScore = 0, gameTime = 50, gameMistakes = 0;
+        let gameActive = false;
+        let gameTimerInterval = null;
+        let currentGameQ = null;
+        
+        const gameQuestionsBank = [
+            { type: "choice", text: "下列哪组数是勾股数？", options: ["(3,4,5)", "(1,2,3)", "(2,2,3)", "(5,6,7)"], answer: 0, explanation: "3²+4²=25=5²" },
+            { type: "judge", text: "判断：3,4,5可构成直角三角形。", options: ["正确", "错误"], answer: 0, explanation: "3²+4²=5²" },
+            { type: "choice", text: "直角边5和12，斜边？", options: ["13", "17", "15", "10"], answer: 0, explanation: "5²+12²=169→13" },
+            { type: "fill", text: "勾股定理表达式：a² + b² = ______", options: ["c²", "a+b", "ab"], answer: 0, explanation: "c²" },
+            { type: "choice", text: "梯子长13米，底端离墙5米，顶端高？", options: ["12米", "8米", "10米", "9米"], answer: 0, explanation: "√(13²-5²)=12" },
+            { type: "judge", text: "判断：6,8,10是直角三角形。", options: ["正确", "错误"], answer: 0, explanation: "6²+8²=100=10²" },
+            { type: "choice", text: "Rt△ABC中，∠C=90°，AB=10，BC=6，AC=？", options: ["8", "4", "5", "9"], answer: 0, explanation: "AC=√(100-36)=8" }
+        ];
+        
+        function generateGameQuestion() {
+            if (!gameActive) return;
+            const idx = Math.floor(Math.random() * gameQuestionsBank.length);
+            const q = gameQuestionsBank[idx];
+            currentGameQ = { ...q };
+            updateGameUI();
+        }
+        
+        function updateGameUI() {
+            if (!currentGameQ) return;
+            const q = currentGameQ;
+            document.getElementById('gameQuestionText').innerHTML = q.text;
+            const optsDiv = document.getElementById('gameOptions');
+            optsDiv.innerHTML = '';
+            if (q.type === 'choice' || q.type === 'judge') {
+                q.options.forEach((opt, i) => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'game-option';
+                    optDiv.innerHTML = opt;
+                    optDiv.onclick = () => handleGameAnswer(i);
+                    optsDiv.appendChild(optDiv);
+                });
+            } else if (q.type === 'fill') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = '输入答案...';
+                input.style.width = '70%';
+                input.style.padding = '6px';
+                input.style.borderRadius = '20px';
+                input.style.border = '1px solid #ff44cc';
+                input.style.background = '#010a1a';
+                input.style.color = '#ff44cc';
+                input.id = 'gameFillInput';
+                const submitBtn = document.createElement('div');
+                submitBtn.className = 'game-btn';
+                submitBtn.innerHTML = '提交';
+                submitBtn.style.marginTop = '8px';
+                submitBtn.onclick = () => {
+                    const val = document.getElementById('gameFillInput').value.trim();
+                    let correct = false;
+                    if (q.answer === 0 && (val === 'c²' || val === 'c^2' || val === 'c平方')) correct = true;
+                    else if (val.toLowerCase() === q.options[q.answer].toLowerCase()) correct = true;
+                    if (correct) handleGameAnswer(true);
+                    else handleGameAnswer(false);
+                };
+                optsDiv.appendChild(input);
+                optsDiv.appendChild(submitBtn);
+            }
+            document.getElementById('gameFeedbackMsg').innerHTML = '';
+        }
+        
+        function handleGameAnswer(selected) {
+            if (!gameActive) {
+                document.getElementById('gameFeedbackMsg').innerHTML = '⏳ 请先点击「开始任务」！';
+                return;
+            }
+            let isCorrect = false;
+            if (typeof selected === 'boolean') {
+                isCorrect = selected;
+            } else {
+                isCorrect = (selected === currentGameQ.answer);
+            }
+            if (isCorrect) {
+                gameScore += 10;
+                document.getElementById('gameScore').innerText = gameScore;
+                document.getElementById('gameFeedbackMsg').innerHTML = '✅ 特工出击成功！ +10分';
+                generateGameQuestion();
+            } else {
+                gameMistakes++;
+                document.getElementById('gameMistakes').innerText = gameMistakes;
+                const correctAns = currentGameQ.options ? currentGameQ.options[currentGameQ.answer] : currentGameQ.options[currentGameQ.answer];
+                document.getElementById('gameFeedbackMsg').innerHTML = `❌ 失误！正确答案：${correctAns}。剩余资源 ${3-gameMistakes}/3`;
+                if (gameMistakes >= 3) {
+                    gameActive = false;
+                    if (gameTimerInterval) clearInterval(gameTimerInterval);
+                    document.getElementById('gameFeedbackMsg').innerHTML = '💀 任务失败！点击「重置游戏」后重新开始。';
+                    document.getElementById('startGameBtn').style.opacity = '0.5';
+                } else {
+                    generateGameQuestion();
+                }
+            }
+        }
+        
+        function startGame() {
+            if (gameTimerInterval) clearInterval(gameTimerInterval);
+            gameScore = 0; gameTime = 50; gameMistakes = 0; gameActive = true;
+            document.getElementById('gameScore').innerText = gameScore;
+            document.getElementById('gameTimer').innerText = gameTime;
+            document.getElementById('gameMistakes').innerText = gameMistakes;
+            document.getElementById('startGameBtn').style.opacity = '1';
+            generateGameQuestion();
+            gameTimerInterval = setInterval(() => {
+                if (gameActive && gameTime > 0) {
+                    gameTime--;
+                    document.getElementById('gameTimer').innerText = gameTime;
+                    if (gameTime === 0) {
+                        gameActive = false;
+                        clearInterval(gameTimerInterval);
+                        document.getElementById('gameFeedbackMsg').innerHTML = '⏰ 时间耗尽！任务终止，点击重置游戏。';
+                        document.getElementById('startGameBtn').style.opacity = '0.5';
+                    }
+                } else if (gameTime === 0) clearInterval(gameTimerInterval);
+            }, 1000);
+        }
+        
+        function resetGame() {
+            if (gameTimerInterval) clearInterval(gameTimerInterval);
+            gameScore = 0; gameTime = 50; gameMistakes = 0; gameActive = false;
+            document.getElementById('gameScore').innerText = gameScore;
+            document.getElementById('gameTimer').innerText = gameTime;
+            document.getElementById('gameMistakes').innerText = gameMistakes;
+            document.getElementById('gameQuestionText').innerHTML = '点击「开始任务」启动挑战';
+            document.getElementById('gameOptions').innerHTML = '';
+            document.getElementById('gameFeedbackMsg').innerHTML = '';
+            document.getElementById('startGameBtn').style.opacity = '1';
+            currentGameQ = null;
+        }
+        
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+        document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+        
+        // ======================= 主联动 =======================
+        function onParamChange() {
+            a = parseFloat(sliderA.value); b = parseFloat(sliderB.value);
+            a = Math.min(250, Math.max(20, a)); b = Math.min(250, Math.max(20, b));
+            spanA.innerText = a; spanB.innerText = b; sliderA.value = a; sliderB.value = b;
+            updateFormula(); initParticles();
+        }
+        sliderA.addEventListener('input', (e) => { a = parseInt(e.target.value,10); onParamChange(); drawMain(); });
+        sliderB.addEventListener('input', (e) => { b = parseInt(e.target.value,10); onParamChange(); drawMain(); });
+        
+        function animateMain() { drawMain(); requestAnimationFrame(animateMain); }
+        
+        onParamChange(); initParticles(); resetGame();
+        animateMain(); animateVerify();
+    })();
+</script>
+</body>
+</html>
