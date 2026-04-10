@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>⚡ 抛物线大挑战 | y=ax² 专属 · 双人创新题库 ⚡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f2a, #03050b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', 'Segoe UI', 'Poppins', 'Courier New', monospace;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(12, 20, 35, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 64px;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .game-header {
+            background: rgba(0, 20, 30, 0.8);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 2px solid #0ff;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 8px;
+        }
+        .mode-btn, .settings-btn, .start-game-btn {
+            background: linear-gradient(135deg, #0a2f44, #001d2f);
+            border: 1px solid cyan;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #0ff;
+        }
+        .mode-btn.active {
+            background: cyan;
+            color: #010d17;
+            box-shadow: 0 0 12px cyan;
+        }
+        .start-game-btn {
+            background: #2e7d64;
+            color: white;
+            border-color: #0ff;
+        }
+        .score-board, .timer-board {
+            background: #010d17;
+            padding: 4px 16px;
+            border-radius: 48px;
+            color: #0ff;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border: 1px solid cyan;
+        }
+        .level-badge {
+            background: #0a1a24;
+            padding: 4px 20px;
+            border-radius: 60px;
+            color: #f0f;
+            font-size: 1rem;
+            border: 1px solid #f0f;
+        }
+        .game-stage {
+            padding: 20px 15px 30px;
+            background: rgba(3, 10, 20, 0.5);
+            min-height: 580px;
+        }
+        .question-card {
+            background: rgba(16, 26, 45, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 20px 15px;
+            border: 1px solid rgba(0, 255, 255, 0.6);
+            text-align: center;
+        }
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: rgba(0, 20, 40, 0.8);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 80px;
+            margin-bottom: 20px;
+            color: #9effff;
+            border: 1px solid cyan;
+        }
+        .option-btn {
+            background: linear-gradient(145deg, #1f3f5c, #0a283c);
+            border: none;
+            padding: 6px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 60px;
+            color: white;
+            cursor: pointer;
+            margin: 4px;
+        }
+        .vs-panel { display: flex; gap: 15px; margin-bottom: 20px; }
+        .player-card { flex:1; background: rgba(0,0,0,0.6); border-radius: 40px; padding: 12px; border:1px solid cyan; }
+        .player-name { font-size: 1.5rem; font-weight: bold; }
+        .player-score { font-size: 2rem; font-family: monospace; color: #ffd966; margin: 5px 0; }
+        .red { color: #ff4d4d; text-shadow: 0 0 4px red; }
+        .blue { color: #4da8ff; text-shadow: 0 0 4px blue; }
+        .buzz-area { display: flex; justify-content: center; gap: 25px; margin: 15px 0; }
+        .buzz-btn { font-size: 1.3rem; padding: 8px 25px; border-radius: 50px; font-weight: bold; border: none; cursor: pointer; }
+        .buzz-red { background: #a12222; color: white; box-shadow: 0 4px 0 #4a0f0f; }
+        .buzz-blue { background: #2255aa; color: white; box-shadow: 0 4px 0 #0f2a4a; }
+        .buzz-btn:active { transform: translateY(3px); box-shadow: none; }
+        .vs-status { font-size: 1rem; background: #010d17; padding: 8px; border-radius: 40px; margin-top: 10px; }
+        .restart-vs { margin-top: 12px; background: #2c4f6e; border: 1px solid cyan; padding: 6px 18px; border-radius: 40px; cursor: pointer; color: cyan; }
+        .ai-hint { background: rgba(0,0,0,0.7); border-radius: 50px; margin-top: 20px; padding: 10px 18px; color: #b4ffb4; border-left: 8px solid #0ff; font-size: 0.9rem; }
+        .settings-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .settings-card {
+            background: #0e1a2a;
+            border: 2px solid cyan;
+            border-radius: 48px;
+            padding: 20px 30px;
+            width: 90%;
+            max-width: 450px;
+            color: white;
+        }
+        .settings-card h2 { text-align: center; margin-bottom: 15px; color: #0ff; font-size: 1.4rem; }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            align-items: center;
+        }
+        .setting-row input {
+            background: #021a24;
+            border: 1px solid cyan;
+            color: cyan;
+            padding: 4px 10px;
+            border-radius: 30px;
+            width: 110px;
+            text-align: center;
+        }
+        .save-settings {
+            background: cyan;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .pairing-area { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .graphs-panel { flex: 2; display: flex; flex-direction: column; gap: 20px; min-width: 240px; }
+        .graph-card { background: rgba(10, 25, 40, 0.7); border-radius: 36px; padding: 10px; border: 1px solid cyan; }
+        .dropzone { background: rgba(0, 20, 30, 0.7); border: 2px dashed cyan; border-radius: 40px; padding: 10px; margin-top: 8px; font-size: 0.85rem; }
+        .drag-cards { flex: 1; background: rgba(0, 20, 30, 0.6); border-radius: 40px; padding: 15px; border: 1px solid #f0f; }
+        .drag-item { background: linear-gradient(95deg, #1f496e, #0a2c44); margin: 10px 0; padding: 10px; border-radius: 40px; cursor: grab; text-align: center; border: 1px solid cyan; }
+        .floating-score { position: fixed; font-size: 1.5rem; font-weight: bold; color: #ff44ff; text-shadow: 0 0 8px cyan; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 200; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0px) scale(0.6);} 100% { opacity: 0; transform: translateY(-70px) scale(1.1);} }
+        .ready-screen { text-align: center; padding: 40px; color: cyan; }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameApp">
+    <div class="game-header">
+        <div class="mode-switch">
+            <button id="singleModeBtn" class="mode-btn">🎮 单人闯关</button>
+            <button id="vsModeBtn" class="mode-btn">⚔️ 双人对战</button>
+            <button id="settingsBtn" class="settings-btn">⚙️ 设置</button>
+        </div>
+        <div class="level-badge" id="levelName">🚀 抛物线大挑战</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="startGameBtn" class="start-game-btn">▶ 开始游戏</button>
+            <div class="timer-board"><span>⏳</span> <span id="timerValue">--</span><span> 秒</span></div>
+        </div>
+    </div>
+    <div class="game-stage" id="stageArea"></div>
+</div>
+
+<script>
+    // ======================= 全局设置 =======================
+    let GameSettings = {
+        vsTargetScore: 50,
+        pointsPerQuestion: 10,
+        singleTimerSec: 10,
+        pairingTimerSec: 30,
+        vsBuzzTimerSec: 10
+    };
+    try {
+        const saved = localStorage.getItem("ParabolaSettings");
+        if(saved) Object.assign(GameSettings, JSON.parse(saved));
+    } catch(e) {}
+    function saveSettings() { localStorage.setItem("ParabolaSettings", JSON.stringify(GameSettings)); }
+    
+    // ======================= 单人模式（保持不变，只涉及 y=ax² 的开口/比较/配对） =======================
+    const LEVEL1_POOL = [
+        { text: "y = 7x²", answer: "向上", explanation: "a = 7 > 0，开口向上 🚀" },
+        { text: "y = -4x²", answer: "向下", explanation: "a = -4 < 0，开口向下 🌧️" },
+        { text: "y = 1.5x²", answer: "向上", explanation: "a = 1.5 > 0，开口向上 ☀️" },
+        { text: "y = -0.8x²", answer: "向下", explanation: "a = -0.8 < 0，开口向下 ❄️" },
+        { text: "y = ⅔ x²", answer: "向上", explanation: "a = 2/3 > 0，开口向上 🍃" },
+        { text: "y = -9x²", answer: "向下", explanation: "a = -9 < 0，开口向下 ⚡" }
+    ];
+    const COEFF_POOL = [3, -6, 0.2, 1, -2, 0.5, -0.7, 4, -3, 0.8];
+    const LEVEL3_POOL = [
+        { func: "y = 5x²", points: "A(-3, y₁) 和 B(2, y₂)", correct: "y₁ > y₂", explanation: "开口向上，离轴越远值越大。|-3|=3 > |2|=2，y₁ > y₂ 📏" },
+        { func: "y = -4x²", points: "A(-1, y₁) 和 B(3, y₂)", correct: "y₁ > y₂", explanation: "开口向下，离轴越远值越小。| -1|=1, |3|=3，y₁ > y₂ 🎯" },
+        { func: "y = 2x²", points: "A(0, y₁) 和 B(-4, y₂)", correct: "y₁ < y₂", explanation: "开口向上，0最近，-4更远，y₁ < y₂ 🌟" },
+        { func: "y = -x²", points: "A(-5, y₁) 和 B(1, y₂)", correct: "y₁ < y₂", explanation: "开口向下，离轴越近值越大。|-5|=5 > |1|=1，y₁更小 ➕" },
+        { func: "y = 0.5x²", points: "A(4, y₁) 和 B(-4, y₂)", correct: "y₁ = y₂", explanation: "两点到对称轴距离相等，函数值相等 🎯" },
+        { func: "y = -2x²", points: "A(2, y₁) 和 B(-1, y₂)", correct: "y₁ < y₂", explanation: "开口向下，|2|=2 > |-1|=1，所以y₁更小 🔽" }
+    ];
+    function getRandomItems(arr, count) { const s = [...arr]; for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]];} return s.slice(0,count); }
+    function generateFreshGameData() { 
+        const coeffs = getRandomItems(COEFF_POOL,3);
+        const expressions = coeffs.map(c=>{ let fmt=(c===Math.floor(c))?c:c.toFixed(2).replace(/\.?0+$/,''); return `y = ${fmt}x²`; });
+        return { level1Items: getRandomItems(LEVEL1_POOL,3), level2Coeffs: coeffs, level2Expressions: expressions, level3Items: getRandomItems(LEVEL3_POOL,3) }; 
+    }
+    let singleGameData = null;
+    let singleScore = 0, singleLevel = 0, singleSub = 0, singleTimer = null, singleWaiting = false, singleTimerSeconds = 10;
+    let pairingState = { dropValues:[], correctExprs:[], graphCoeffs:[], timer:null, timeLeft:30, isActive:false, availableCards:[], cardElementsMap:new Map() };
+    let singleActive = false;
+    function updateSingleScoreUI() { document.getElementById("scoreValue") && (document.getElementById("scoreValue").innerText = singleScore); }
+    function stopSingleTimer() { if(singleTimer){clearInterval(singleTimer); singleTimer=null;} }
+    function showHint(msg, isError=true) { 
+        const stage=document.getElementById("stageArea"); 
+        let old=document.querySelector(".ai-hint"); 
+        if(old) old.remove(); 
+        const box=document.createElement("div"); 
+        box.className="ai-hint"; 
+        box.innerHTML=`<div>🤖 ${msg}</div>`; 
+        stage.appendChild(box); 
+        setTimeout(()=>{if(box.parentNode) box.style.opacity="0.7";},4000);
+    }
+    function addPointsEffect(p) { 
+        singleScore += p; 
+        updateSingleScoreUI(); 
+        const sb=document.querySelector(".score-board"); 
+        if(sb){ 
+            const r=sb.getBoundingClientRect(); 
+            const div=document.createElement("div"); 
+            div.className="floating-score"; 
+            div.innerText=`+${p}`; 
+            div.style.left=r.left+r.width/2-20+"px"; 
+            div.style.top=r.top-10+"px"; 
+            document.body.appendChild(div); 
+            setTimeout(()=>div.remove(),800);
+        } 
+    }
+    function startSingleTimer(sec, onTimeout) { 
+        stopSingleTimer(); 
+        singleTimerSeconds=sec; 
+        const span=document.getElementById("timerValue"); 
+        span.innerText=sec; 
+        singleTimer=setInterval(()=>{ 
+            if(singleWaiting) return; 
+            if(singleTimerSeconds<=1){ 
+                stopSingleTimer(); 
+                onTimeout(); 
+            } else{ 
+                singleTimerSeconds--; 
+                span.innerText=singleTimerSeconds;
+            } 
+        },1000);
+    }
+    function renderSingleLevel1() {
+        const q = singleGameData.level1Items[singleSub];
+        document.getElementById("stageArea").innerHTML = `<div class="question-card"><div class="question-text">📡 判断开口方向 <br> ${q.text}</div><div class="options-area"><button class="option-btn" data-dir="向上">⬆️ 开口向上</button><button class="option-btn" data-dir="向下">⬇️ 开口向下</button></div></div>`;
+        document.querySelectorAll(".option-btn").forEach(btn=>btn.addEventListener("click",()=>{ if(singleWaiting) return; handleSingleAnswer(btn.getAttribute("data-dir")); }));
+        startSingleTimer(GameSettings.singleTimerSec, ()=>handleSingleTimeout());
+    }
+    function handleSingleAnswer(sel) { if(singleWaiting || !singleActive) return; const q=singleGameData.level1Items[singleSub]; const correct=(sel===q.answer); stopSingleTimer(); if(correct){ addPointsEffect(GameSettings.pointsPerQuestion); showHint(`✅ 正确！${q.explanation}`,false); } else showHint(`❌ 错误！${q.explanation}`,true); singleWaiting=true; setTimeout(()=>{ singleWaiting=false; if(singleSub+1<singleGameData.level1Items.length){ singleSub++; renderSingleLevel1(); } else { singleLevel=1; singleSub=0; initSingleLevel2(); } },1500); }
+    function handleSingleTimeout() { if(singleWaiting || !singleActive) return; const q=singleGameData.level1Items[singleSub]; showHint(`⏰ 超时！正确答案是 ${q.answer}。${q.explanation}`,true); singleWaiting=true; setTimeout(()=>{ singleWaiting=false; if(singleSub+1<singleGameData.level1Items.length){ singleSub++; renderSingleLevel1(); } else { singleLevel=1; singleSub=0; initSingleLevel2(); } },1500); }
+    function drawParabola(canvas, coeff) { 
+        const ctx=canvas.getContext("2d"); const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h); ctx.save(); ctx.strokeStyle="#0ff"; for(let x=0;x<=w;x+=w/6){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,x); ctx.lineTo(w,x); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(w/2,0); ctx.lineTo(w/2,h); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.strokeStyle="#ff66ff"; ctx.lineWidth=2; ctx.stroke(); const scaleX=w/6, scaleY=h/12; ctx.beginPath(); let first=true; for(let px=-3;px<=3;px+=0.05){ let yVal=coeff*px*px; let cx=w/2+px*scaleX; let cy=h/2-yVal*scaleY; if(cy<0||cy>h) continue; if(first){ ctx.moveTo(cx,cy); first=false; } else ctx.lineTo(cx,cy); } ctx.strokeStyle="#0ff"; ctx.lineWidth=3; ctx.stroke(); ctx.restore();
+    }
+    function initSingleLevel2() { 
+        if(!singleActive) return; stopSingleTimer(); if(pairingState.timer) clearInterval(pairingState.timer);
+        const coeffs = singleGameData.level2Coeffs, expressions = singleGameData.level2Expressions;
+        pairingState.graphCoeffs=coeffs; pairingState.correctExprs=expressions; pairingState.dropValues=["","",""]; pairingState.timeLeft = GameSettings.pairingTimerSec; pairingState.isActive=true; pairingState.availableCards=[...expressions]; pairingState.cardElementsMap.clear();
+        const stage=document.getElementById("stageArea");
+        stage.innerHTML=`<div class="pairing-area"><div class="graphs-panel">${coeffs.map((coeff,idx)=>`<div class="graph-card" data-graph-idx="${idx}"><canvas width="240" height="200" style="width:100%; background:#010a12" id="canvas_${idx}"></canvas><div class="dropzone" id="dropzone_${idx}">⚡ 等待配对 ⚡</div></div>`).join('')}</div><div class="drag-cards"><h3>🧩 解析式卡片 (拖拽后消失)</h3><div id="cardsList"></div></div></div><div class="pair-action" style="text-align:center; margin-top:20px;"><button id="submitPairBtn" class="pair-btn">✅ 提交配对</button><button id="resetPairBtn" class="pair-btn">🔄 重置配对</button></div>`;
+        for(let i=0;i<coeffs.length;i++){ const canvas=document.getElementById(`canvas_${i}`); if(canvas){ canvas.width=240; canvas.height=200; drawParabola(canvas,coeffs[i]); } }
+        const buildCards=()=>{ const container=document.getElementById("cardsList"); container.innerHTML=""; pairingState.availableCards.forEach(expr=>{ const card=document.createElement("div"); card.className="drag-item"; card.setAttribute("data-expr",expr); card.innerText=`📌 ${expr}`; card.setAttribute("draggable","true"); card.addEventListener("dragstart",e=>{ if(!pairingState.isActive){e.preventDefault();return;} const exprCard=e.target.closest(".drag-item").getAttribute("data-expr"); if(!pairingState.availableCards.includes(exprCard)){e.preventDefault();return;} e.dataTransfer.setData("text/plain",exprCard); e.dataTransfer.effectAllowed="copy"; e.target.style.opacity="0.5"; }); card.addEventListener("dragend",e=>{ if(e.target) e.target.style.opacity=""; }); container.appendChild(card); pairingState.cardElementsMap.set(expr,card); }); }; buildCards();
+        for(let i=0;i<3;i++){ const zone=document.getElementById(`dropzone_${i}`); zone.addEventListener("dragover",e=>e.preventDefault()); zone.addEventListener("drop",e=>{ e.preventDefault(); if(!pairingState.isActive) return; const expr=e.dataTransfer.getData("text/plain"); if(!expr) return; if(!pairingState.availableCards.includes(expr)){ showHint("⚠️ 卡片已使用！重置可继续",true); return; } const dropIdx=parseInt(zone.closest(".graph-card").getAttribute("data-graph-idx")); if(isNaN(dropIdx)) return; if(pairingState.dropValues[dropIdx]!==""){ showHint("此区域已有解析式，请重置",true); return; } pairingState.dropValues[dropIdx]=expr; pairingState.availableCards=pairingState.availableCards.filter(e=>e!==expr); const cardDom=pairingState.cardElementsMap.get(expr); if(cardDom&&cardDom.parentNode) cardDom.remove(); pairingState.cardElementsMap.delete(expr); zone.innerHTML=`✨ ${expr} ✨`; showHint(`配对成功: ${expr}`,false); }); }
+        document.getElementById("resetPairBtn").addEventListener("click",()=>{ if(!pairingState.isActive) return; pairingState.dropValues=["","",""]; pairingState.availableCards=[...pairingState.correctExprs]; buildCards(); for(let i=0;i<3;i++){ const dz=document.getElementById(`dropzone_${i}`); if(dz) dz.innerHTML="⚡ 等待配对 ⚡"; } showHint("重置完成",false); });
+        document.getElementById("submitPairBtn").addEventListener("click",()=>{ if(!pairingState.isActive) return; if(pairingState.timer) clearInterval(pairingState.timer); pairingState.isActive=false; let correctCount=0; for(let i=0;i<3;i++) if(pairingState.dropValues[i]===pairingState.correctExprs[i]) correctCount++; let gain=correctCount*GameSettings.pointsPerQuestion; if(gain>0){ addPointsEffect(gain); showHint(`配对正确 ${correctCount}/3 ，获得 ${gain} 分！`,false); } else showHint(`配对失败！正确搭配: ${pairingState.correctExprs.join(' , ')}`,true); setTimeout(()=>{ singleLevel=2; singleSub=0; initSingleLevel3(); },1800); });
+        startPairTimer();
+        function startPairTimer(){ if(pairingState.timer) clearInterval(pairingState.timer); const timerSpan=document.getElementById("timerValue"); timerSpan.innerText=pairingState.timeLeft; pairingState.timer=setInterval(()=>{ if(!pairingState.isActive) return; if(pairingState.timeLeft<=1){ clearInterval(pairingState.timer); pairingState.timer=null; handlePairTimeout(); } else{ pairingState.timeLeft--; timerSpan.innerText=pairingState.timeLeft; } },1000); }
+        function handlePairTimeout(){ if(!pairingState.isActive) return; pairingState.isActive=false; let correctCount=0; for(let i=0;i<3;i++) if(pairingState.dropValues[i]===pairingState.correctExprs[i]) correctCount++; let gain=correctCount*GameSettings.pointsPerQuestion; if(gain>0) addPointsEffect(gain); setTimeout(()=>{ singleLevel=2; singleSub=0; initSingleLevel3(); },1800); }
+    }
+    function initSingleLevel3() { if(!singleActive) return; stopSingleTimer(); document.getElementById("levelName").innerHTML = "⚡ 第三关 · 函数值比较"; renderSingleLevel3(); }
+    function renderSingleLevel3() { const q=singleGameData.level3Items[singleSub]; document.getElementById("stageArea").innerHTML=`<div class="question-card"><div class="question-text">🔮 比较函数值 <br> ${q.func} <br> 点 ${q.points}</div><div class="options-area"><button class="option-btn" data-comp="y₁ < y₂">y₁ &lt; y₂</button><button class="option-btn" data-comp="y₁ = y₂">y₁ = y₂</button><button class="option-btn" data-comp="y₁ > y₂">y₁ &gt; y₂</button></div></div>`; document.querySelectorAll("[data-comp]").forEach(btn=>btn.addEventListener("click",()=>{ if(singleWaiting) return; handleSingleLevel3Answer(btn.getAttribute("data-comp")); })); startSingleTimer(GameSettings.singleTimerSec,()=>handleSingleLevel3Timeout()); }
+    function handleSingleLevel3Answer(sel) { if(singleWaiting || !singleActive) return; const q=singleGameData.level3Items[singleSub]; const isCorrect=(sel===q.correct); stopSingleTimer(); if(isCorrect){ addPointsEffect(GameSettings.pointsPerQuestion); showHint(`✅ 正确！${q.explanation}`,false); } else showHint(`❌ 错误。正确答案是 ${q.correct}。${q.explanation}`,true); singleWaiting=true; setTimeout(()=>{ singleWaiting=false; if(singleSub+1<singleGameData.level3Items.length){ singleSub++; renderSingleLevel3(); } else { gameComplete(); } },1500); }
+    function handleSingleLevel3Timeout() { if(singleWaiting || !singleActive) return; const q=singleGameData.level3Items[singleSub]; showHint(`⏰ 超时！正确答案是 ${q.correct}。${q.explanation}`,true); singleWaiting=true; setTimeout(()=>{ singleWaiting=false; if(singleSub+1<singleGameData.level3Items.length){ singleSub++; renderSingleLevel3(); } else { gameComplete(); } },1500); }
+    function gameComplete() { if(!singleActive) return; stopSingleTimer(); document.getElementById("stageArea").innerHTML=`<div class="question-card"><div class="question-text">🏆 星际通关 🏆<br>最终得分: ${singleScore} / ${GameSettings.pointsPerQuestion*9}</div><button id="restartSingleBtn" style="background:#0f3b4a; padding:8px 25px; border-radius:40px;">🔄 重新冒险</button></div>`; document.getElementById("restartSingleBtn").addEventListener("click",()=>startSingleGame()); singleActive=false; }
+    function startSingleGame() { 
+        if(singleTimer) clearInterval(singleTimer); if(pairingState.timer) clearInterval(pairingState.timer); 
+        singleScore=0; singleLevel=0; singleSub=0; singleWaiting=false; singleActive=true; 
+        updateSingleScoreUI(); singleGameData=generateFreshGameData(); 
+        document.getElementById("levelName").innerHTML="🌀 第一关 · 开口方向"; renderSingleLevel1(); 
+    }
+    
+    // ======================= 双人对战 · 全新题库（仅限 y=ax²，丰富且不重复） =======================
+    const VS_NEW_POOL = [
+        { text: "抛物线 y = 5x² 的开口方向是？", options: ["向上", "向下"], answer: "向上", explanation: "a = 5 > 0，开口向上。" },
+        { text: "抛物线 y = -2x² 的开口方向是？", options: ["向上", "向下"], answer: "向下", explanation: "a = -2 < 0，开口向下。" },
+        { text: "下列抛物线中，开口最大的是？", options: ["y = 4x²", "y = 0.1x²", "y = -3x²", "y = x²"], answer: "y = 0.1x²", explanation: "|a| 越小开口越大，0.1 最小。" },
+        { text: "下列抛物线中，开口最小（最窄）的是？", options: ["y = 0.5x²", "y = -5x²", "y = 2x²", "y = -0.2x²"], answer: "y = -5x²", explanation: "|a| 越大开口越小，| -5 | = 5 最大。" },
+        { text: "点 (2, 12) 是否在抛物线 y = 3x² 上？", options: ["在", "不在"], answer: "在", explanation: "代入 x=2，y=3×4=12，符合。" },
+        { text: "点 (-1, 4) 是否在抛物线 y = 4x² 上？", options: ["在", "不在"], answer: "在", explanation: "代入 x=-1，y=4×1=4，符合。" },
+        { text: "点 (3, -18) 是否在抛物线 y = -2x² 上？", options: ["在", "不在"], answer: "在", explanation: "代入 x=3，y=-2×9=-18，符合。" },
+        { text: "点 (2, 6) 是否在抛物线 y = 2x² 上？", options: ["在", "不在"], answer: "不在", explanation: "代入得 y=8，不是6。" },
+        { text: "抛物线 y = 3x² 上，当 x = -2 时，y 的值是？", options: ["6", "-6", "12", "-12"], answer: "12", explanation: "y = 3×(-2)² = 12。" },
+        { text: "抛物线 y = -4x² 上，当 x = 1 时，y 的值是？", options: ["4", "-4", "1", "-1"], answer: "-4", explanation: "y = -4×1 = -4。" },
+        { text: "若点 (2, 8) 在抛物线 y = a x² 上，则 a 的值是？", options: ["4", "2", "1", "0.5"], answer: "2", explanation: "8 = a×4 → a=2。" },
+        { text: "若点 (-3, -18) 在抛物线 y = a x² 上，则 a 的值是？", options: ["-2", "2", "-6", "6"], answer: "-2", explanation: "-18 = a×9 → a=-2。" },
+        { text: "已知 A(-2, y₁) 和 B(3, y₂) 在抛物线 y = x² 上，比较 y₁ 与 y₂ 的大小？", options: ["y₁ < y₂", "y₁ = y₂", "y₁ > y₂"], answer: "y₁ < y₂", explanation: "开口向上，离轴越远值越大，|3|=3 > | -2|=2，所以 y₂ > y₁。" },
+        { text: "已知 A(-3, y₁) 和 B(2, y₂) 在抛物线 y = -2x² 上，比较 y₁ 与 y₂ 的大小？", options: ["y₁ < y₂", "y₁ = y₂", "y₁ > y₂"], answer: "y₁ < y₂", explanation: "开口向下，离轴越远值越小。| -3|=3 > |2|=2，所以 y₁ 更小。" },
+        { text: "抛物线 y = -x² 的对称轴是？", options: ["x = 0", "x = 1", "y = 0", "y = 1"], answer: "x = 0", explanation: "y = ax² 的对称轴都是 y 轴 (x=0)。" },
+        { text: "抛物线 y = 0.8x² 的顶点坐标是？", options: ["(0,0)", "(0,0.8)", "(0.8,0)", "(1,0)"], answer: "(0,0)", explanation: "y = ax² 的顶点都是原点 (0,0)。" }
+    ];
+    // 打乱顺序函数，让每次游戏题目顺序不同，避免重复感
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+    let vsQuestionBank = shuffleArray([...VS_NEW_POOL]);  // 随机顺序
+    
+    let vsActive = false, vsTimer = null, vsTimerSeconds = 10, player1Score = 0, player2Score = 0;
+    let currentVsQuestion = null, vsWaitingForAnswer = false, vsBuzzerLocked = false, currentTurnPlayer = null, vsGameEnded = false;
+    let currentQuestionIndex = 0;  // 顺序取题，保证不重复且丰富
+    
+    function getRandomVsQuestion() {
+        // 循环取题，用尽后重新洗牌
+        if (currentQuestionIndex >= vsQuestionBank.length) {
+            vsQuestionBank = shuffleArray([...VS_NEW_POOL]);
+            currentQuestionIndex = 0;
+        }
+        const q = { ...vsQuestionBank[currentQuestionIndex] };
+        currentQuestionIndex++;
+        return q;
+    }
+    
+    function showVsHint(msg, isError=true) { 
+        const stage=document.getElementById("stageArea"); 
+        let old=document.querySelector(".ai-hint"); 
+        if(old) old.remove(); 
+        const box=document.createElement("div"); 
+        box.className="ai-hint"; 
+        box.innerHTML=`<div>🤖 ${msg}</div>`; 
+        stage.appendChild(box); 
+        setTimeout(()=>{if(box.parentNode) box.remove();},3500);
+    }
+    function updateVsScoresUI() { 
+        document.getElementById("redScore").innerText = player1Score; 
+        document.getElementById("blueScore").innerText = player2Score; 
+        if((player1Score >= GameSettings.vsTargetScore || player2Score >= GameSettings.vsTargetScore) && !vsGameEnded) { 
+            vsGameEnded=true; vsActive=false; if(vsTimer) clearInterval(vsTimer); 
+            const winner = player1Score >= GameSettings.vsTargetScore ? "红方" : "蓝方"; 
+            document.getElementById("vsStatus").innerHTML = `🏆 游戏结束！ ${winner} 获得胜利！ 🏆<br><button id="vsRestartBtn" class="restart-vs">🔄 重新开局</button>`; 
+            document.getElementById("buzzRed").disabled=true; document.getElementById("buzzBlue").disabled=true; 
+            document.querySelectorAll("#vsOptionsArea .option-btn").forEach(btn=>btn.disabled=true); 
+            document.getElementById("vsRestartBtn").addEventListener("click", ()=>startVsGame()); 
+            showVsHint(`🏆 ${winner} 赢得比赛！`, false); 
+        } 
+    }
+    function endVsRound() { if(!vsActive) return; if(vsTimer) clearInterval(vsTimer); setTimeout(()=>{ if(vsActive && !vsGameEnded) loadNewVsQuestion(); },1800); }
+    function handleVsAnswer(selected) { 
+        if(!vsActive || vsGameEnded) return; 
+        if(!vsWaitingForAnswer || !currentTurnPlayer) return; 
+        const isCorrect = (selected === currentVsQuestion.answer); 
+        if(isCorrect) { 
+            const gain = GameSettings.pointsPerQuestion; 
+            if(currentTurnPlayer === "red") player1Score += gain; 
+            else player2Score += gain; 
+            showVsHint(`✅ ${currentTurnPlayer==="red"?"红方":"蓝方"} 答对了！ +${gain}分。 ${currentVsQuestion.explanation}`, false); 
+        } else { 
+            showVsHint(`❌ ${currentTurnPlayer==="red"?"红方":"蓝方"} 答错了！ 正确答案: ${currentVsQuestion.answer}。 ${currentVsQuestion.explanation}`, true); 
+        } 
+        updateVsScoresUI(); 
+        vsWaitingForAnswer=false; vsBuzzerLocked=false; currentTurnPlayer=null; 
+        if(vsTimer) clearInterval(vsTimer); 
+        endVsRound(); 
+    }
+    function loadNewVsQuestion() { 
+        if(!vsActive || vsGameEnded) return; 
+        currentVsQuestion = getRandomVsQuestion(); 
+        document.getElementById("vsQuestionText").innerHTML = currentVsQuestion.text; 
+        const optsDiv = document.getElementById("vsOptionsArea"); 
+        optsDiv.innerHTML = ""; 
+        currentVsQuestion.options.forEach(opt => { 
+            const btn = document.createElement("button"); 
+            btn.className = "option-btn"; 
+            btn.innerText = opt; 
+            btn.addEventListener("click", () => handleVsAnswer(opt)); 
+            optsDiv.appendChild(btn); 
+        }); 
+        vsWaitingForAnswer=false; vsBuzzerLocked=false; currentTurnPlayer=null; 
+        document.getElementById("buzzRed").disabled=false; document.getElementById("buzzBlue").disabled=false; 
+        document.querySelectorAll("#vsOptionsArea .option-btn").forEach(btn => btn.disabled=true); 
+        document.getElementById("vsStatus").innerHTML = `🎤 抢答倒计时 ${GameSettings.vsBuzzTimerSec} 秒，按下按钮！`; 
+        if(vsTimer) clearInterval(vsTimer); 
+        vsTimerSeconds = GameSettings.vsBuzzTimerSec; 
+        document.getElementById("timerValue").innerText = vsTimerSeconds; 
+        vsTimer = setInterval(()=>{ 
+            if(!vsActive || vsGameEnded) return; 
+            if(vsWaitingForAnswer) return; 
+            if(vsTimerSeconds <= 1) { 
+                clearInterval(vsTimer); vsTimer=null; 
+                if(!vsWaitingForAnswer && !vsBuzzerLocked) { 
+                    showVsHint("⏰ 无人抢答，本题跳过！", true); 
+                    endVsRound(); 
+                } 
+            } else { vsTimerSeconds--; document.getElementById("timerValue").innerText = vsTimerSeconds; } 
+        },1000); 
+    }
+    function handleBuzz(player) { 
+        if(!vsActive || vsGameEnded) return; 
+        if(vsWaitingForAnswer || vsBuzzerLocked) return; 
+        vsBuzzerLocked=true; vsWaitingForAnswer=true; currentTurnPlayer=player; 
+        if(vsTimer) clearInterval(vsTimer); 
+        document.getElementById("vsStatus").innerHTML = `⚡ ${player==="red"?"红方":"蓝方"} 抢答成功！请选择答案 ⚡`; 
+        showVsHint(`${player==="red"?"红方":"蓝方"} 抢到答题权！`, false); 
+        document.querySelectorAll("#vsOptionsArea .option-btn").forEach(btn => btn.disabled=false); 
+        document.getElementById("buzzRed").disabled=true; document.getElementById("buzzBlue").disabled=true; 
+        let answerTimer = 15; 
+        const ansInterval = setInterval(()=>{ 
+            if(!vsActive || vsGameEnded || !vsWaitingForAnswer) { clearInterval(ansInterval); return; } 
+            if(answerTimer <= 1) { 
+                clearInterval(ansInterval); 
+                if(vsWaitingForAnswer) { 
+                    showVsHint(`⏰ ${currentTurnPlayer==="red"?"红方":"蓝方"} 答题超时！本题作废。`, true); 
+                    vsWaitingForAnswer=false; vsBuzzerLocked=false; currentTurnPlayer=null; 
+                    endVsRound(); 
+                } 
+            } else { answerTimer--; } 
+        },1000); 
+    }
+    function renderVsUI() { 
+        document.getElementById("stageArea").innerHTML = `<div class="vs-panel"><div class="player-card"><div class="player-name red">🔴 红方</div><div class="player-score" id="redScore">0</div></div><div class="player-card"><div class="player-name blue">🔵 蓝方</div><div class="player-score" id="blueScore">0</div></div></div><div class="question-card"><div class="question-text" id="vsQuestionText">⚔️ 点击「开始游戏」开始对战</div><div id="vsOptionsArea" class="options-area"></div><div class="buzz-area"><button id="buzzRed" class="buzz-btn buzz-red">🔴 红方抢答</button><button id="buzzBlue" class="buzz-btn buzz-blue">🔵 蓝方抢答</button></div><div class="vs-status" id="vsStatus">⏳ 未开始</div><button id="restartVsBtn" class="restart-vs">🔄 重新开局</button></div>`; 
+        document.getElementById("buzzRed").addEventListener("click", ()=>handleBuzz("red")); 
+        document.getElementById("buzzBlue").addEventListener("click", ()=>handleBuzz("blue")); 
+        document.getElementById("restartVsBtn").addEventListener("click", ()=>startVsGame()); 
+        document.getElementById("buzzRed").disabled = true; document.getElementById("buzzBlue").disabled = true;
+    }
+    function startVsGame() { 
+        if(vsTimer) clearInterval(vsTimer); 
+        vsActive=true; vsGameEnded=false; 
+        player1Score=0; player2Score=0; 
+        vsWaitingForAnswer=false; vsBuzzerLocked=false; currentTurnPlayer=null; 
+        currentQuestionIndex = 0;  // 重置题目顺序
+        vsQuestionBank = shuffleArray([...VS_NEW_POOL]); // 重新洗牌
+        renderVsUI(); 
+        updateVsScoresUI(); 
+        loadNewVsQuestion(); 
+        document.getElementById("levelName").innerHTML = "⚔️ 双人对战 · 抛物线 y=ax² 特训 ⚔️"; 
+        document.getElementById("timerValue").innerText = GameSettings.vsBuzzTimerSec; 
+    }
+    
+    // ======================= 设置面板 =======================
+    function openSettings() {
+        const modal = document.createElement("div");
+        modal.className = "settings-modal";
+        modal.innerHTML = `
+            <div class="settings-card">
+                <h2>⚙️ 游戏设置</h2>
+                <div class="setting-row"><label>🎯 双人对战目标分数</label><input type="number" id="setTargetScore" min="20" max="100" value="${GameSettings.vsTargetScore}"></div>
+                <div class="setting-row"><label>⭐ 每题得分</label><input type="number" id="setPoints" min="5" max="20" value="${GameSettings.pointsPerQuestion}"></div>
+                <div class="setting-row"><label>⏱️ 单人每题限时(秒)</label><input type="number" id="setSingleTimer" min="5" max="20" value="${GameSettings.singleTimerSec}"></div>
+                <div class="setting-row"><label>🃏 配对环节时间(秒)</label><input type="number" id="setPairTimer" min="20" max="60" value="${GameSettings.pairingTimerSec}"></div>
+                <div class="setting-row"><label>⚡ 双人抢答时间(秒)</label><input type="number" id="setBuzzTimer" min="5" max="15" value="${GameSettings.vsBuzzTimerSec}"></div>
+                <button class="save-settings">💾 保存设置</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.querySelector(".save-settings").addEventListener("click", () => {
+            GameSettings.vsTargetScore = parseInt(modal.querySelector("#setTargetScore").value) || 50;
+            GameSettings.pointsPerQuestion = parseInt(modal.querySelector("#setPoints").value) || 10;
+            GameSettings.singleTimerSec = parseInt(modal.querySelector("#setSingleTimer").value) || 10;
+            GameSettings.pairingTimerSec = parseInt(modal.querySelector("#setPairTimer").value) || 30;
+            GameSettings.vsBuzzTimerSec = parseInt(modal.querySelector("#setBuzzTimer").value) || 10;
+            saveSettings();
+            modal.remove();
+            showHint("设置已保存！下次游戏生效", false);
+        });
+        modal.addEventListener("click", (e) => { if(e.target === modal) modal.remove(); });
+    }
+    document.getElementById("settingsBtn").addEventListener("click", openSettings);
+    
+    // ======================= 开始游戏按钮逻辑 =======================
+    let currentMode = "single";
+    function setMode(mode) {
+        currentMode = mode;
+        if(mode === "single") {
+            document.getElementById("singleModeBtn").classList.add("active");
+            document.getElementById("vsModeBtn").classList.remove("active");
+        } else {
+            document.getElementById("vsModeBtn").classList.add("active");
+            document.getElementById("singleModeBtn").classList.remove("active");
+        }
+    }
+    function startGameByMode() {
+        if(singleTimer) clearInterval(singleTimer);
+        if(pairingState.timer) clearInterval(pairingState.timer);
+        if(vsTimer) clearInterval(vsTimer);
+        vsActive = false;
+        singleActive = false;
+        if(currentMode === "single") {
+            startSingleGame();
+        } else {
+            startVsGame();
+        }
+    }
+    document.getElementById("singleModeBtn").addEventListener("click", () => setMode("single"));
+    document.getElementById("vsModeBtn").addEventListener("click", () => setMode("vs"));
+    document.getElementById("startGameBtn").addEventListener("click", startGameByMode);
+    
+    // 增加单人分数显示
+    const scoreDiv = document.createElement("div");
+    scoreDiv.className = "score-board";
+    scoreDiv.innerHTML = "<span>🏆 积分</span> <span id='scoreValue'>0</span>";
+    document.querySelector(".game-header .mode-switch").after(scoreDiv);
+    
+    // 初始界面
+    document.getElementById("stageArea").innerHTML = `<div class="ready-screen"><div class="question-card"><div class="question-text">✨ 抛物线大挑战 ✨</div><p style="margin: 20px;">请选择模式，然后点击「开始游戏」</p></div></div>`;
+    document.getElementById("levelName").innerHTML = "⏳ 待开始";
+    document.getElementById("timerValue").innerText = "--";
+    setMode("single");
+</script>
+</body>
+</html>
