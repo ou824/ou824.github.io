@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>二次函数 y = ax² 动态探究 | 清晰对称轴 + 完整性质</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #eef2f9 0%, #dfe6f0 100%);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 20px;
+        }
+
+        .card {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255,255,255,0.96);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .demo-header {
+            padding: 1rem 2rem 0.5rem 2rem;
+            background: #ffffffdd;
+            border-bottom: 2px solid #dce5f0;
+        }
+        .demo-header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #1a4b6e;
+            margin: 0;
+            display: inline-block;
+        }
+        .demo-header p {
+            color: #3a6b8c;
+            margin: 0.3rem 0 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .flex-main {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem 1.8rem 2rem;
+        }
+
+        .canvas-area {
+            flex: 2;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            border-radius: 1.2rem;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            background-color: #ffffff;
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+        }
+
+        .toolbar {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: #f8fafd;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            align-items: center;
+        }
+
+        .toolbar label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #1f4e6e;
+            background: #eef3fc;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        .slider-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #ffffff;
+            padding: 0.2rem 1.2rem;
+            border-radius: 48px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        input[type="range"] {
+            width: 260px;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #cbdde9;
+            border-radius: 5px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #2c7da0;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .a-badge {
+            background: #1e2f3c;
+            color: white;
+            font-family: monospace;
+            font-weight: bold;
+            padding: 0.2rem 0.9rem;
+            border-radius: 32px;
+            font-size: 1.2rem;
+            min-width: 85px;
+            text-align: center;
+        }
+
+        .property-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fefefef2;
+            border-radius: 1.5rem;
+            padding: 0 1.2rem 1rem 1.2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #2c7da0;
+        }
+
+        .prop-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #cbdde6;
+            padding: 0.8rem 0 0.4rem;
+            color: #1a4b6e;
+        }
+
+        .func-card {
+            background: #e9f2f9;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            margin: 0.8rem 0;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #1f6392;
+        }
+
+        .prop-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+        .prop-list li {
+            padding: 0.45rem 0;
+            border-bottom: 1px dashed #e0eaf1;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+        .prop-list li strong {
+            min-width: 70px;
+            color: #1f5e7e;
+        }
+        .knowledge {
+            background: #f0f6fa;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #2c5775;
+        }
+        .knowledge summary {
+            font-weight: bold;
+            cursor: pointer;
+            color: #1c6f9c;
+        }
+        .badge-val {
+            background: white;
+            border-radius: 20px;
+            padding: 0 0.5rem;
+            font-family: monospace;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 0.8rem;
+            border-top: 1px solid #d8e2ed;
+            color: #5f7f9a;
+        }
+        @media (max-width: 800px) {
+            .flex-main { flex-direction: column; padding: 1rem; }
+            .toolbar { flex-direction: column; align-items: stretch; border-radius: 28px; }
+            .slider-block { justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="demo-header">
+        <h1>📐 二次函数 y = ax²  · 动态探究</h1>
+        <p>参数 a 控制开口方向、大小 | 对称轴已加强显示 | 复选框控制辅助元素</p>
+    </div>
+
+    <div class="flex-main">
+        <!-- 左侧画布区 -->
+        <div class="canvas-area">
+            <canvas id="functionCanvas" width="600" height="600" style="width:100%; height:auto; max-width:600px; aspect-ratio:1/1"></canvas>
+            <div class="toolbar">
+                <div class="slider-block">
+                    <span style="font-weight:600;">参数 a =</span>
+                    <input type="range" id="aSlider" min="-3" max="3" step="0.01" value="1">
+                    <span class="a-badge" id="aValueDisplay">1.00</span>
+                </div>
+                <label>
+                    <input type="checkbox" id="showAxisCheckbox" checked> 🎯 显示对称轴 (增强醒目)
+                </label>
+                <label>
+                    <input type="checkbox" id="showVertexCheckbox" checked> 🔴 显示顶点 & 标签
+                </label>
+            </div>
+        </div>
+
+        <!-- 右侧性质面板 + 知识点 -->
+        <div class="property-panel">
+            <div class="prop-title">🔍 函数性质探究 · 动态分析</div>
+            <div class="func-card" id="funcExprDisplay">y = 1.00 · x²</div>
+            <ul class="prop-list" id="propertyList">
+                <li><strong>开口方向</strong> <span id="openDir">⬆️ 向上</span></li>
+                <li><strong>顶点坐标</strong> <span id="vertexCoord">(0, 0)</span></li>
+                <li><strong>对称轴</strong> <span id="symAxis">直线 x = 0</span></li>
+                <li><strong>最值</strong> <span id="extremum">最小值 y = 0</span></li>
+                <li><strong>单调性</strong> <span id="monotonicity">(-∞,0]递减；[0,+∞)递增</span></li>
+                <li><strong>开口宽窄</strong> <span id="widthInfo">|a|越大越窄</span></li>
+            </ul>
+            <details class="knowledge">
+                <summary>📖 知识点讲解 · 二次函数 y = ax²</summary>
+                <p>✔ 图像是抛物线，顶点在原点 (0,0)，对称轴为 y 轴 (x=0)。<br>
+                ✔ 当 <strong>a > 0</strong> 时，开口向上，有最小值0；在(-∞,0]递减，[0,+∞)递增。<br>
+                ✔ 当 <strong>a < 0</strong> 时，开口向下，有最大值0；在(-∞,0]递增，[0,+∞)递减。<br>
+                ✔ |a| 越大，抛物线开口越窄；|a| 越小，开口越宽。<br>
+                ✔ a = 0 时退化为直线 y=0 (x轴)。<br>
+                💡 拖动滑块观察图像变化，对称轴已加粗为橙红色虚线并带光晕，非常醒目。</p>
+            </details>
+        </div>
+    </div>
+    <footer>⚡ 图像仅绘制显示范围内部分 (y∈[-6,6]) | 分段绘制无多余横线 | 对称轴采用加粗虚线与半透明光晕增强</footer>
+</div>
+
+<script>
+    (function() {
+        // ----- 坐标系参数 -----
+        const X_MIN = -5.0;
+        const X_MAX = 5.0;
+        const Y_MIN = -6.0;
+        const Y_MAX = 6.0;
+
+        const canvas = document.getElementById('functionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const width = 600, height = 600;
+        canvas.width = width;
+        canvas.height = height;
+        
+        // 边距
+        const MARGIN = { top: 35, right: 32, bottom: 40, left: 52 };
+        const plotWidth = width - MARGIN.left - MARGIN.right;
+        const plotHeight = height - MARGIN.top - MARGIN.bottom;
+        
+        // UI 元素
+        const aSlider = document.getElementById('aSlider');
+        const aValueSpan = document.getElementById('aValueDisplay');
+        const showAxisCheck = document.getElementById('showAxisCheckbox');
+        const showVertexCheck = document.getElementById('showVertexCheckbox');
+        
+        let currentA = 1.0;
+        
+        function worldToPixel(x, y) {
+            const px = MARGIN.left + (x - X_MIN) / (X_MAX - X_MIN) * plotWidth;
+            const py = MARGIN.top + (Y_MAX - y) / (Y_MAX - Y_MIN) * plotHeight;
+            return { x: px, y: py };
+        }
+        
+        function pixelToWorld(px, py) {
+            const x = X_MIN + (px - MARGIN.left) / plotWidth * (X_MAX - X_MIN);
+            const y = Y_MAX - (py - MARGIN.top) / plotHeight * (Y_MAX - Y_MIN);
+            return { x, y };
+        }
+        
+        // 绘制网格 + 坐标轴 (干净整洁)
+        function drawGridAndAxes() {
+            ctx.save();
+            ctx.strokeStyle = "#d9e2ec";
+            ctx.lineWidth = 0.6;
+            ctx.fillStyle = "#2c3e4e";
+            ctx.font = "11px 'Segoe UI', 'Roboto'";
+            ctx.shadowBlur = 0;
+            
+            // 纵向网格 (x = 整数)
+            for (let x = -5; x <= 5; x += 1) {
+                if (Math.abs(x) < 0.01) continue;
+                const p1 = worldToPixel(x, Y_MIN);
+                const p2 = worldToPixel(x, Y_MAX);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+            // 横向网格 (y = 整数)
+            for (let y = -6; y <= 6; y += 1) {
+                if (Math.abs(y) < 0.01) continue;
+                const p1 = worldToPixel(X_MIN, y);
+                const p2 = worldToPixel(X_MAX, y);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+            
+            // 坐标轴 (加粗)
+            ctx.beginPath();
+            const xAxisStart = worldToPixel(X_MIN, 0);
+            const xAxisEnd = worldToPixel(X_MAX, 0);
+            ctx.moveTo(xAxisStart.x, xAxisStart.y);
+            ctx.lineTo(xAxisEnd.x, xAxisEnd.y);
+            ctx.strokeStyle = "#2c3e4e";
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            const yAxisStart = worldToPixel(0, Y_MIN);
+            const yAxisEnd = worldToPixel(0, Y_MAX);
+            ctx.moveTo(yAxisStart.x, yAxisStart.y);
+            ctx.lineTo(yAxisEnd.x, yAxisEnd.y);
+            ctx.stroke();
+            
+            // 箭头
+            ctx.fillStyle = "#2c3e4e";
+            const arrowX = worldToPixel(X_MAX, 0);
+            ctx.beginPath();
+            ctx.moveTo(arrowX.x - 8, arrowX.y - 3);
+            ctx.lineTo(arrowX.x, arrowX.y);
+            ctx.lineTo(arrowX.x - 8, arrowX.y + 3);
+            ctx.fill();
+            const arrowY = worldToPixel(0, Y_MAX);
+            ctx.beginPath();
+            ctx.moveTo(arrowY.x - 3, arrowY.y + 8);
+            ctx.lineTo(arrowY.x, arrowY.y);
+            ctx.lineTo(arrowY.x + 3, arrowY.y + 8);
+            ctx.fill();
+            
+            // 刻度数字
+            ctx.fillStyle = "#1f4e6e";
+            ctx.font = "10px 'Segoe UI'";
+            ctx.textAlign = "center";
+            for (let x = -5; x <= 5; x += 1) {
+                if (Math.abs(x) < 0.01) continue;
+                const p = worldToPixel(x, 0);
+                ctx.fillText(x.toString(), p.x, p.y + (x > 0 ? 14 : -6));
+            }
+            for (let y = -6; y <= 6; y += 1) {
+                if (Math.abs(y) < 0.01) continue;
+                const p = worldToPixel(0, y);
+                if (p.y >= MARGIN.top && p.y <= height - MARGIN.bottom) {
+                    ctx.fillText(y.toString(), p.x + 8, p.y + 3);
+                }
+            }
+            ctx.fillStyle = "#1a5d7a";
+            ctx.font = "bold 12px 'Segoe UI'";
+            const originPix = worldToPixel(0, 0);
+            ctx.fillText("O", originPix.x - 10, originPix.y - 4);
+            ctx.fillText("x", arrowX.x + 5, arrowX.y - 3);
+            ctx.fillText("y", arrowY.x + 3, arrowY.y - 8);
+            ctx.restore();
+        }
+        
+        // 绘制对称轴 —— 增强版：加粗虚线 + 半透明光晕 + 醒目标签
+        function drawSymmetryAxisIfNeeded(show) {
+            if (!show) return;
+            ctx.save();
+            const top = worldToPixel(0, Y_MAX);
+            const bottom = worldToPixel(0, Y_MIN);
+            
+            // 1. 半透明背景光晕 (让轴线更醒目)
+            ctx.beginPath();
+            ctx.moveTo(top.x, top.y);
+            ctx.lineTo(bottom.x, bottom.y);
+            ctx.lineWidth = 18;
+            ctx.strokeStyle = "rgba(255, 100, 50, 0.25)";
+            ctx.stroke();
+            
+            // 2. 主轴线: 橙红色加粗虚线
+            ctx.beginPath();
+            ctx.moveTo(top.x, top.y);
+            ctx.lineTo(bottom.x, bottom.y);
+            ctx.strokeStyle = "#e65c1e";
+            ctx.lineWidth = 3.5;
+            ctx.setLineDash([10, 8]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 3. 在轴线两端添加小箭头/装饰
+            ctx.beginPath();
+            ctx.fillStyle = "#e65c1e";
+            ctx.shadowBlur = 0;
+            // 顶端箭头
+            const arrowTop = worldToPixel(0, Y_MAX - 0.3);
+            ctx.moveTo(arrowTop.x, arrowTop.y);
+            ctx.lineTo(arrowTop.x - 5, arrowTop.y + 8);
+            ctx.lineTo(arrowTop.x + 5, arrowTop.y + 8);
+            ctx.fill();
+            // 底端箭头
+            const arrowBottom = worldToPixel(0, Y_MIN + 0.3);
+            ctx.beginPath();
+            ctx.moveTo(arrowBottom.x, arrowBottom.y);
+            ctx.lineTo(arrowBottom.x - 5, arrowBottom.y - 8);
+            ctx.lineTo(arrowBottom.x + 5, arrowBottom.y - 8);
+            ctx.fill();
+            
+            // 4. 添加非常显眼的标签背景 + 文字
+            const labelPos = worldToPixel(0, (Y_MIN + Y_MAX) / 2 + 0.8);
+            ctx.font = "bold 14px 'Segoe UI', 'PingFang SC'";
+            ctx.shadowBlur = 0;
+            const text = "对称轴 x = 0";
+            const metrics = ctx.measureText(text);
+            const textWidth = metrics.width;
+            const padding = 8;
+            // 半透白背景
+            ctx.fillStyle = "rgba(0,0,0,0.65)";
+            ctx.shadowBlur = 0;
+            ctx.fillRect(labelPos.x - textWidth/2 - padding, labelPos.y - 16, textWidth + padding*2, 24);
+            ctx.fillStyle = "#ffecb3";
+            ctx.font = "bold 14px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.fillText(text, labelPos.x, labelPos.y - 4);
+            
+            // 额外增加一个小提示
+            ctx.font = "italic 10px 'Segoe UI'";
+            ctx.fillStyle = "#ff9f4a";
+            ctx.fillText("(抛物线关于此轴对称)", labelPos.x, labelPos.y + 10);
+            
+            ctx.restore();
+        }
+        
+        // 顶点标记 (带光晕)
+        function drawVertexIfNeeded(show) {
+            if (!show) return;
+            const vPixel = worldToPixel(0, 0);
+            ctx.save();
+            ctx.shadowBlur = 0;
+            // 外发光效果
+            ctx.beginPath();
+            ctx.arc(vPixel.x, vPixel.y, 9, 0, 2 * Math.PI);
+            ctx.fillStyle = "rgba(227, 66, 52, 0.25)";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.fillStyle = "#e34234";
+            ctx.arc(vPixel.x, vPixel.y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(vPixel.x, vPixel.y, 2.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.font = "bold 12px 'Segoe UI'";
+            ctx.fillStyle = "#c02b1a";
+            ctx.fillText("顶点 (0,0)", vPixel.x + 10, vPixel.y - 8);
+            ctx.restore();
+        }
+        
+        // 抛物线绘制 (分段避免多余横线)
+        function drawParabola(a) {
+            const step = 0.045;
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 2.8;
+            ctx.strokeStyle = "#e34234";
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
+            ctx.shadowBlur = 0;
+            
+            let isDrawing = false;
+            for (let x = X_MIN; x <= X_MAX + 1e-8; x += step) {
+                let y = a * x * x;
+                const withinY = (y >= Y_MIN && y <= Y_MAX);
+                if (withinY) {
+                    const pixel = worldToPixel(x, y);
+                    if (!isDrawing) {
+                        ctx.moveTo(pixel.x, pixel.y);
+                        isDrawing = true;
+                    } else {
+                        ctx.lineTo(pixel.x, pixel.y);
+                    }
+                } else {
+                    if (isDrawing) {
+                        ctx.stroke();
+                        ctx.beginPath();
+                        isDrawing = false;
+                    }
+                }
+            }
+            if (isDrawing) {
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        
+        // 更新右侧性质面板（完整探究）
+        function updatePropertiesPanel(a) {
+            const absA = Math.abs(a);
+            document.getElementById('funcExprDisplay').innerHTML = `y = ${a.toFixed(3)} · x²`;
+            
+            let openDirText = "";
+            if (a > 0) openDirText = "⬆️ 向上 (开口向上)";
+            else if (a < 0) openDirText = "⬇️ 向下 (开口向下)";
+            else openDirText = "⚪ 退化为直线 (a=0)";
+            document.getElementById('openDir').innerHTML = openDirText;
+            
+            document.getElementById('vertexCoord').innerHTML = "(0, 0)";
+            document.getElementById('symAxis').innerHTML = "直线 x = 0 (y轴)";
+            
+            let extremumText = "";
+            if (a > 0) extremumText = "最小值 y = 0 (在顶点处取得)";
+            else if (a < 0) extremumText = "最大值 y = 0 (在顶点处取得)";
+            else extremumText = "常函数，最值恒为0";
+            document.getElementById('extremum').innerHTML = extremumText;
+            
+            let monoText = "";
+            if (a > 0) monoText = "↘ 递减区间: (-∞, 0] &nbsp;&nbsp; ↗ 递增区间: [0, +∞)";
+            else if (a < 0) monoText = "↗ 递增区间: (-∞, 0] &nbsp;&nbsp; ↘ 递减区间: [0, +∞)";
+            else monoText = "常函数，无单调增减";
+            document.getElementById('monotonicity').innerHTML = monoText;
+            
+            let widthDesc = "";
+            if (Math.abs(a) > 2) widthDesc = `🎯 非常窄 (|a| = ${absA.toFixed(2)})`;
+            else if (Math.abs(a) > 1) widthDesc = `📐 较窄 (|a| = ${absA.toFixed(2)})`;
+            else if (Math.abs(a) > 0.3) widthDesc = `📏 中等宽度 (|a| = ${absA.toFixed(2)})`;
+            else if (Math.abs(a) > 0.05) widthDesc = `🌊 较宽 (|a| = ${absA.toFixed(2)})`;
+            else if (Math.abs(a) < 0.01) widthDesc = `➖ 几乎为直线 (a ≈ 0)`;
+            else widthDesc = `🌬️ 很宽 (|a| = ${absA.toFixed(2)})`;
+            document.getElementById('widthInfo').innerHTML = widthDesc + "  (|a|↑ 开口变窄)";
+        }
+        
+        // 主渲染
+        function drawAll() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+            
+            drawGridAndAxes();
+            drawParabola(currentA);
+            
+            const showAxis = showAxisCheck.checked;
+            drawSymmetryAxisIfNeeded(showAxis);
+            
+            const showVertex = showVertexCheck.checked;
+            drawVertexIfNeeded(showVertex);
+            
+            // 动态a值标注
+            ctx.font = "500 12px 'Segoe UI'";
+            ctx.fillStyle = "#2b5d7a";
+            ctx.shadowBlur = 0;
+            ctx.fillText(`当前 a = ${currentA.toFixed(4)}`, MARGIN.left + 5, MARGIN.top - 8);
+            ctx.font = "italic 10px 'Segoe UI'";
+            ctx.fillStyle = "#547e9e";
+            ctx.fillText("对称轴已增强 (橙红虚线+光晕)", MARGIN.left + 5, MARGIN.top + 12);
+            
+            updatePropertiesPanel(currentA);
+        }
+        
+        function updateFromSlider() {
+            let val = parseFloat(aSlider.value);
+            if (isNaN(val)) val = 1;
+            currentA = val;
+            aValueSpan.innerText = currentA.toFixed(3);
+            drawAll();
+        }
+        
+        function redrawFromOptions() {
+            drawAll();
+        }
+        
+        aSlider.addEventListener('input', updateFromSlider);
+        showAxisCheck.addEventListener('change', redrawFromOptions);
+        showVertexCheck.addEventListener('change', redrawFromOptions);
+        
+        // 小彩蛋：鼠标悬浮显示坐标
+        function setupMouseCoord() {
+            const coordDiv = document.createElement('div');
+            coordDiv.id = 'mouseCoordTooltip';
+            coordDiv.style.position = 'fixed';
+            coordDiv.style.bottom = '20px';
+            coordDiv.style.right = '20px';
+            coordDiv.style.background = '#1e2f3cee';
+            coordDiv.style.color = '#f0f9ff';
+            coordDiv.style.padding = '4px 12px';
+            coordDiv.style.borderRadius = '24px';
+            coordDiv.style.fontSize = '12px';
+            coordDiv.style.fontFamily = 'monospace';
+            coordDiv.style.pointerEvents = 'none';
+            coordDiv.style.backdropFilter = 'blur(4px)';
+            coordDiv.style.zIndex = '100';
+            coordDiv.style.opacity = '0';
+            coordDiv.style.transition = 'opacity 0.1s';
+            document.body.appendChild(coordDiv);
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let mouseCanvasX = (e.clientX - rect.left) * scaleX;
+                let mouseCanvasY = (e.clientY - rect.top) * scaleY;
+                if (mouseCanvasX >= MARGIN.left && mouseCanvasX <= width - MARGIN.right &&
+                    mouseCanvasY >= MARGIN.top && mouseCanvasY <= height - MARGIN.bottom) {
+                    const world = pixelToWorld(mouseCanvasX, mouseCanvasY);
+                    coordDiv.innerHTML = `📌 图像坐标 (${world.x.toFixed(2)}, ${world.y.toFixed(2)})`;
+                    coordDiv.style.opacity = '0.85';
+                } else {
+                    coordDiv.style.opacity = '0';
+                }
+            });
+            canvas.addEventListener('mouseleave', () => { coordDiv.style.opacity = '0'; });
+        }
+        
+        function init() {
+            updateFromSlider();
+            setupMouseCoord();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
