@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>音乐喷泉 · 精确抛物线 (步长0.1)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #b8d8fc 0%, #8bb5e0 100%);
+            font-family: 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(2px);
+            border-radius: 64px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            padding: 24px 30px 32px 30px;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #1e4b7a, #3e9f9f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #2c5a6e;
+            border-left: 5px solid #ffb347;
+            padding-left: 15px;
+            margin: 5px 0 20px 0;
+            font-weight: 500;
+        }
+
+        .split-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+        }
+
+        .canvas-area {
+            flex: 2;
+            min-width: 500px;
+            background: #fef7e0;
+            border-radius: 48px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #eef4ff;
+            border-radius: 32px;
+            box-shadow: inset 0 0 0 2px white, 0 8px 18px rgba(0, 0, 0, 0.1);
+            cursor: crosshair;
+        }
+
+        .interaction-panel {
+            flex: 1.2;
+            min-width: 280px;
+            background: rgba(250, 250, 255, 0.9);
+            backdrop-filter: blur(4px);
+            border-radius: 48px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .problem-box {
+            background: #fff0db;
+            padding: 16px 20px;
+            border-radius: 32px;
+            margin-bottom: 20px;
+            border-left: 10px solid #f4a261;
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #1f3e48;
+        }
+
+        .choice-area {
+            margin: 15px 0;
+            display: flex;
+            gap: 18px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            background: #d9e6f5;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 10px 0;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 3px 0 #7f8c8d;
+        }
+
+        .choice-btn.active {
+            background: #ffb347;
+            color: white;
+            transform: scale(0.98);
+        }
+
+        button.submit-answer {
+            background: #2f855a;
+            width: 100%;
+            padding: 12px;
+            font-weight: bold;
+            color: white;
+            border-radius: 48px;
+            cursor: pointer;
+            margin-top: 10px;
+            border: none;
+        }
+
+        .feedback-area {
+            background: #eef2fa;
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 18px;
+            font-size: 0.85rem;
+            border-left: 8px solid #ffb347;
+        }
+
+        .curve-control {
+            background: #e9f0f5;
+            border-radius: 32px;
+            padding: 18px;
+            margin: 20px 0;
+        }
+
+        .slider-group {
+            margin: 12px 0;
+        }
+
+        .slider-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .manual-inputs {
+            display: flex;
+            gap: 12px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .input-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .input-item label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .input-item input {
+            width: 100%;
+            padding: 6px;
+            border-radius: 28px;
+            border: 1px solid #aaa;
+            text-align: center;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .equation-display {
+            background: #2d3e50;
+            color: #f9f3d9;
+            font-family: monospace;
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: 28px;
+            text-align: center;
+            margin: 12px 0;
+            word-break: break-word;
+        }
+
+        .drag-hint {
+            background: #fcf8e8;
+            border-radius: 24px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .deco-badge {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .deco {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .deco.triangle {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 28px solid #3b82f6;
+            background: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.7rem;
+        }
+
+        @media (max-width: 800px) {
+            .canvas-area { min-width: 300px; }
+            .split-layout { flex-direction: column; }
+            .manual-inputs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div>
+            <h1>🎵 音乐喷泉 · 精确到0.1 🎯</h1>
+            <div class="sub">滑块步长0.1 | 手动输入步长0.1 | 拖拽自动取整</div>
+        </div>
+        <div class="deco-badge">
+            <div class="deco" style="background:#ff4d4d;"></div>
+            <div class="deco" style="background:#ffd966;"></div>
+            <div class="deco" style="background:#6fbf4c;"></div>
+            <div class="deco triangle"></div>
+        </div>
+    </div>
+
+    <div class="split-layout">
+        <div class="canvas-area">
+            <canvas id="fountainCanvas" width="800" height="550" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/550"></canvas>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size:12px;">
+                <span>💧 喷口原点</span>
+                <span>🔵 真实水柱 (顶点2.0,4.0)</span>
+                <span>🟣 可移动抛物线 (顶点/开口 步长0.1)</span>
+            </div>
+        </div>
+
+        <div class="interaction-panel">
+            <div class="problem-box">
+                <div class="question-text">
+                    📐 <strong>【挑战问题】</strong><br>
+                    以喷水口为原点，喷泉最高点离地4米，轨迹是抛物线。<br>
+                    ❓ 能否用 <span class="highlight">y = a x²</span> 表示这条水柱轨迹？<br>
+                    ✅ 如果能，求 a 值 (精确到0.1)。
+                </div>
+            </div>
+            <div class="choice-area">
+                <button id="choiceYes" class="choice-btn yes">✅ 能</button>
+                <button id="choiceNo" class="choice-btn no">❌ 不能</button>
+            </div>
+            <div id="aValueContainer" style="display: none;">
+                <div style="background:#f5f0e6; border-radius: 32px; padding: 12px 20px; margin: 15px 0;">
+                    <label>📝 参数 a 的值 (精确到0.1)：</label>
+                    <input type="number" id="aInput" step="0.1" placeholder="-1.0" value="-1.0" style="width:100%; padding:10px; border-radius:48px;">
+                </div>
+            </div>
+            <button id="submitAnswerBtn" class="submit-answer">🔍 提交答案 & 验证</button>
+            <div id="feedbackMsg" class="feedback-area">
+                🌟 等待你的判断……<br>拖拽紫色圆点或手动输入，所有数值自动按0.1取整。
+            </div>
+
+            <div class="curve-control">
+                <div class="slider-group">
+                    <label>🎛️ 开口系数 a (步长0.1)</label>
+                    <input type="range" id="aSlider" min="-2.5" max="-0.1" step="0.1" value="-0.9">
+                    <div>当前 a = <span id="aSliderVal">-0.9</span></div>
+                </div>
+
+                <div class="manual-inputs">
+                    <div class="input-item">
+                        <label>a (开口)</label>
+                        <input type="number" id="manualA" step="0.1" value="-0.9">
+                    </div>
+                    <div class="input-item">
+                        <label>h (顶点 x)</label>
+                        <input type="number" id="manualH" step="0.1" value="2.0">
+                    </div>
+                    <div class="input-item">
+                        <label>k (顶点 y)</label>
+                        <input type="number" id="manualK" step="0.1" value="4.0">
+                    </div>
+                </div>
+
+                <div class="equation-display" id="movableEqDisplay">
+                    y = -0.9·(x - 2.0)² + 4.0
+                </div>
+                <div class="drag-hint">
+                    🖱️ <strong>拖拽紫色圆点</strong> → 移动顶点 (h,k) 自动取整0.1<br>
+                    🎚️ <strong>滑块/手动输入</strong> → 改变 a (步长0.1)<br>
+                    ✨ 所有数值精确到小数点后一位。
+                </div>
+            </div>
+            <footer>💡 真实喷泉的 a = -1.0, 顶点 (2.0, 4.0)。你可以尝试将紫色抛物线调至完全重合。</footer>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- Canvas 配置 -----
+        const canvas = document.getElementById('fountainCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 800, height = 550;
+        canvas.width = width;
+        canvas.height = height;
+
+        const xMin = -2.2, xMax = 6.5;
+        const yMin = -1.2, yMax = 7.2;
+        
+        function toCanvasX(x) { return ((x - xMin) / (xMax - xMin)) * width; }
+        function toCanvasY(y) { return height - ((y - yMin) / (yMax - yMin)) * height; }
+        
+        // 真实喷泉: 过原点 顶点(2,4)
+        function realFountain(x) {
+            if (x < 0) return 0;
+            let y = -x * x + 4 * x;
+            return y < 0 ? 0 : y;
+        }
+        
+        // ----- 可移动抛物线参数 (所有值精确到0.1) -----
+        let a = -0.9;
+        let h = 2.0;
+        let k = 4.0;
+        
+        // 辅助函数：将数值四舍五入到 0.1
+        function roundOneDecimal(value) {
+            return Math.round(value * 10) / 10;
+        }
+        
+        function getMovableY(x) {
+            return a * (x - h) ** 2 + k;
+        }
+        
+        function updateEquationDisplay() {
+            let aFormatted = a.toFixed(1);
+            let hFormatted = h.toFixed(1);
+            let kFormatted = k.toFixed(1);
+            let signH = (h >= 0 ? '-' : '+');
+            let absH = Math.abs(h).toFixed(1);
+            let eq = `y = ${aFormatted} · (x ${signH} ${absH})² + ${kFormatted}`;
+            document.getElementById('movableEqDisplay').innerHTML = eq;
+        }
+        
+        // 同步所有UI，同时确保所有参数为0.1精度
+        function syncUI() {
+            document.getElementById('aSlider').value = a;
+            document.getElementById('aSliderVal').innerText = a.toFixed(1);
+            document.getElementById('manualA').value = a.toFixed(1);
+            document.getElementById('manualH').value = h.toFixed(1);
+            document.getElementById('manualK').value = k.toFixed(1);
+            updateEquationDisplay();
+        }
+        
+        // 从手动输入框更新参数，并取整到0.1
+        function updateFromManual() {
+            let newA = parseFloat(document.getElementById('manualA').value);
+            let newH = parseFloat(document.getElementById('manualH').value);
+            let newK = parseFloat(document.getElementById('manualK').value);
+            if (!isNaN(newA)) a = roundOneDecimal(newA);
+            if (!isNaN(newH)) h = roundOneDecimal(newH);
+            if (!isNaN(newK)) k = roundOneDecimal(newK);
+            // 限制范围
+            a = Math.min(-0.1, Math.max(-2.8, a));
+            h = Math.min(5.5, Math.max(-1.0, h));
+            k = Math.min(6.8, Math.max(-0.5, k));
+            syncUI();
+            fullRedraw();
+        }
+        
+        // 滑块控制a (步长0.1)
+        const aSlider = document.getElementById('aSlider');
+        aSlider.addEventListener('input', (e) => {
+            a = roundOneDecimal(parseFloat(e.target.value));
+            syncUI();
+            fullRedraw();
+        });
+        
+        // 手动输入框监听
+        document.getElementById('manualA').addEventListener('input', updateFromManual);
+        document.getElementById('manualH').addEventListener('input', updateFromManual);
+        document.getElementById('manualK').addEventListener('input', updateFromManual);
+        
+        // ----- 拖拽交互 (移动顶点，取整到0.1) -----
+        let isDragging = false;
+        
+        function getMouseCoord(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            let mathX = xMin + (canvasX / width) * (xMax - xMin);
+            let mathY = yMin + (height - canvasY) / height * (yMax - yMin);
+            return { mx: mathX, my: mathY };
+        }
+        
+        function isVertexHit(mx, my) {
+            let epsX = (xMax - xMin) * 0.02;
+            let epsY = (yMax - yMin) * 0.02;
+            return (Math.abs(mx - h) < epsX && Math.abs(my - k) < epsY);
+        }
+        
+        function onMouseDown(e) {
+            e.preventDefault();
+            const { mx, my } = getMouseCoord(e);
+            if (isVertexHit(mx, my)) {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+        
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const { mx, my } = getMouseCoord(e);
+            let newH = roundOneDecimal(Math.min(5.5, Math.max(-1.0, mx)));
+            let newK = roundOneDecimal(Math.min(6.8, Math.max(-0.5, my)));
+            h = newH;
+            k = newK;
+            syncUI();
+            fullRedraw();
+        }
+        
+        function onMouseUp(e) {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        }
+        
+        canvas.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onMouseDown(e); });
+        window.addEventListener('touchmove', (e) => { e.preventDefault(); onMouseMove(e); });
+        window.addEventListener('touchend', onMouseUp);
+        
+        // ----- 绘图函数 (与之前相同，但使用当前参数) -----
+        function drawGridAndAxes() {
+            ctx.save();
+            ctx.strokeStyle = "#bdd4e7";
+            ctx.lineWidth = 0.6;
+            for (let x = -2; x <= 6.5; x += 0.5) {
+                let sx = toCanvasX(x);
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, height);
+                ctx.stroke();
+            }
+            for (let y = -1; y <= 7.2; y += 0.5) {
+                let sy = toCanvasY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(width, sy);
+                ctx.stroke();
+            }
+            ctx.beginPath();
+            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = "#2c5a6e";
+            let axisY0 = toCanvasY(0);
+            ctx.moveTo(0, axisY0);
+            ctx.lineTo(width, axisY0);
+            let axisX0 = toCanvasX(0);
+            ctx.moveTo(axisX0, 0);
+            ctx.lineTo(axisX0, height);
+            ctx.stroke();
+            ctx.fillStyle = "#1f4e6e";
+            let xArrowX = toCanvasX(xMax - 0.25);
+            ctx.beginPath();
+            ctx.moveTo(xArrowX, axisY0);
+            ctx.lineTo(xArrowX-8, axisY0-4);
+            ctx.lineTo(xArrowX-8, axisY0+4);
+            ctx.fill();
+            let yArrowY = toCanvasY(yMax - 0.25);
+            ctx.beginPath();
+            ctx.moveTo(axisX0, yArrowY);
+            ctx.lineTo(axisX0-4, yArrowY+8);
+            ctx.lineTo(axisX0+4, yArrowY+8);
+            ctx.fill();
+            ctx.font = "bold 12px 'Segoe UI'";
+            ctx.fillStyle = "#1f4e6e";
+            ctx.fillText("x", toCanvasX(5.8), toCanvasY(-0.2));
+            ctx.fillText("y", toCanvasX(0.2), toCanvasY(6.6));
+            ctx.fillStyle = "#b95f1a";
+            ctx.fillText("喷口(0,0)", toCanvasX(-0.3), toCanvasY(-0.2));
+            ctx.fillStyle = "#e67e22";
+            ctx.fillText("真实顶点 (2.0,4.0)", toCanvasX(2.0), toCanvasY(4.3));
+            ctx.restore();
+        }
+        
+        function drawRealFountain() {
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#2c7ab1";
+            ctx.shadowBlur = 3;
+            let step = 0.05;
+            let first = true;
+            for (let x = 0; x <= 4.0; x += step) {
+                let y = realFountain(x);
+                let cx = toCanvasX(x);
+                let cy = toCanvasY(y);
+                if (first) { ctx.moveTo(cx, cy); first = false; }
+                else ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.fillStyle = "#ff884d";
+            ctx.arc(toCanvasX(2.0), toCanvasY(4.0), 6, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.arc(toCanvasX(2.0), toCanvasY(4.0), 2.5, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.fillStyle = "#ffb347";
+            ctx.arc(toCanvasX(0), toCanvasY(0), 6, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "gold";
+            ctx.arc(toCanvasX(0), toCanvasY(0), 3, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawMovableParabola() {
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = "#aa6dc9";
+            let step = 0.06;
+            let first = true;
+            for (let x = xMin; x <= xMax; x += step) {
+                let y = getMovableY(x);
+                if (y < yMin - 0.5 || y > yMax + 0.5) continue;
+                let cx = toCanvasX(x);
+                let cy = toCanvasY(y);
+                if (first) { ctx.moveTo(cx, cy); first = false; }
+                else ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+            let vxCanvas = toCanvasX(h);
+            let vyCanvas = toCanvasY(k);
+            ctx.beginPath();
+            ctx.fillStyle = "#bf5fff";
+            ctx.shadowBlur = 6;
+            ctx.arc(vxCanvas, vyCanvas, 9, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(vxCanvas, vyCanvas, 4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "#6a0dad";
+            ctx.font = "bold 11px sans-serif";
+            ctx.fillText("拖拽我", vxCanvas-18, vyCanvas-6);
+            ctx.restore();
+        }
+        
+        function drawDecor() {
+            ctx.save();
+            ctx.fillStyle = "#3b82f6";
+            let triX = toCanvasX(5.2);
+            let triY = toCanvasY(6.2);
+            ctx.beginPath();
+            ctx.moveTo(triX, triY);
+            ctx.lineTo(triX+18, triY-16);
+            ctx.lineTo(triX-6, triY-24);
+            ctx.fill();
+            ctx.fillStyle = "#ffaa77";
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillText("⛲", triX+2, triY-12);
+            let dots = [[3.8,3.2,"#ff4d4d"],[5.0,1.8,"#ffd966"],[1.5,2.0,"#6fbf4c"]];
+            dots.forEach(d=>{
+                ctx.beginPath();
+                ctx.fillStyle = d[2];
+                ctx.arc(toCanvasX(d[0]), toCanvasY(d[1]), 6, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.fillStyle = "white";
+                ctx.arc(toCanvasX(d[0]), toCanvasY(d[1]), 2, 0, 2*Math.PI);
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+        
+        function fullRedraw() {
+            ctx.clearRect(0, 0, width, height);
+            drawGridAndAxes();
+            drawRealFountain();
+            drawMovableParabola();
+            drawDecor();
+        }
+        
+        // 初始化
+        syncUI();
+        fullRedraw();
+        
+        // ----- 原解题游戏逻辑 (微调，aInput步长0.1) -----
+        let selectedChoice = null;
+        const choiceYes = document.getElementById('choiceYes');
+        const choiceNo = document.getElementById('choiceNo');
+        const aValueContainer = document.getElementById('aValueContainer');
+        const aInput = document.getElementById('aInput');
+        const submitBtn = document.getElementById('submitAnswerBtn');
+        const feedbackDiv = document.getElementById('feedbackMsg');
+        
+        function resetActiveStyle() {
+            choiceYes.classList.remove('active');
+            choiceNo.classList.remove('active');
+        }
+        
+        choiceYes.addEventListener('click', () => {
+            resetActiveStyle();
+            choiceYes.classList.add('active');
+            selectedChoice = 'yes';
+            aValueContainer.style.display = 'block';
+            feedbackDiv.innerHTML = "🤔 选择「能」，但请观察紫色抛物线的顶点：只有当顶点在(0,0)时才能写成 y=ax²。试试手动将 h 和 k 设为 0，再看方程形式？";
+        });
+        
+        choiceNo.addEventListener('click', () => {
+            resetActiveStyle();
+            choiceNo.classList.add('active');
+            selectedChoice = 'no';
+            aValueContainer.style.display = 'none';
+            feedbackDiv.innerHTML = "📌 你选择了「不能」。点击提交验证推理！";
+        });
+        
+        submitBtn.addEventListener('click', () => {
+            if (selectedChoice === null) {
+                feedbackDiv.innerHTML = "⚠️ 请先选择「能」或「不能」再提交。";
+                return;
+            }
+            if (selectedChoice === 'no') {
+                feedbackDiv.innerHTML = "🎉✨ 完全正确！ ✨🎉<br>✅ 答案：不能表示为 y = a x²。<br>因为 y = a x² 的顶点固定在原点 (0,0)，最高点高度为0，而实际喷泉最高点4米，顶点在(2.0,4.0)。<br>📖 必须用顶点式 y = a(x - h)² + k。已将紫色抛物线设置为与蓝色喷泉完全重合 (a=-1.0, h=2.0, k=4.0)。";
+                createCelebration();
+            } else {
+                let aVal = parseFloat(aInput.value);
+                if (isNaN(aVal)) {
+                    feedbackDiv.innerHTML = "❓ 请输入有效的 a 值再提交。";
+                    return;
+                }
+                feedbackDiv.innerHTML = "❌ 错误！不论 a 取何值，y = a x² 的顶点都是 (0,0)，最高点高度0，达不到4米。<br>正确答案是「不能」。尝试将 h 和 k 手动设为 0，你会发现方程变成 y = a x²，但最高点仍然是0。";
+                feedbackDiv.style.backgroundColor = "#ffe0e0";
+                setTimeout(()=> feedbackDiv.style.backgroundColor = "#eef2fa", 1000);
+            }
+        });
+        
+        function createCelebration() {
+            feedbackDiv.style.backgroundColor = "#d9ffcc";
+            setTimeout(()=> feedbackDiv.style.backgroundColor = "#eef2fa", 1200);
+            a = -1.0;
+            h = 2.0;
+            k = 4.0;
+            syncUI();
+            fullRedraw();
+            feedbackDiv.innerHTML += "<br>🎈 已将紫色抛物线调整为与蓝色喷泉完全重合：a = -1.0, 顶点 (2.0, 4.0)，方程 y = -1.0·(x - 2.0)² + 4.0。你可以继续拖拽或手动调整探索！";
+        }
+        
+        window.addEventListener('resize', () => fullRedraw());
+    })();
+</script>
+</body>
+</html>
