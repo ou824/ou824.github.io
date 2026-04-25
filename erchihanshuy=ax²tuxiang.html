@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次函数 y=ax² 动态探究 · 独立描点列表版</title>
+    <style>
+        :root {
+            --bg: #f8f9fb;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --border: #e2e8f0;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+            --accent: #6c5ce7;
+            --accent-light: #ede7f6;
+            --radius: 14px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf2 40%, #f5f3f9 100%);
+            min-height: 100vh; padding:20px; display:flex; justify-content:center; align-items:flex-start; color: var(--text);
+        }
+        .main-container { width:100%; max-width:1300px; display:flex; flex-direction:column; gap:18px; }
+        .header { background:var(--card-bg); border-radius:var(--radius); padding:18px 28px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; border:1px solid var(--border); }
+        .header .title-group { display:flex; align-items:center; gap:12px; }
+        .header .logo-icon { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#6c5ce7,#a29bfe); display:flex; align-items:center; justify-content:center; font-size:22px; color:#fff; flex-shrink:0; box-shadow:0 4px 14px rgba(108,92,231,0.35); }
+        .header h1 { font-size:1.45rem; font-weight:700; color:#1a1a2e; white-space:nowrap; }
+        .header .subtitle { font-size:0.85rem; color:var(--text-secondary); font-weight:500; background:#f1f5f9; padding:6px 14px; border-radius:20px; white-space:nowrap; }
+        .btn { padding:8px 16px; border-radius:22px; border:1.5px solid var(--border); background:#fff; cursor:pointer; font-size:0.85rem; font-weight:600; transition:var(--transition); white-space:nowrap; color:#4a5568; }
+        .btn:hover { background:#f7f8fa; border-color:#c4cde0; transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,0.06); }
+        .btn.accent { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 3px 12px rgba(108,92,231,0.3); }
+        .btn.preset-a { padding:6px 13px; font-size:0.8rem; border-radius:18px; font-weight:500; }
+        .btn.preset-a.active-preset { background:var(--accent-light); border-color:var(--accent); color:var(--accent); font-weight:700; box-shadow:0 0 0 3px rgba(108,92,231,0.1); }
+        .content-wrapper { display:flex; gap:18px; flex-wrap:wrap; }
+        .canvas-panel { flex:1 1 700px; min-width:500px; background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow-lg); padding:12px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+        canvas { display:block; max-width:100%; height:auto; border-radius:8px; cursor:crosshair; }
+        .side-panel { flex:0 0 360px; min-width:300px; display:flex; flex-direction:column; gap:16px; }
+        .card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px; border:1px solid var(--border); }
+        .card h3 { font-size:1rem; font-weight:700; margin-bottom:12px; color:#1a1a2e; display:flex; align-items:center; gap:8px; }
+        .slider-group label { display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:0.9rem; margin-bottom:6px; color:#3d4f5f; }
+        .a-display { font-weight:700; font-size:1.3rem; color:var(--accent); background:var(--accent-light); padding:3px 12px; border-radius:14px; min-width:55px; text-align:center; }
+        input[type="range"] { -webkit-appearance:none; width:100%; height:8px; border-radius:4px; background:linear-gradient(90deg,#e74c3c 0%,#f39c12 25%,#bdc3c7 50%,#3498db 75%,#27ae60 100%); outline:none; cursor:pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:32px; height:32px; border-radius:50%; background:#fff; border:3px solid var(--accent); cursor:pointer; box-shadow:0 3px 12px rgba(0,0,0,0.18); }
+        .func-row { display:flex; align-items:center; gap:8px; padding:6px 4px; border-radius:8px; font-size:0.85rem; flex-wrap:wrap; }
+        .func-row:hover { background:#f8f9fc; }
+        .func-row .color-box { width:14px; height:14px; border-radius:4px; flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+        .func-row .func-name { width:70px; font-weight:600; white-space:nowrap; }
+        .mini-toggle { display:flex; align-items:center; gap:3px; font-size:0.75rem; cursor:pointer; user-select:none; background:#f1f5f9; padding:3px 8px; border-radius:12px; transition:var(--transition); color:#475569; }
+        .mini-toggle input { margin:0; cursor:pointer; }
+        .mini-toggle.active-mini { background:var(--accent-light); color:var(--accent); font-weight:600; }
+        .divider { border:none; border-top:1px solid var(--border); margin:6px 0; }
+        .property-list { list-style:none; display:flex; flex-direction:column; gap:4px; font-size:0.83rem; }
+        .property-list li { padding:5px 8px; border-radius:6px; background:#fafbfc; }
+        .summary-table { width:100%; border-collapse:collapse; font-size:0.78rem; margin-top:8px; }
+        .summary-table th, .summary-table td { border:1px solid #e2e8f0; padding:6px 8px; text-align:center; }
+        .summary-table th { background:#f8fafc; font-weight:700; }
+        .summary-table .highlight-row { background:#fefce8; font-weight:600; }
+        .table-wrapper { overflow-x:auto; background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); padding:8px 4px; margin-top:4px; }
+        .table-wrapper h4 { padding:4px 16px; font-size:0.9rem; font-weight:700; color:#1a1a2e; }
+        table.data-tbl { border-collapse:collapse; width:100%; min-width:400px; font-size:0.8rem; }
+        table.data-tbl th, table.data-tbl td { padding:7px 6px; text-align:center; border-bottom:1px solid #eef1f5; white-space:nowrap; }
+        .x-col { font-weight:700; background:#f1f5f9; }
+        .x-zero { background:#ede7f6; color:var(--accent); font-weight:700; }
+        .y-zero { background:#fefce8; font-weight:700; }
+        @media (max-width:900px) { .content-wrapper { flex-direction:column; } .canvas-panel { min-width:auto; } .side-panel { min-width:auto; } }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="header">
+        <div class="title-group">
+            <div class="logo-icon">📐</div>
+            <div><h1>二次函数 <em>y = ax²</em> 动态探究</h1></div>
+            <span class="subtitle">列表 · 描点 · 图像</span>
+        </div>
+        <div class="quick-actions">
+            <button class="btn preset-a active-preset" data-a="0.5">a=0.5</button>
+            <button class="btn preset-a" data-a="1">a=1</button>
+            <button class="btn preset-a" data-a="2">a=2</button>
+            <button class="btn preset-a" data-a="-0.5">a=−0.5</button>
+            <button class="btn preset-a" data-a="-1">a=−1</button>
+            <button class="btn preset-a" data-a="-2">a=−2</button>
+            <button class="btn" id="btnReset">🔄 重置</button>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="canvas-panel" id="canvasPanel">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+
+        <div class="side-panel">
+            <div class="card">
+                <h3>🎚️ 动态参数 a</h3>
+                <div class="slider-group">
+                    <label><span>a =</span><span class="a-display" id="aDisplay">1.0</span></label>
+                    <input type="range" id="sliderA" min="-3" max="3" step="0.05" value="1">
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📊 函数控制（图像 · 描点 · 列表）</h3>
+                <div id="funcControlList"></div>
+                <hr class="divider">
+                <label class="mini-toggle" style="display:inline-flex;margin-top:4px;">
+                    <input type="checkbox" id="toggleSymmetry" checked> ┅ 对称轴 (x=0)
+                </label>
+                <label class="mini-toggle" style="display:inline-flex;margin-left:8px;">
+                    <input type="checkbox" id="toggleVertex" checked> ⦿ 顶点标记
+                </label>
+                <label class="mini-toggle" style="display:inline-flex;margin-left:8px;">
+                    <input type="checkbox" id="toggleGrid" checked> 📏 网格
+                </label>
+            </div>
+
+            <div class="card" id="propertyCard">
+                <h3>📝 实时性质（动态 a = <span id="propA">1.0</span>）</h3>
+                <ul class="property-list" id="propertyList"></ul>
+            </div>
+
+            <div class="card" id="summaryCard">
+                <h3>📋 归纳总结</h3>
+                <table class="summary-table">
+                    <thead><tr><th>函数</th><th>开口方向</th><th>顶点</th><th>对称轴</th><th>增减性</th><th>最值</th></tr></thead>
+                    <tbody>
+                        <tr id="summaryRowPos"><td>y=ax² (a>0)</td><td>向上 ↑</td><td>(0,0)</td><td>y轴</td><td>左减右增</td><td>最小值=0</td></tr>
+                        <tr id="summaryRowNeg"><td>y=ax² (a<0)</td><td>向下 ↓</td><td>(0,0)</td><td>y轴</td><td>左增右减</td><td>最大值=0</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:8px;font-size:0.8rem;color:#5a6c7d;"><strong>|a|越大开口越小；|a|越小开口越大。</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper" id="tableWrapper">
+        <h4>📋 数据列表（仅显示已开启“列表”的函数）</h4>
+        <div style="overflow-x:auto;">
+            <table class="data-tbl" id="dataTable"><thead></thead><tbody></tbody></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasPanel = document.getElementById('canvasPanel');
+        const sliderA = document.getElementById('sliderA');
+        const aDisplay = document.getElementById('aDisplay');
+        const propA = document.getElementById('propA');
+        const propertyList = document.getElementById('propertyList');
+        const dataTable = document.getElementById('dataTable');
+        const toggleSymmetry = document.getElementById('toggleSymmetry');
+        const toggleVertex = document.getElementById('toggleVertex');
+        const toggleGrid = document.getElementById('toggleGrid');
+        const btnReset = document.getElementById('btnReset');
+        const funcControlList = document.getElementById('funcControlList');
+        const summaryRowPos = document.getElementById('summaryRowPos');
+        const summaryRowNeg = document.getElementById('summaryRowNeg');
+
+        let dynamicA = 1.0;
+
+        // 每个函数有四个独立显示属性：visible(曲线), showDots(描点), showTable(列表)
+        const presetFunctions = [
+            { id: 'preset-0.5', name: 'y = ½x²', a: 0.5, color: '#2980b9', visible: true, showDots: true, showTable: true },
+            { id: 'preset-2', name: 'y = 2x²', a: 2, color: '#e74c3c', visible: true, showDots: true, showTable: true },
+            { id: 'preset--0.5', name: 'y = −½x²', a: -0.5, color: '#f39c12', visible: true, showDots: true, showTable: true },
+            { id: 'preset--2', name: 'y = −2x²', a: -2, color: '#27ae60', visible: true, showDots: true, showTable: true },
+            { id: 'preset-1', name: 'y = x²', a: 1, color: '#95a5a6', visible: false, showDots: false, showTable: false },
+            { id: 'preset--1', name: 'y = −x²', a: -1, color: '#7f8c8d', visible: false, showDots: false, showTable: false },
+        ];
+        const dynamicFunc = { id: 'dynamic', name: 'y = ax²', a: 1.0, color: '#8e44ad', visible: true, showDots: true, showTable: true };
+
+        let showSymmetry = true, showVertex = true, showGrid = true;
+
+        const CANVAS_W = 700, CANVAS_H = 500;
+        const X_MIN = -5.5, X_MAX = 5.5, Y_MIN = -10.5, Y_MAX = 10.5;
+        const MARGIN_LEFT = 68, MARGIN_RIGHT = 40, MARGIN_TOP = 28, MARGIN_BOTTOM = 48;
+        const PLOT_W = CANVAS_W - MARGIN_LEFT - MARGIN_RIGHT;
+        const PLOT_H = CANVAS_H - MARGIN_TOP - MARGIN_BOTTOM;
+        const TABLE_X_VALUES = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
+        const DOT_X_VALUES = [];
+        for (let x = -4; x <= 4; x += 0.5) DOT_X_VALUES.push(parseFloat(x.toFixed(1)));
+
+        function toCanvasX(mx) { return MARGIN_LEFT + (mx - X_MIN) / (X_MAX - X_MIN) * PLOT_W; }
+        function toCanvasY(my) { return MARGIN_TOP + (Y_MAX - my) / (Y_MAX - Y_MIN) * PLOT_H; }
+        function isInCanvasY(my) { const cy = toCanvasY(my); return cy > MARGIN_TOP-30 && cy < CANVAS_H-MARGIN_BOTTOM+30; }
+
+        // 核心修改：只要 visible、showDots、showTable 任一为true，就参与处理
+        function getActiveFunctions() {
+            const funcs = [];
+            for (const pf of presetFunctions) {
+                if (pf.visible || pf.showDots || pf.showTable) {
+                    funcs.push({ ...pf, isDynamic: false });
+                }
+            }
+            if (dynamicFunc.visible || dynamicFunc.showDots || dynamicFunc.showTable) {
+                funcs.push({ ...dynamicFunc, a: dynamicA, isDynamic: true });
+            }
+            return funcs;
+        }
+
+        function draw() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = CANVAS_W * dpr;
+            canvas.height = CANVAS_H * dpr;
+            canvas.style.width = CANVAS_W + 'px';
+            canvas.style.height = CANVAS_H + 'px';
+            ctx.setTransform(1,0,0,1,0,0);
+            ctx.scale(dpr, dpr);
+            ctx.fillStyle = '#fdfdfe';
+            ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(MARGIN_LEFT-5, MARGIN_TOP-5, PLOT_W+10, PLOT_H+10);
+            ctx.clip();
+
+            if (showGrid) {
+                ctx.strokeStyle = '#e8ecf1'; ctx.lineWidth = 0.6; ctx.setLineDash([3,4]);
+                for (let x = Math.floor(X_MIN); x <= Math.ceil(X_MAX); x++) {
+                    ctx.beginPath(); ctx.moveTo(toCanvasX(x), MARGIN_TOP); ctx.lineTo(toCanvasX(x), CANVAS_H-MARGIN_BOTTOM); ctx.stroke();
+                }
+                for (let y = Math.floor(Y_MIN/2)*2; y <= Math.ceil(Y_MAX/2)*2; y+=2) {
+                    ctx.beginPath(); ctx.moveTo(MARGIN_LEFT, toCanvasY(y)); ctx.lineTo(CANVAS_W-MARGIN_RIGHT, toCanvasY(y)); ctx.stroke();
+                }
+                ctx.setLineDash([]);
+            }
+
+            const originX = toCanvasX(0), originY = toCanvasY(0);
+            ctx.strokeStyle = '#4a5568'; ctx.lineWidth = 2; ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(MARGIN_LEFT, originY); ctx.lineTo(CANVAS_W-MARGIN_RIGHT, originY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(originX, MARGIN_TOP); ctx.lineTo(originX, CANVAS_H-MARGIN_BOTTOM); ctx.stroke();
+            ctx.fillStyle = '#4a5568';
+            ctx.beginPath(); ctx.moveTo(CANVAS_W-MARGIN_RIGHT, originY); ctx.lineTo(CANVAS_W-MARGIN_RIGHT-12, originY-5); ctx.lineTo(CANVAS_W-MARGIN_RIGHT-12, originY+5); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(originX, MARGIN_TOP); ctx.lineTo(originX-5, MARGIN_TOP+12); ctx.lineTo(originX+5, MARGIN_TOP+12); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('x', CANVAS_W-MARGIN_RIGHT+16, originY+5);
+            ctx.fillText('y', originX, MARGIN_TOP-8);
+            ctx.fillStyle = '#5a6c7d'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+            for (let x = Math.floor(X_MIN); x <= Math.ceil(X_MAX); x++) {
+                if (x===0) continue;
+                const cx = toCanvasX(x);
+                if (cx > MARGIN_LEFT+5 && cx < CANVAS_W-MARGIN_RIGHT-5) {
+                    ctx.fillText(x, cx, originY+16);
+                    ctx.beginPath(); ctx.moveTo(cx, originY-3); ctx.lineTo(cx, originY+3); ctx.strokeStyle='#4a5568'; ctx.lineWidth=1; ctx.stroke();
+                }
+            }
+            ctx.textAlign = 'right';
+            for (let y = Math.floor(Y_MIN/2)*2; y <= Math.ceil(Y_MAX/2)*2; y+=2) {
+                if (y===0) continue;
+                const cy = toCanvasY(y);
+                if (cy > MARGIN_TOP+5 && cy < CANVAS_H-MARGIN_BOTTOM-5) {
+                    ctx.fillText(y, originX-6, cy+4);
+                    ctx.beginPath(); ctx.moveTo(originX-3, cy); ctx.lineTo(originX+3, cy); ctx.strokeStyle='#4a5568'; ctx.lineWidth=1; ctx.stroke();
+                }
+            }
+            ctx.textAlign = 'right'; ctx.fillText('O', originX-8, originY+14);
+
+            if (showSymmetry) {
+                ctx.setLineDash([10,6]); ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2.8;
+                ctx.beginPath(); ctx.moveTo(originX, MARGIN_TOP); ctx.lineTo(originX, CANVAS_H-MARGIN_BOTTOM); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('对称轴 x=0', originX+10, MARGIN_TOP+24);
+            }
+            if (showVertex) {
+                const glow = ctx.createRadialGradient(originX, originY, 2, originX, originY, 18);
+                glow.addColorStop(0, 'rgba(255,180,50,0.9)'); glow.addColorStop(0.6, 'rgba(255,150,30,0.3)'); glow.addColorStop(1, 'rgba(255,120,20,0)');
+                ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(originX, originY, 18, 0, 2*Math.PI); ctx.fill();
+                ctx.fillStyle = '#e67e22'; ctx.beginPath(); ctx.arc(originX, originY, 7, 0, 2*Math.PI); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+                ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('顶点 (0,0)', originX+16, originY-12);
+            }
+
+            const activeFuncs = getActiveFunctions();
+            // 曲线只对 visible 为真的函数绘制
+            for (const func of activeFuncs) {
+                if (func.visible) drawCurve(func);
+            }
+            // 描点只对 showDots 为真的函数绘制
+            for (const func of activeFuncs) {
+                if (func.showDots) drawDots(func);
+            }
+
+            ctx.restore();
+            // 图例只显示打开了图像的函数
+            drawLegend(activeFuncs.filter(f => f.visible));
+        }
+
+        function drawCurve(func) {
+            const a = func.a;
+            ctx.strokeStyle = func.color; ctx.lineWidth = func.isDynamic ? 3.2 : 2.4;
+            ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.beginPath();
+            let first = true;
+            for (let mx = X_MIN; mx <= X_MAX; mx += 0.03) {
+                const my = a * mx * mx;
+                const cx = toCanvasX(mx);
+                const cy = Math.max(MARGIN_TOP-30, Math.min(CANVAS_H-MARGIN_BOTTOM+30, toCanvasY(my)));
+                if (first) { ctx.moveTo(cx, cy); first = false; } else ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+        }
+
+        function drawDots(func) {
+            const a = func.a;
+            const r = func.isDynamic ? 4.5 : 3.8;
+            ctx.fillStyle = func.color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2;
+            for (const mx of DOT_X_VALUES) {
+                const my = a * mx * mx;
+                if (!isInCanvasY(my)) continue;
+                const cx = toCanvasX(mx), cy = toCanvasY(my);
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI); ctx.fill(); ctx.stroke();
+            }
+            for (const mx of TABLE_X_VALUES) {
+                const my = a * mx * mx;
+                if (!isInCanvasY(my)) continue;
+                const cx = toCanvasX(mx), cy = toCanvasY(my);
+                ctx.beginPath(); ctx.arc(cx, cy, r+1.2, 0, 2*Math.PI); ctx.fill(); ctx.stroke();
+            }
+        }
+
+        function drawLegend(funcs) {
+            if (funcs.length === 0) return;
+            const lx = CANVAS_W - MARGIN_RIGHT - 170, ly = MARGIN_TOP + 16;
+            ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.strokeStyle = '#dde3ea'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(lx-8, ly-6, 180, funcs.length*22+20, 10); ctx.fill(); ctx.stroke();
+            ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+            funcs.forEach((f, i) => {
+                const y = ly + i*22 + 14;
+                ctx.fillStyle = f.color; ctx.fillRect(lx+4, y-7, 22, 14);
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth=0.5; ctx.strokeRect(lx+4, y-7, 22, 14);
+                ctx.fillStyle = '#2c3e50'; ctx.fillText(f.name, lx+34, y+3);
+            });
+        }
+
+        function updateTable() {
+            const funcsWithTable = getActiveFunctions().filter(f => f.showTable);
+            const thead = dataTable.querySelector('thead');
+            const tbody = dataTable.querySelector('tbody');
+            if (funcsWithTable.length === 0) {
+                thead.innerHTML = '<tr><th>x</th><th>—</th></tr>';
+                tbody.innerHTML = '<tr><td colspan="2">未开启任何函数的列表显示</td></tr>';
+                return;
+            }
+            let headerHTML = '<tr><th style="background:#f1f5f9;">x</th>';
+            for (const f of funcsWithTable) headerHTML += `<th style="color:${f.color};">${f.name}</th>`;
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
+            let bodyHTML = '';
+            for (const mx of TABLE_X_VALUES) {
+                const xClass = mx === 0 ? 'x-col x-zero' : 'x-col';
+                bodyHTML += `<tr><td class="${xClass}">${mx}</td>`;
+                for (const f of funcsWithTable) {
+                    const my = f.a * mx * mx;
+                    const yClass = mx === 0 ? 'y-zero' : '';
+                    const displayY = Number.isInteger(my) ? my : parseFloat(my.toFixed(2));
+                    bodyHTML += `<td class="${yClass}">${displayY}</td>`;
+                }
+                bodyHTML += '</tr>';
+            }
+            tbody.innerHTML = bodyHTML;
+        }
+
+        function updateProperties() {
+            const a = dynamicA;
+            propA.textContent = parseFloat(a.toFixed(2));
+            let items = [];
+            if (Math.abs(a) < 0.001) {
+                items = ['<strong>a=0：</strong>图像为x轴（y=0）'];
+            } else if (a > 0) {
+                items = [`<strong>开口向上：</strong>a>0，|a|=${Math.abs(a).toFixed(2)}`, `<strong>对称轴：</strong>y轴`, `<strong>顶点：</strong>(0,0) 最低点`, `<strong>左侧：</strong>y随x增大而减小`, `<strong>右侧：</strong>y随x增大而增大`];
+            } else {
+                items = [`<strong>开口向下：</strong>a<0，|a|=${Math.abs(a).toFixed(2)}`, `<strong>对称轴：</strong>y轴`, `<strong>顶点：</strong>(0,0) 最高点`, `<strong>左侧：</strong>y随x增大而增大`, `<strong>右侧：</strong>y随x增大而减小`];
+            }
+            propertyList.innerHTML = items.map(i => `<li>${i}</li>`).join('');
+            if (summaryRowPos && summaryRowNeg) {
+                if (a > 0.001) { summaryRowPos.className = 'highlight-row'; summaryRowNeg.className = ''; }
+                else if (a < -0.001) { summaryRowNeg.className = 'highlight-row'; summaryRowPos.className = ''; }
+                else { summaryRowPos.className = ''; summaryRowNeg.className = ''; }
+            }
+        }
+
+        function renderFuncControls() {
+            const allFuncs = [...presetFunctions.map(f => ({...f, isDynamic: false})), {...dynamicFunc, a: dynamicA, isDynamic: true}];
+            let html = '';
+            allFuncs.forEach(f => {
+                html += `
+                <div class="func-row">
+                    <span class="color-box" style="background:${f.color};"></span>
+                    <span class="func-name">${f.name}</span>
+                    <label class="mini-toggle ${f.visible?'active-mini':''}"><input type="checkbox" data-id="${f.id}" data-prop="visible" ${f.visible?'checked':''}> 图像</label>
+                    <label class="mini-toggle ${f.showDots?'active-mini':''}"><input type="checkbox" data-id="${f.id}" data-prop="showDots" ${f.showDots?'checked':''}> 描点</label>
+                    <label class="mini-toggle ${f.showTable?'active-mini':''}"><input type="checkbox" data-id="${f.id}" data-prop="showTable" ${f.showTable?'checked':''}> 列表</label>
+                </div>`;
+            });
+            funcControlList.innerHTML = html;
+            document.querySelectorAll('#funcControlList input[type=checkbox]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const id = this.dataset.id;
+                    const prop = this.dataset.prop;
+                    if (id === 'dynamic') {
+                        dynamicFunc[prop] = this.checked;
+                    } else {
+                        const preset = presetFunctions.find(p => p.id === id);
+                        if (preset) preset[prop] = this.checked;
+                    }
+                    updateAll();
+                });
+            });
+        }
+
+        function updateAll() {
+            draw();
+            updateTable();
+            updateProperties();
+            aDisplay.textContent = parseFloat(dynamicA.toFixed(2));
+            document.querySelectorAll('.btn.preset-a').forEach(btn => {
+                const ba = parseFloat(btn.dataset.a);
+                btn.classList.toggle('active-preset', Math.abs(ba - dynamicA) < 0.001);
+            });
+            renderFuncControls();
+        }
+
+        sliderA.addEventListener('input', () => { dynamicA = parseFloat(sliderA.value); dynamicFunc.a = dynamicA; updateAll(); });
+        document.querySelectorAll('.btn.preset-a').forEach(btn => btn.addEventListener('click', () => {
+            dynamicA = parseFloat(btn.dataset.a); dynamicFunc.a = dynamicA; sliderA.value = dynamicA; updateAll();
+        }));
+        toggleSymmetry.addEventListener('change', () => { showSymmetry = toggleSymmetry.checked; draw(); });
+        toggleVertex.addEventListener('change', () => { showVertex = toggleVertex.checked; draw(); });
+        toggleGrid.addEventListener('change', () => { showGrid = toggleGrid.checked; draw(); });
+        btnReset.addEventListener('click', () => {
+            dynamicA = 1.0; dynamicFunc.a = 1.0; dynamicFunc.visible = true; dynamicFunc.showDots = true; dynamicFunc.showTable = true;
+            sliderA.value = 1.0;
+            presetFunctions.forEach(f => {
+                if (f.id === 'preset-0.5' || f.id === 'preset-2' || f.id === 'preset--0.5' || f.id === 'preset--2') {
+                    f.visible = true; f.showDots = true; f.showTable = true;
+                } else {
+                    f.visible = false; f.showDots = false; f.showTable = false;
+                }
+            });
+            showSymmetry = showVertex = showGrid = true;
+            toggleSymmetry.checked = toggleVertex.checked = toggleGrid.checked = true;
+            updateAll();
+        });
+        window.addEventListener('keydown', (e) => {
+            const step = 0.1;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); dynamicA = Math.min(3, +(dynamicA + step).toFixed(2)); }
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); dynamicA = Math.max(-3, +(dynamicA - step).toFixed(2)); }
+            else if (e.key === 'r' || e.key === 'R') { btnReset.click(); return; }
+            else return;
+            dynamicFunc.a = dynamicA; sliderA.value = dynamicA; updateAll();
+        });
+        function resizeCanvas() {
+            const pw = canvasPanel.clientWidth - 24;
+            const maxW = Math.min(pw, CANVAS_W);
+            canvas.style.width = maxW + 'px';
+            canvas.style.height = (maxW / CANVAS_W * CANVAS_H) + 'px';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        updateAll();
+    })();
+</script>
+</body>
+</html>
